@@ -39,6 +39,10 @@ using SchemaIndex = std::unordered_map<sourcemeta::core::JSON::String,
 OCTUE_CRUZER_EXPORT
 auto is_compatible_with(
     const sourcemeta::core::JSON &left, const sourcemeta::core::JSON &right,
+    const std::optional<sourcemeta::core::JSON::String> &default_dialect_left =
+        std::nullopt,
+    const std::optional<sourcemeta::core::JSON::String> &default_dialect_right =
+        std::nullopt,
     const sourcemeta::core::SchemaWalker &walker_left =
         sourcemeta::core::schema_official_walker,
     const sourcemeta::core::SchemaWalker &walker_right =
@@ -47,10 +51,6 @@ auto is_compatible_with(
         sourcemeta::core::schema_official_resolver,
     const sourcemeta::core::SchemaResolver &resolver_right =
         sourcemeta::core::schema_official_resolver,
-    const std::optional<sourcemeta::core::JSON::String> &default_dialect_left =
-        std::nullopt,
-    const std::optional<sourcemeta::core::JSON::String> &default_dialect_right =
-        std::nullopt,
     const std::optional<sourcemeta::core::JSON::String> &default_id_left =
         std::nullopt,
     const std::optional<sourcemeta::core::JSON::String> &default_id_right =

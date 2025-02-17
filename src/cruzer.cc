@@ -76,12 +76,12 @@ auto is_compatible_with(const SchemaIndex &left, const SchemaIndex &right)
 
 auto is_compatible_with(
     const sourcemeta::core::JSON &left, const sourcemeta::core::JSON &right,
+    const std::optional<sourcemeta::core::JSON::String> &default_dialect_left,
+    const std::optional<sourcemeta::core::JSON::String> &default_dialect_right,
     const sourcemeta::core::SchemaWalker &walker_left,
     const sourcemeta::core::SchemaWalker &walker_right,
     const sourcemeta::core::SchemaResolver &resolver_left,
     const sourcemeta::core::SchemaResolver &resolver_right,
-    const std::optional<sourcemeta::core::JSON::String> &default_dialect_left,
-    const std::optional<sourcemeta::core::JSON::String> &default_dialect_right,
     const std::optional<sourcemeta::core::JSON::String> &default_id_left,
     const std::optional<sourcemeta::core::JSON::String> &default_id_right)
     -> std::vector<Result> {
