@@ -23,6 +23,17 @@ struct Result {
   const sourcemeta::core::Pointer right;
 };
 
+struct SchemaLocation {
+  const sourcemeta::core::Pointer pointer;
+  const std::reference_wrapper<const sourcemeta::core::JSON> subschema;
+  const sourcemeta::core::JSON::String dialect;
+  const sourcemeta::core::JSON::String base_dialect;
+};
+
+using SchemaIndex =
+    std::map<sourcemeta::core::JSON::String, std::vector<SchemaLocation>>;
+
+OCTUE_CRUZER_EXPORT
 auto is_compatible_with(
     const sourcemeta::core::JSON &left, const sourcemeta::core::JSON &right,
     const sourcemeta::core::SchemaWalker &walker_left =
@@ -42,16 +53,7 @@ auto is_compatible_with(
     const std::optional<sourcemeta::core::JSON::String> &default_id_right =
         std::nullopt) -> std::vector<Result>;
 
-struct SchemaLocation {
-  const sourcemeta::core::Pointer pointer;
-  const std::reference_wrapper<const sourcemeta::core::JSON> subschema;
-  const sourcemeta::core::JSON::String dialect;
-  const sourcemeta::core::JSON::String base_dialect;
-};
-
-using SchemaIndex =
-    std::map<sourcemeta::core::JSON::String, std::vector<SchemaLocation>>;
-
+OCTUE_CRUZER_EXPORT
 auto index(const sourcemeta::core::SchemaFrame &frame,
            const sourcemeta::core::JSON &schema) -> SchemaIndex;
 
