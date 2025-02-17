@@ -3,13 +3,7 @@
 #include <cassert> // assert
 #include <sstream> // std::ostringstream
 
-static auto compare_keywords(const octue::SchemaLocation &left,
-                             const octue::SchemaLocation &right,
-                             const sourcemeta::core::SchemaWalkerResult &,
-                             const sourcemeta::core::SchemaWalkerResult &)
-    -> octue::Result {
-  return {octue::Compatibility::Unknown, left.pointer, right.pointer};
-}
+#include "comparator.h"
 
 static auto compare_subschemas(const octue::SchemaLocation &left,
                                const octue::SchemaLocation &right)
@@ -40,8 +34,12 @@ static auto compare_subschemas(const octue::SchemaLocation &left,
       for (const auto &right_entry : right.subschema.get().as_object()) {
         const auto right_walker_result{
             right.walker(right_entry.first, right_vocabularies)};
-        result.push_back(compare_keywords(left, right, left_walker_result,
-                                          right_walker_result));
+        result.push_back(octue::compare(
+            left.subschema.get(), left_entry.first,
+            left_walker_result.vocabulary, left_walker_result.type,
+            left.pointer, right.subschema.get(), right_entry.first,
+            right_walker_result.vocabulary, right_walker_result.type,
+            right.pointer));
       }
     }
 
