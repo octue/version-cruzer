@@ -1,12 +1,79 @@
 #include <octue/cruzer.h>
 
+#include <cassert> // assert
 #include <sstream> // std::ostringstream
+
+static auto compare_keywords(const octue::SchemaLocation &left,
+                             const octue::SchemaLocation &right,
+                             const sourcemeta::core::SchemaWalkerResult &,
+                             const sourcemeta::core::SchemaWalkerResult &)
+    -> octue::Result {
+  return {octue::Compatibility::Unknown, left.pointer, right.pointer};
+}
+
+static auto compare_subschemas(const octue::SchemaLocation &left,
+                               const octue::SchemaLocation &right)
+    -> std::vector<octue::Result> {
+  assert(sourcemeta::core::is_schema(left.subschema.get()));
+  assert(sourcemeta::core::is_schema(right.subschema.get()));
+
+  // TODO: Do proper boolean compatibility checks
+  if (left.subschema.get().is_boolean() && right.subschema.get().is_boolean()) {
+    return {{octue::Compatibility::Unknown, left.pointer, right.pointer}};
+  } else if (left.subschema.get().is_boolean()) {
+    return {{octue::Compatibility::Unknown, left.pointer, right.pointer}};
+  } else if (right.subschema.get().is_boolean()) {
+    return {{octue::Compatibility::Unknown, left.pointer, right.pointer}};
+
+  } else {
+    const auto left_vocabularies{sourcemeta::core::vocabularies(
+        left.resolver, left.base_dialect, left.dialect)};
+    const auto right_vocabularies{sourcemeta::core::vocabularies(
+        right.resolver, right.base_dialect, right.dialect)};
+
+    std::vector<octue::Result> result;
+
+    // TODO: Handle empty schemas
+    for (const auto &left_entry : left.subschema.get().as_object()) {
+      const auto left_walker_result{
+          left.walker(left_entry.first, left_vocabularies)};
+      for (const auto &right_entry : right.subschema.get().as_object()) {
+        const auto right_walker_result{
+            right.walker(right_entry.first, right_vocabularies)};
+        result.push_back(compare_keywords(left, right, left_walker_result,
+                                          right_walker_result));
+      }
+    }
+
+    return result;
+  }
+}
 
 namespace octue {
 
-auto is_compatible_with(const SchemaIndex &, const SchemaIndex &)
+auto is_compatible_with(const SchemaIndex &left, const SchemaIndex &right)
     -> std::vector<Result> {
-  return {};
+  std::vector<Result> result;
+
+  for (const auto &[instance_location, entries] : left) {
+    const auto match{right.find(instance_location)};
+    if (match == right.cend()) {
+      for (const auto &entry : entries) {
+        result.emplace_back(Compatibility::Compatible, entry.pointer,
+                            std::nullopt);
+      }
+    } else {
+      for (const auto &entry : entries) {
+        for (const auto &other : match->second) {
+          for (auto &&outcome : compare_subschemas(entry, other)) {
+            result.push_back(std::move(outcome));
+          }
+        }
+      }
+    }
+  }
+
+  return result;
 }
 
 auto is_compatible_with(
@@ -31,15 +98,18 @@ auto is_compatible_with(
                       default_dialect_right, default_id_right);
 
   // (2) Index subschemas by their unresolved instance locations
-  const auto index_left{index(frame_left, left)};
-  const auto index_right{index(frame_right, right)};
+  const auto index_left{index(frame_left, left, walker_left, resolver_left)};
+  const auto index_right{
+      index(frame_right, right, walker_right, resolver_right)};
 
   // (3) Proceed with the compatibility checks
   return is_compatible_with(index_left, index_right);
 }
 
 auto index(const sourcemeta::core::SchemaFrame &frame,
-           const sourcemeta::core::JSON &schema) -> SchemaIndex {
+           const sourcemeta::core::JSON &schema,
+           const sourcemeta::core::SchemaWalker &walker,
+           const sourcemeta::core::SchemaResolver &resolver) -> SchemaIndex {
   SchemaIndex result;
 
   for (const auto &location : frame.locations()) {
@@ -61,7 +131,8 @@ auto index(const sourcemeta::core::SchemaFrame &frame,
       result[key.str()].emplace_back(
           location.second.pointer,
           sourcemeta::core::get(schema, location.second.pointer),
-          location.second.dialect, location.second.base_dialect);
+          location.second.dialect, location.second.base_dialect, walker,
+          resolver);
     }
   }
 

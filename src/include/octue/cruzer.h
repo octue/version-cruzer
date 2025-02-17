@@ -19,8 +19,8 @@ enum class Compatibility { Compatible, Incompatible, Annotation, Unknown };
 
 struct Result {
   const Compatibility compatibility;
-  const sourcemeta::core::Pointer left;
-  const sourcemeta::core::Pointer right;
+  const std::optional<sourcemeta::core::Pointer> left;
+  const std::optional<sourcemeta::core::Pointer> right;
 };
 
 struct SchemaLocation {
@@ -28,6 +28,8 @@ struct SchemaLocation {
   const std::reference_wrapper<const sourcemeta::core::JSON> subschema;
   const sourcemeta::core::JSON::String dialect;
   const sourcemeta::core::JSON::String base_dialect;
+  const std::reference_wrapper<const sourcemeta::core::SchemaWalker> walker;
+  const std::reference_wrapper<const sourcemeta::core::SchemaResolver> resolver;
 };
 
 using SchemaIndex = std::unordered_map<sourcemeta::core::JSON::String,
@@ -60,7 +62,9 @@ auto is_compatible_with(const SchemaIndex &left, const SchemaIndex &right)
 
 OCTUE_CRUZER_EXPORT
 auto index(const sourcemeta::core::SchemaFrame &frame,
-           const sourcemeta::core::JSON &schema) -> SchemaIndex;
+           const sourcemeta::core::JSON &schema,
+           const sourcemeta::core::SchemaWalker &walker,
+           const sourcemeta::core::SchemaResolver &resolver) -> SchemaIndex;
 
 } // namespace octue
 
