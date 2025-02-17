@@ -1,0 +1,39 @@
+name: Cruzer
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - os: ubuntu-latest
+            cc: clang
+            cxx: clang++
+          - os: ubuntu-latest
+            cc: gcc
+            cxx: g++
+
+    runs-on: ${{ matrix.platform.os }}
+    env:
+      CC: ${{ matrix.platform.cc }}
+      CXX: ${{ matrix.platform.cxx }}
+    steps:
+      - name: Install ClangFormat
+        run: pipx install clang-format==19.1.0
+      - run: cmake --version
+      - uses: actions/checkout@v4
+      - run: >
+          cmake -S . -B ./build
+          -DCMAKE_BUILD_TYPE:STRING=Release
+          -DCRUZER_TESTS:BOOL=ON
+          -DBUILD_SHARED_LIBS:BOOL=OFF
+          -DCMAKE_COMPILE_WARNING_AS_ERROR:BOOL=ON
+      - run: cmake --build ./build --config Release --target clang_format_test
+      - run: cmake --build ./build --config Release --parallel 4
+      - run: cd ./build && ctest --build-config Release --output-on-failure --parallel
