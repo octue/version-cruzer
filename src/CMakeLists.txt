@@ -1,4 +1,5 @@
-sourcemeta_library(PROJECT octue NAME cruzer FOLDER "Octue" SOURCES cruzer.cc)
+sourcemeta_library(PROJECT octue NAME cruzer FOLDER "Octue"
+  SOURCES cruzer.cc comparator.h)
 
 target_link_libraries(octue_cruzer PUBLIC sourcemeta::core::json)
 target_link_libraries(octue_cruzer PUBLIC sourcemeta::core::jsonpointer)
