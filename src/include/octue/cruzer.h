@@ -9,8 +9,10 @@
 #include <octue/cruzer_export.h>
 #endif
 
-#include <optional> // std::optional, std::nullopt
-#include <vector>   // std::vector
+#include <functional> // std::reference_wrapper
+#include <map>        // std::map
+#include <optional>   // std::optional, std::nullopt
+#include <vector>     // std::vector
 
 namespace octue {
 enum class Compatibility { Compatible, Incompatible, Annotation, Unknown };
@@ -39,6 +41,19 @@ auto is_compatible_with(
         std::nullopt,
     const std::optional<sourcemeta::core::JSON::String> &default_id_right =
         std::nullopt) -> std::vector<Result>;
+
+struct SchemaLocation {
+  const sourcemeta::core::Pointer pointer;
+  const std::reference_wrapper<const sourcemeta::core::JSON> subschema;
+  const sourcemeta::core::JSON::String dialect;
+  const sourcemeta::core::JSON::String base_dialect;
+};
+
+using SchemaIndex =
+    std::map<sourcemeta::core::JSON::String, std::vector<SchemaLocation>>;
+
+auto index(const sourcemeta::core::SchemaFrame &frame,
+           const sourcemeta::core::JSON &schema) -> SchemaIndex;
 
 } // namespace octue
 
