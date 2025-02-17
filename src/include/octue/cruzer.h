@@ -9,10 +9,10 @@
 #include <octue/cruzer_export.h>
 #endif
 
-#include <functional> // std::reference_wrapper
-#include <map>        // std::map
-#include <optional>   // std::optional, std::nullopt
-#include <vector>     // std::vector
+#include <functional>    // std::reference_wrapper
+#include <optional>      // std::optional, std::nullopt
+#include <unordered_map> // std::unordered_map
+#include <vector>        // std::vector
 
 namespace octue {
 enum class Compatibility { Compatible, Incompatible, Annotation, Unknown };
@@ -30,8 +30,8 @@ struct SchemaLocation {
   const sourcemeta::core::JSON::String base_dialect;
 };
 
-using SchemaIndex =
-    std::map<sourcemeta::core::JSON::String, std::vector<SchemaLocation>>;
+using SchemaIndex = std::unordered_map<sourcemeta::core::JSON::String,
+                                       std::vector<SchemaLocation>>;
 
 // A convenience helper for end users to avoid framing themselves
 OCTUE_CRUZER_EXPORT
