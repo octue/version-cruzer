@@ -4,6 +4,11 @@
 
 namespace octue {
 
+auto is_compatible_with(const SchemaIndex &, const SchemaIndex &)
+    -> std::vector<Result> {
+  return {};
+}
+
 auto is_compatible_with(
     const sourcemeta::core::JSON &left, const sourcemeta::core::JSON &right,
     const sourcemeta::core::SchemaWalker &walker_left,
@@ -25,7 +30,12 @@ auto is_compatible_with(
   frame_right.analyse(right, walker_right, resolver_right,
                       default_dialect_right, default_id_right);
 
-  return {};
+  // (2) Index subschemas by their unresolved instance locations
+  const auto index_left{index(frame_left, left)};
+  const auto index_right{index(frame_right, right)};
+
+  // (3) Proceed with the compatibility checks
+  return is_compatible_with(index_left, index_right);
 }
 
 auto index(const sourcemeta::core::SchemaFrame &frame,

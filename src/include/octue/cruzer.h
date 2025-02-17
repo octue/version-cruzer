@@ -33,6 +33,7 @@ struct SchemaLocation {
 using SchemaIndex =
     std::map<sourcemeta::core::JSON::String, std::vector<SchemaLocation>>;
 
+// A convenience helper for end users to avoid framing themselves
 OCTUE_CRUZER_EXPORT
 auto is_compatible_with(
     const sourcemeta::core::JSON &left, const sourcemeta::core::JSON &right,
@@ -52,6 +53,10 @@ auto is_compatible_with(
         std::nullopt,
     const std::optional<sourcemeta::core::JSON::String> &default_id_right =
         std::nullopt) -> std::vector<Result>;
+
+OCTUE_CRUZER_EXPORT
+auto is_compatible_with(const SchemaIndex &left, const SchemaIndex &right)
+    -> std::vector<Result>;
 
 OCTUE_CRUZER_EXPORT
 auto index(const sourcemeta::core::SchemaFrame &frame,
