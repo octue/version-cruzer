@@ -20,7 +20,7 @@ compile: .always
 
 test: .always
 	$(CTEST) --test-dir ./build --build-config $(PRESET) \
-		--output-on-failure --progress --parallel
+		--output-on-failure --parallel
 
 clean: .always
 	$(CMAKE) -E rm -R -f build
