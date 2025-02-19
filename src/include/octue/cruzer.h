@@ -19,7 +19,7 @@ enum class Compatibility { Compatible, Incompatible, Annotation, Unknown };
 
 struct Result {
   const Compatibility compatibility;
-  const std::optional<sourcemeta::core::Pointer> left;
+  const sourcemeta::core::Pointer left;
   const std::optional<sourcemeta::core::Pointer> right;
 };
 
