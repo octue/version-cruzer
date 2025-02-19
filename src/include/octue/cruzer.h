@@ -19,8 +19,8 @@ enum class Compatibility { Compatible, Incompatible, Annotation, Unknown };
 
 struct Trace {
   const Compatibility compatibility;
-  const sourcemeta::core::Pointer left;
-  const std::optional<sourcemeta::core::Pointer> right;
+  std::optional<sourcemeta::core::Pointer> left;
+  std::optional<sourcemeta::core::Pointer> right;
 };
 
 struct SchemaLocation {
@@ -34,6 +34,33 @@ struct SchemaLocation {
 
 using SchemaIndex = std::unordered_map<sourcemeta::core::JSON::String,
                                        std::vector<SchemaLocation>>;
+
+enum class SemVer { Major, Minor, Patch };
+
+struct Result {
+  const std::optional<SemVer> version;
+  const std::vector<Trace> traces;
+};
+
+OCTUE_CRUZER_EXPORT
+auto version(
+    const sourcemeta::core::JSON &from, const sourcemeta::core::JSON &to,
+    const std::optional<sourcemeta::core::JSON::String> &default_dialect_from =
+        std::nullopt,
+    const std::optional<sourcemeta::core::JSON::String> &default_dialect_to =
+        std::nullopt,
+    const sourcemeta::core::SchemaWalker &walker_from =
+        sourcemeta::core::schema_official_walker,
+    const sourcemeta::core::SchemaWalker &walker_to =
+        sourcemeta::core::schema_official_walker,
+    const sourcemeta::core::SchemaResolver &resolver_from =
+        sourcemeta::core::schema_official_resolver,
+    const sourcemeta::core::SchemaResolver &resolver_to =
+        sourcemeta::core::schema_official_resolver,
+    const std::optional<sourcemeta::core::JSON::String> &default_id_from =
+        std::nullopt,
+    const std::optional<sourcemeta::core::JSON::String> &default_id_to =
+        std::nullopt) -> Result;
 
 // A convenience helper for end users to avoid framing themselves
 OCTUE_CRUZER_EXPORT

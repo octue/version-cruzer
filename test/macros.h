@@ -27,9 +27,8 @@
                              expected_right_pointer)                           \
   EXPECT_EQ((expected_traces).at((expected_index)).compatibility,              \
             octue::cruzer::Compatibility::expected_compatibility);             \
-  EXPECT_EQ(sourcemeta::core::to_string(                                       \
-                (expected_traces).at((expected_index)).left),                  \
-            expected_left_pointer);                                            \
+  EXPECT_OPTIONAL_POINTER((expected_traces).at((expected_index)).left,         \
+                          expected_left_pointer);                              \
   EXPECT_OPTIONAL_POINTER((expected_traces).at((expected_index)).right,        \
                           expected_right_pointer);
 
