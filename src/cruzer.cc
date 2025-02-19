@@ -11,9 +11,14 @@ static auto compare_subschemas(const octue::SchemaLocation &left,
   assert(sourcemeta::core::is_schema(left.subschema.get()));
   assert(sourcemeta::core::is_schema(right.subschema.get()));
 
-  // TODO: Do proper boolean compatibility checks
   if (left.subschema.get().is_boolean() && right.subschema.get().is_boolean()) {
-    return {{octue::Compatibility::Unknown, left.pointer, right.pointer}};
+    return {{!left.subschema.get().to_boolean() &&
+                     right.subschema.get().to_boolean()
+                 ? octue::Compatibility::Incompatible
+                 : octue::Compatibility::Compatible,
+             left.pointer, right.pointer}};
+
+    // TODO: Do proper boolean compatibility checks
   } else if (left.subschema.get().is_boolean()) {
     return {{octue::Compatibility::Unknown, left.pointer, right.pointer}};
   } else if (right.subschema.get().is_boolean()) {
