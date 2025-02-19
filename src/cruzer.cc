@@ -5,6 +5,21 @@
 
 #include "comparator.h"
 
+static auto effective_subschema(const octue::SchemaLocation &location) noexcept
+    -> const sourcemeta::core::JSON & {
+  const static sourcemeta::core::JSON wildcard{true};
+  return location.subschema.get().is_object() &&
+                 location.subschema.get().empty()
+             ? wildcard
+             : location.subschema.get();
+}
+
+// TODO: Investigate why older GCC versions get confused here
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
 static auto compare_subschemas(const octue::SchemaLocation &left,
                                const octue::SchemaLocation &right)
     -> std::vector<octue::Result> {
@@ -21,7 +36,8 @@ static auto compare_subschemas(const octue::SchemaLocation &left,
 
   std::vector<octue::Result> result;
 
-  if (left.subschema.get().is_object() && right.subschema.get().is_object()) {
+  if (left.subschema.get().is_object() && right.subschema.get().is_object() &&
+      !left.subschema.get().empty() && !right.subschema.get().empty()) {
     for (const auto &left_entry : left.subschema.get().as_object()) {
       const auto left_walker_result{
           left.walker(left_entry.first, left_vocabularies)};
@@ -36,43 +52,66 @@ static auto compare_subschemas(const octue::SchemaLocation &left,
             right.pointer));
       }
     }
-  } else if (left.subschema.get().is_object()) {
-    for (const auto &left_entry : left.subschema.get().as_object()) {
-      const auto left_walker_result{
-          left.walker(left_entry.first, left_vocabularies)};
+  } else if (left.subschema.get().is_object() &&
+             (right.subschema.get().is_boolean() ||
+              right.subschema.get().empty())) {
+    if (left.subschema.get().empty()) {
       result.push_back(octue::compare(
-          left.subschema.get(), left_entry.first, left_walker_result.vocabulary,
-          left_walker_result.type, left.pointer, right.subschema.get(),
-          BOOLEAN_KEYWORD_NAME, std::nullopt,
-          sourcemeta::core::SchemaKeywordType::Assertion, right.pointer));
-    }
-  } else if (right.subschema.get().is_object()) {
-    for (const auto &right_entry : right.subschema.get().as_object()) {
-      const auto right_walker_result{
-          right.walker(right_entry.first, right_vocabularies)};
-      result.push_back(octue::compare(
-          left.subschema.get(), BOOLEAN_KEYWORD_NAME, std::nullopt,
+          effective_subschema(left), BOOLEAN_KEYWORD_NAME, std::nullopt,
           sourcemeta::core::SchemaKeywordType::Assertion, left.pointer,
-          right.subschema.get(), right_entry.first,
-          right_walker_result.vocabulary, right_walker_result.type,
-          right.pointer));
+          effective_subschema(right), BOOLEAN_KEYWORD_NAME, std::nullopt,
+          sourcemeta::core::SchemaKeywordType::Assertion, right.pointer));
+    } else {
+      for (const auto &left_entry : left.subschema.get().as_object()) {
+        const auto left_walker_result{
+            left.walker(left_entry.first, left_vocabularies)};
+        result.push_back(octue::compare(
+            left.subschema.get(), left_entry.first,
+            left_walker_result.vocabulary, left_walker_result.type,
+            left.pointer, effective_subschema(right), BOOLEAN_KEYWORD_NAME,
+            std::nullopt, sourcemeta::core::SchemaKeywordType::Assertion,
+            right.pointer));
+      }
+    }
+  } else if (right.subschema.get().is_object() &&
+             (left.subschema.get().is_boolean() ||
+              left.subschema.get().empty())) {
+    if (right.subschema.get().empty()) {
+      result.push_back(octue::compare(
+          effective_subschema(left), BOOLEAN_KEYWORD_NAME, std::nullopt,
+          sourcemeta::core::SchemaKeywordType::Assertion, left.pointer,
+          effective_subschema(right), BOOLEAN_KEYWORD_NAME, std::nullopt,
+          sourcemeta::core::SchemaKeywordType::Assertion, right.pointer));
+    } else {
+      for (const auto &right_entry : right.subschema.get().as_object()) {
+        const auto right_walker_result{
+            right.walker(right_entry.first, right_vocabularies)};
+        result.push_back(octue::compare(
+            effective_subschema(left), BOOLEAN_KEYWORD_NAME, std::nullopt,
+            sourcemeta::core::SchemaKeywordType::Assertion, left.pointer,
+            right.subschema.get(), right_entry.first,
+            right_walker_result.vocabulary, right_walker_result.type,
+            right.pointer));
+      }
     }
   } else {
+    assert(left.subschema.get().is_boolean() || left.subschema.get().empty());
+    assert(right.subschema.get().is_boolean() || right.subschema.get().empty());
     result.push_back(octue::compare(
-        left.subschema.get(), BOOLEAN_KEYWORD_NAME, std::nullopt,
+        effective_subschema(left), BOOLEAN_KEYWORD_NAME, std::nullopt,
         sourcemeta::core::SchemaKeywordType::Assertion, left.pointer,
-        right.subschema.get(), BOOLEAN_KEYWORD_NAME, std::nullopt,
+        effective_subschema(right), BOOLEAN_KEYWORD_NAME, std::nullopt,
         sourcemeta::core::SchemaKeywordType::Assertion, right.pointer));
   }
 
-  // If nothing got compared, we are compatible by definition
-  if (result.empty()) {
-    result.emplace_back(octue::Compatibility::Compatible, left.pointer,
-                        right.pointer);
-  }
-
+  // We should be always be making at least one comparison,
+  assert(!result.empty());
   return result;
 }
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 namespace octue {
 
