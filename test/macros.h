@@ -1,6 +1,17 @@
 #ifndef OCTUE_CRUZER_TEST_MACROS_H_
 #define OCTUE_CRUZER_TEST_MACROS_H_
 
+#define COMPARE_TWO_WAY_2020_12(left_schema, right_schema, left_output,        \
+                                right_output)                                  \
+  const auto left_output{octue::is_compatible_with(                            \
+      left_schema, right_schema,                                               \
+      "https://json-schema.org/draft/2020-12/schema",                          \
+      "https://json-schema.org/draft/2020-12/schema")};                        \
+  const auto right_output{octue::is_compatible_with(                           \
+      right_schema, left_schema,                                               \
+      "https://json-schema.org/draft/2020-12/schema",                          \
+      "https://json-schema.org/draft/2020-12/schema")};
+
 #define EXPECT_OPTIONAL_POINTER(expected_pointer, expected_value)              \
   if (std::optional<sourcemeta::core::JSON::String>{expected_value}            \
           .has_value()) {                                                      \
