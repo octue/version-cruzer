@@ -62,3 +62,30 @@ TEST(Cruzer_is_compatible_with_2020_12, boolean_false_false) {
   EXPECT_EQ(result.size(), 1);
   EXPECT_COMPATIBILITY(result, 0, Compatible, "", "");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12, empty_empty) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({})JSON")};
+  const auto right{sourcemeta::core::parse_json(R"JSON({})JSON")};
+
+  const auto result{octue::is_compatible_with(
+      left, right, "https://json-schema.org/draft/2020-12/schema",
+      "https://json-schema.org/draft/2020-12/schema")};
+
+  EXPECT_EQ(result.size(), 1);
+  EXPECT_COMPATIBILITY(result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12, core_schema_core_schema_equal) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema"
+  })JSON")};
+
+  const auto result{octue::is_compatible_with(left, right)};
+
+  EXPECT_EQ(result.size(), 1);
+  EXPECT_COMPATIBILITY(result, 0, Compatible, "", "");
+}

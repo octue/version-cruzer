@@ -65,7 +65,11 @@ static auto compare_subschemas(const octue::SchemaLocation &left,
         sourcemeta::core::SchemaKeywordType::Assertion, right.pointer));
   }
 
-  // TODO: Handle empty schemas
+  // If nothing got compared, we are compatible by definition
+  if (result.empty()) {
+    result.emplace_back(octue::Compatibility::Compatible, left.pointer,
+                        right.pointer);
+  }
 
   return result;
 }
