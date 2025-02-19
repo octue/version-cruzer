@@ -15,5 +15,50 @@ TEST(Cruzer_is_compatible_with_2020_12, boolean_true_true) {
       "https://json-schema.org/draft/2020-12/schema")};
 
   EXPECT_EQ(result.size(), 1);
-  EXPECT_COMPATIBILITY(result, 0, Unknown, "", "");
+  EXPECT_COMPATIBILITY(result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12, boolean_true_false) {
+  const sourcemeta::core::JSON left{true};
+  const sourcemeta::core::JSON right{false};
+
+  const auto result{octue::is_compatible_with(
+      left, right,
+
+      // We need to manually specify dialects for boolean schemas
+      "https://json-schema.org/draft/2020-12/schema",
+      "https://json-schema.org/draft/2020-12/schema")};
+
+  EXPECT_EQ(result.size(), 1);
+  EXPECT_COMPATIBILITY(result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12, boolean_false_true) {
+  const sourcemeta::core::JSON left{false};
+  const sourcemeta::core::JSON right{true};
+
+  const auto result{octue::is_compatible_with(
+      left, right,
+
+      // We need to manually specify dialects for boolean schemas
+      "https://json-schema.org/draft/2020-12/schema",
+      "https://json-schema.org/draft/2020-12/schema")};
+
+  EXPECT_EQ(result.size(), 1);
+  EXPECT_COMPATIBILITY(result, 0, Incompatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12, boolean_false_false) {
+  const sourcemeta::core::JSON left{false};
+  const sourcemeta::core::JSON right{false};
+
+  const auto result{octue::is_compatible_with(
+      left, right,
+
+      // We need to manually specify dialects for boolean schemas
+      "https://json-schema.org/draft/2020-12/schema",
+      "https://json-schema.org/draft/2020-12/schema")};
+
+  EXPECT_EQ(result.size(), 1);
+  EXPECT_COMPATIBILITY(result, 0, Compatible, "", "");
 }
