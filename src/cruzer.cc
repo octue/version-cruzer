@@ -5,7 +5,8 @@
 
 #include "comparator.h"
 
-static auto effective_subschema(const octue::SchemaLocation &location) noexcept
+static auto
+effective_subschema(const octue::cruzer::SchemaLocation &location) noexcept
     -> const sourcemeta::core::JSON & {
   const static sourcemeta::core::JSON wildcard{true};
   return location.subschema.get().is_object() &&
@@ -20,9 +21,9 @@ static auto effective_subschema(const octue::SchemaLocation &location) noexcept
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
 
-static auto compare_subschemas(const octue::SchemaLocation &left,
-                               const octue::SchemaLocation &right)
-    -> std::vector<octue::Result> {
+static auto compare_subschemas(const octue::cruzer::SchemaLocation &left,
+                               const octue::cruzer::SchemaLocation &right)
+    -> std::vector<octue::cruzer::Trace> {
   assert(sourcemeta::core::is_schema(left.subschema.get()));
   assert(sourcemeta::core::is_schema(right.subschema.get()));
 
@@ -34,7 +35,7 @@ static auto compare_subschemas(const octue::SchemaLocation &left,
   // A simple default to more transparently handle boolean schemas
   constexpr auto BOOLEAN_KEYWORD_NAME{""};
 
-  std::vector<octue::Result> result;
+  std::vector<octue::cruzer::Trace> result;
 
   if (left.subschema.get().is_object() && right.subschema.get().is_object() &&
       !left.subschema.get().empty() && !right.subschema.get().empty()) {
@@ -44,7 +45,7 @@ static auto compare_subschemas(const octue::SchemaLocation &left,
       for (const auto &right_entry : right.subschema.get().as_object()) {
         const auto right_walker_result{
             right.walker(right_entry.first, right_vocabularies)};
-        result.push_back(octue::compare(
+        result.push_back(octue::cruzer::compare(
             left.subschema.get(), left_entry.first,
             left_walker_result.vocabulary, left_walker_result.type,
             left.pointer, right.subschema.get(), right_entry.first,
@@ -56,7 +57,7 @@ static auto compare_subschemas(const octue::SchemaLocation &left,
              (right.subschema.get().is_boolean() ||
               right.subschema.get().empty())) {
     if (left.subschema.get().empty()) {
-      result.push_back(octue::compare(
+      result.push_back(octue::cruzer::compare(
           effective_subschema(left), BOOLEAN_KEYWORD_NAME, std::nullopt,
           sourcemeta::core::SchemaKeywordType::Assertion, left.pointer,
           effective_subschema(right), BOOLEAN_KEYWORD_NAME, std::nullopt,
@@ -65,7 +66,7 @@ static auto compare_subschemas(const octue::SchemaLocation &left,
       for (const auto &left_entry : left.subschema.get().as_object()) {
         const auto left_walker_result{
             left.walker(left_entry.first, left_vocabularies)};
-        result.push_back(octue::compare(
+        result.push_back(octue::cruzer::compare(
             left.subschema.get(), left_entry.first,
             left_walker_result.vocabulary, left_walker_result.type,
             left.pointer, effective_subschema(right), BOOLEAN_KEYWORD_NAME,
@@ -77,7 +78,7 @@ static auto compare_subschemas(const octue::SchemaLocation &left,
              (left.subschema.get().is_boolean() ||
               left.subschema.get().empty())) {
     if (right.subschema.get().empty()) {
-      result.push_back(octue::compare(
+      result.push_back(octue::cruzer::compare(
           effective_subschema(left), BOOLEAN_KEYWORD_NAME, std::nullopt,
           sourcemeta::core::SchemaKeywordType::Assertion, left.pointer,
           effective_subschema(right), BOOLEAN_KEYWORD_NAME, std::nullopt,
@@ -86,7 +87,7 @@ static auto compare_subschemas(const octue::SchemaLocation &left,
       for (const auto &right_entry : right.subschema.get().as_object()) {
         const auto right_walker_result{
             right.walker(right_entry.first, right_vocabularies)};
-        result.push_back(octue::compare(
+        result.push_back(octue::cruzer::compare(
             effective_subschema(left), BOOLEAN_KEYWORD_NAME, std::nullopt,
             sourcemeta::core::SchemaKeywordType::Assertion, left.pointer,
             right.subschema.get(), right_entry.first,
@@ -97,7 +98,7 @@ static auto compare_subschemas(const octue::SchemaLocation &left,
   } else {
     assert(left.subschema.get().is_boolean() || left.subschema.get().empty());
     assert(right.subschema.get().is_boolean() || right.subschema.get().empty());
-    result.push_back(octue::compare(
+    result.push_back(octue::cruzer::compare(
         effective_subschema(left), BOOLEAN_KEYWORD_NAME, std::nullopt,
         sourcemeta::core::SchemaKeywordType::Assertion, left.pointer,
         effective_subschema(right), BOOLEAN_KEYWORD_NAME, std::nullopt,
@@ -113,11 +114,11 @@ static auto compare_subschemas(const octue::SchemaLocation &left,
 #pragma GCC diagnostic pop
 #endif
 
-namespace octue {
+namespace octue::cruzer {
 
 auto is_compatible_with(const SchemaIndex &left, const SchemaIndex &right)
-    -> std::vector<Result> {
-  std::vector<Result> result;
+    -> std::vector<Trace> {
+  std::vector<Trace> result;
 
   for (const auto &[instance_location, entries] : left) {
     const auto match{right.find(instance_location)};
@@ -150,7 +151,7 @@ auto is_compatible_with(
     const sourcemeta::core::SchemaResolver &resolver_right,
     const std::optional<sourcemeta::core::JSON::String> &default_id_left,
     const std::optional<sourcemeta::core::JSON::String> &default_id_right)
-    -> std::vector<Result> {
+    -> std::vector<Trace> {
   // (1) Frame both schemas for unresolved instance locations
   sourcemeta::core::SchemaFrame frame_left{
       sourcemeta::core::SchemaFrame::Mode::Instances};
@@ -203,4 +204,4 @@ auto index(const sourcemeta::core::SchemaFrame &frame,
   return result;
 }
 
-} // namespace octue
+} // namespace octue::cruzer

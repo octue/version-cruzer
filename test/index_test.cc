@@ -22,9 +22,9 @@ TEST(Cruzer_index, example_2020_12_1) {
   frame.analyse(schema, sourcemeta::core::schema_official_walker,
                 sourcemeta::core::schema_official_resolver);
 
-  const auto index{octue::index(frame, schema,
-                                sourcemeta::core::schema_official_walker,
-                                sourcemeta::core::schema_official_resolver)};
+  const auto index{octue::cruzer::index(
+      frame, schema, sourcemeta::core::schema_official_walker,
+      sourcemeta::core::schema_official_resolver)};
 
   EXPECT_EQ(index.size(), 4);
 

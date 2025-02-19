@@ -3,11 +3,11 @@
 
 #define COMPARE_TWO_WAY_2020_12(left_schema, right_schema, left_output,        \
                                 right_output)                                  \
-  const auto left_output{octue::is_compatible_with(                            \
+  const auto left_output{octue::cruzer::is_compatible_with(                    \
       left_schema, right_schema,                                               \
       "https://json-schema.org/draft/2020-12/schema",                          \
       "https://json-schema.org/draft/2020-12/schema")};                        \
-  const auto right_output{octue::is_compatible_with(                           \
+  const auto right_output{octue::cruzer::is_compatible_with(                   \
       right_schema, left_schema,                                               \
       "https://json-schema.org/draft/2020-12/schema",                          \
       "https://json-schema.org/draft/2020-12/schema")};
@@ -26,7 +26,7 @@
                              expected_compatibility, expected_left_pointer,    \
                              expected_right_pointer)                           \
   EXPECT_EQ((expected_traces).at((expected_index)).compatibility,              \
-            octue::Compatibility::expected_compatibility);                     \
+            octue::cruzer::Compatibility::expected_compatibility);             \
   EXPECT_EQ(sourcemeta::core::to_string(                                       \
                 (expected_traces).at((expected_index)).left),                  \
             expected_left_pointer);                                            \
