@@ -1,7 +1,9 @@
 #include <octue/cruzer.h>
 
-#include <cassert> // assert
-#include <sstream> // std::ostringstream
+#include <algorithm> // std::move
+#include <cassert>   // assert
+#include <iterator>  // std::back_inserter
+#include <sstream>   // std::ostringstream
 
 #include "comparator.h"
 
@@ -152,7 +154,6 @@ auto is_compatible_with(
     const std::optional<sourcemeta::core::JSON::String> &default_id_left,
     const std::optional<sourcemeta::core::JSON::String> &default_id_right)
     -> std::vector<Trace> {
-  // (1) Frame both schemas for unresolved instance locations
   sourcemeta::core::SchemaFrame frame_left{
       sourcemeta::core::SchemaFrame::Mode::Instances};
   frame_left.analyse(left, walker_left, resolver_left, default_dialect_left,
@@ -162,12 +163,10 @@ auto is_compatible_with(
   frame_right.analyse(right, walker_right, resolver_right,
                       default_dialect_right, default_id_right);
 
-  // (2) Index subschemas by their unresolved instance locations
   const auto index_left{index(frame_left, left, walker_left, resolver_left)};
   const auto index_right{
       index(frame_right, right, walker_right, resolver_right)};
 
-  // (3) Proceed with the compatibility checks
   return is_compatible_with(index_left, index_right);
 }
 
@@ -202,6 +201,90 @@ auto index(const sourcemeta::core::SchemaFrame &frame,
   }
 
   return result;
+}
+
+auto version(
+    const sourcemeta::core::JSON &from, const sourcemeta::core::JSON &to,
+    const std::optional<sourcemeta::core::JSON::String> &default_dialect_from,
+    const std::optional<sourcemeta::core::JSON::String> &default_dialect_to,
+    const sourcemeta::core::SchemaWalker &walker_from,
+    const sourcemeta::core::SchemaWalker &walker_to,
+    const sourcemeta::core::SchemaResolver &resolver_from,
+    const sourcemeta::core::SchemaResolver &resolver_to,
+    const std::optional<sourcemeta::core::JSON::String> &default_id_from,
+    const std::optional<sourcemeta::core::JSON::String> &default_id_to)
+    -> Result {
+  // (1) Frame both schemas for unresolved instance locations
+  sourcemeta::core::SchemaFrame frame_from{
+      sourcemeta::core::SchemaFrame::Mode::Instances};
+  frame_from.analyse(from, walker_from, resolver_from, default_dialect_from,
+                     default_id_from);
+  sourcemeta::core::SchemaFrame frame_to{
+      sourcemeta::core::SchemaFrame::Mode::Instances};
+  frame_to.analyse(to, walker_to, resolver_to, default_dialect_to,
+                   default_id_to);
+
+  // (2) Index subschemas by their unresolved instance locations
+  const auto index_from{index(frame_from, from, walker_from, resolver_from)};
+  const auto index_to{index(frame_to, to, walker_to, resolver_to)};
+
+  // (3) Collect all version compatibility traces
+  std::vector<Trace> from_to_to_incompatibilities;
+  std::vector<Trace> from_to_to_unknowns;
+  std::vector<Trace> from_to_to_annotations;
+  std::vector<Trace> to_to_from_incompatibilities;
+  std::vector<Trace> to_to_from_unknowns;
+
+  const auto from_to_to{is_compatible_with(index_from, index_to)};
+  const auto to_to_from{is_compatible_with(index_to, index_from)};
+
+  for (auto &&trace : from_to_to) {
+    switch (trace.compatibility) {
+      case Compatibility::Incompatible:
+        from_to_to_incompatibilities.push_back(std::move(trace));
+        break;
+      case Compatibility::Unknown:
+        from_to_to_unknowns.push_back(std::move(trace));
+        break;
+      case Compatibility::Annotation:
+        from_to_to_annotations.push_back(std::move(trace));
+        break;
+      default:
+        continue;
+    }
+  }
+
+  for (auto &&trace : to_to_from) {
+    switch (trace.compatibility) {
+      case Compatibility::Incompatible:
+        to_to_from_incompatibilities.emplace_back(
+            trace.compatibility, std::move(trace.right), std::move(trace.left));
+        break;
+      case Compatibility::Unknown:
+        to_to_from_unknowns.emplace_back(
+            trace.compatibility, std::move(trace.right), std::move(trace.left));
+        break;
+      default:
+        continue;
+    }
+  }
+
+  // (4) Figure out the result
+  if (!from_to_to_unknowns.empty() || !to_to_from_unknowns.empty()) {
+    std::move(to_to_from_unknowns.begin(), to_to_from_unknowns.end(),
+              std::back_inserter(from_to_to_unknowns));
+    return {std::nullopt, std::move(from_to_to_unknowns)};
+  } else if (!from_to_to_incompatibilities.empty() &&
+             !to_to_from_incompatibilities.empty()) {
+    std::move(to_to_from_incompatibilities.begin(),
+              to_to_from_incompatibilities.end(),
+              std::back_inserter(from_to_to_incompatibilities));
+    return {SemVer::Major, std::move(from_to_to_incompatibilities)};
+  } else if (!from_to_to_incompatibilities.empty()) {
+    return {SemVer::Minor, std::move(from_to_to_incompatibilities)};
+  } else {
+    return {SemVer::Patch, std::move(from_to_to_annotations)};
+  }
 }
 
 } // namespace octue::cruzer
