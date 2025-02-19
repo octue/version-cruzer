@@ -14,6 +14,12 @@ static auto effective_subschema(const octue::SchemaLocation &location) noexcept
              : location.subschema.get();
 }
 
+// TODO: Investigate why older GCC versions get confused here
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
 static auto compare_subschemas(const octue::SchemaLocation &left,
                                const octue::SchemaLocation &right)
     -> std::vector<octue::Result> {
@@ -102,6 +108,10 @@ static auto compare_subschemas(const octue::SchemaLocation &left,
   assert(!result.empty());
   return result;
 }
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 namespace octue {
 
