@@ -40,9 +40,14 @@ static auto compare(
             right_schema_location};
   }
 
+  if (left_subschema.is_boolean() && !left_subschema.to_boolean()) {
+    return {Compatibility::Incompatible, left_schema_location,
+            right_schema_location};
+  }
+
   switch (left_type) {
     case sourcemeta::core::SchemaKeywordType::Other:
-      if (right_subschema.is_boolean() && right_subschema.to_boolean()) {
+      if (right_subschema.is_boolean()) {
         return {Compatibility::Compatible, left_schema_location,
                 right_schema_location};
       }
@@ -54,7 +59,7 @@ static auto compare(
 
       break;
     case sourcemeta::core::SchemaKeywordType::Comment:
-      if (right_subschema.is_boolean() && right_subschema.to_boolean()) {
+      if (right_subschema.is_boolean()) {
         return {Compatibility::Annotation, left_schema_location,
                 right_schema_location};
       }
@@ -62,7 +67,7 @@ static auto compare(
       break;
 
     case sourcemeta::core::SchemaKeywordType::Reference:
-      if (right_subschema.is_boolean() && right_subschema.to_boolean()) {
+      if (right_subschema.is_boolean()) {
         return {Compatibility::Compatible, left_schema_location,
                 right_schema_location};
       }
@@ -70,7 +75,7 @@ static auto compare(
       break;
 
     case sourcemeta::core::SchemaKeywordType::LocationMembers:
-      if (right_subschema.is_boolean() && right_subschema.to_boolean()) {
+      if (right_subschema.is_boolean()) {
         return {Compatibility::Compatible, left_schema_location,
                 right_schema_location};
       }
