@@ -11,28 +11,17 @@ static auto compare_subschemas(const octue::SchemaLocation &left,
   assert(sourcemeta::core::is_schema(left.subschema.get()));
   assert(sourcemeta::core::is_schema(right.subschema.get()));
 
-  if (left.subschema.get().is_boolean() && right.subschema.get().is_boolean()) {
-    return {{!left.subschema.get().to_boolean() &&
-                     right.subschema.get().to_boolean()
-                 ? octue::Compatibility::Incompatible
-                 : octue::Compatibility::Compatible,
-             left.pointer, right.pointer}};
+  const auto left_vocabularies{sourcemeta::core::vocabularies(
+      left.resolver, left.base_dialect, left.dialect)};
+  const auto right_vocabularies{sourcemeta::core::vocabularies(
+      right.resolver, right.base_dialect, right.dialect)};
 
-    // TODO: Do proper boolean compatibility checks
-  } else if (left.subschema.get().is_boolean()) {
-    return {{octue::Compatibility::Unknown, left.pointer, right.pointer}};
-  } else if (right.subschema.get().is_boolean()) {
-    return {{octue::Compatibility::Unknown, left.pointer, right.pointer}};
+  // A simple default to more transparently handle boolean schemas
+  constexpr auto BOOLEAN_KEYWORD_NAME{""};
 
-  } else {
-    const auto left_vocabularies{sourcemeta::core::vocabularies(
-        left.resolver, left.base_dialect, left.dialect)};
-    const auto right_vocabularies{sourcemeta::core::vocabularies(
-        right.resolver, right.base_dialect, right.dialect)};
+  std::vector<octue::Result> result;
 
-    std::vector<octue::Result> result;
-
-    // TODO: Handle empty schemas
+  if (left.subschema.get().is_object() && right.subschema.get().is_object()) {
     for (const auto &left_entry : left.subschema.get().as_object()) {
       const auto left_walker_result{
           left.walker(left_entry.first, left_vocabularies)};
@@ -47,9 +36,38 @@ static auto compare_subschemas(const octue::SchemaLocation &left,
             right.pointer));
       }
     }
-
-    return result;
+  } else if (left.subschema.get().is_object()) {
+    for (const auto &left_entry : left.subschema.get().as_object()) {
+      const auto left_walker_result{
+          left.walker(left_entry.first, left_vocabularies)};
+      result.push_back(octue::compare(
+          left.subschema.get(), left_entry.first, left_walker_result.vocabulary,
+          left_walker_result.type, left.pointer, right.subschema.get(),
+          BOOLEAN_KEYWORD_NAME, std::nullopt,
+          sourcemeta::core::SchemaKeywordType::Assertion, right.pointer));
+    }
+  } else if (right.subschema.get().is_object()) {
+    for (const auto &right_entry : right.subschema.get().as_object()) {
+      const auto right_walker_result{
+          right.walker(right_entry.first, right_vocabularies)};
+      result.push_back(octue::compare(
+          left.subschema.get(), BOOLEAN_KEYWORD_NAME, std::nullopt,
+          sourcemeta::core::SchemaKeywordType::Assertion, left.pointer,
+          right.subschema.get(), right_entry.first,
+          right_walker_result.vocabulary, right_walker_result.type,
+          right.pointer));
+    }
+  } else {
+    result.push_back(octue::compare(
+        left.subschema.get(), BOOLEAN_KEYWORD_NAME, std::nullopt,
+        sourcemeta::core::SchemaKeywordType::Assertion, left.pointer,
+        right.subschema.get(), BOOLEAN_KEYWORD_NAME, std::nullopt,
+        sourcemeta::core::SchemaKeywordType::Assertion, right.pointer));
   }
+
+  // TODO: Handle empty schemas
+
+  return result;
 }
 
 namespace octue {
