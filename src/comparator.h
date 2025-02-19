@@ -35,6 +35,25 @@ static auto compare(
             left_schema_location, right_schema_location};
   }
 
+  if (left_subschema.is_boolean() && left_subschema.to_boolean()) {
+    return {Compatibility::Compatible, left_schema_location,
+            right_schema_location};
+  }
+
+  if (left_type == sourcemeta::core::SchemaKeywordType::Other) {
+    if (right_subschema.is_boolean() && right_subschema.to_boolean()) {
+      return {Compatibility::Compatible, left_schema_location,
+              right_schema_location};
+    }
+  }
+
+  if (left_type == sourcemeta::core::SchemaKeywordType::Comment) {
+    if (right_subschema.is_boolean() && right_subschema.to_boolean()) {
+      return {Compatibility::Annotation, left_schema_location,
+              right_schema_location};
+    }
+  }
+
   // "Other" keywords never count
   if (left_type == sourcemeta::core::SchemaKeywordType::Other &&
       right_type == sourcemeta::core::SchemaKeywordType::Other) {
