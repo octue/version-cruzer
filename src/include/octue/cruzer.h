@@ -14,10 +14,10 @@
 #include <unordered_map> // std::unordered_map
 #include <vector>        // std::vector
 
-namespace octue {
+namespace octue::cruzer {
 enum class Compatibility { Compatible, Incompatible, Annotation, Unknown };
 
-struct Result {
+struct Trace {
   const Compatibility compatibility;
   const sourcemeta::core::Pointer left;
   const std::optional<sourcemeta::core::Pointer> right;
@@ -54,11 +54,11 @@ auto is_compatible_with(
     const std::optional<sourcemeta::core::JSON::String> &default_id_left =
         std::nullopt,
     const std::optional<sourcemeta::core::JSON::String> &default_id_right =
-        std::nullopt) -> std::vector<Result>;
+        std::nullopt) -> std::vector<Trace>;
 
 OCTUE_CRUZER_EXPORT
 auto is_compatible_with(const SchemaIndex &left, const SchemaIndex &right)
-    -> std::vector<Result>;
+    -> std::vector<Trace>;
 
 OCTUE_CRUZER_EXPORT
 auto index(const sourcemeta::core::SchemaFrame &frame,
@@ -66,6 +66,6 @@ auto index(const sourcemeta::core::SchemaFrame &frame,
            const sourcemeta::core::SchemaWalker &walker,
            const sourcemeta::core::SchemaResolver &resolver) -> SchemaIndex;
 
-} // namespace octue
+} // namespace octue::cruzer
 
 #endif

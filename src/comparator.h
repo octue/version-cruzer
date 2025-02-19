@@ -3,7 +3,7 @@
 
 #include <cassert> // assert
 
-namespace octue {
+namespace octue::cruzer {
 
 static auto compare(
     // Left current subschema
@@ -26,7 +26,7 @@ static auto compare(
     // Right keyword type
     const sourcemeta::core::SchemaKeywordType &right_type,
     // Right schema location
-    const sourcemeta::core::Pointer &right_schema_location) -> octue::Result {
+    const sourcemeta::core::Pointer &right_schema_location) -> Trace {
 
   if (left_subschema.is_boolean() && right_subschema.is_boolean()) {
     return {!left_subschema.to_boolean() && right_subschema.to_boolean()
@@ -90,6 +90,6 @@ static auto compare(
   return {Compatibility::Unknown, left_schema_location, right_schema_location};
 }
 
-} // namespace octue
+} // namespace octue::cruzer
 
 #endif
