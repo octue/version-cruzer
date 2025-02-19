@@ -7,72 +7,52 @@ TEST(Cruzer_is_compatible_with_2020_12, boolean_true_true) {
   const sourcemeta::core::JSON left{true};
   const sourcemeta::core::JSON right{true};
 
-  const auto result{octue::is_compatible_with(
-      left, right,
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
-      // We need to manually specify dialects for boolean schemas
-      "https://json-schema.org/draft/2020-12/schema",
-      "https://json-schema.org/draft/2020-12/schema")};
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
 
-  EXPECT_EQ(result.size(), 1);
-  EXPECT_COMPATIBILITY(result, 0, Compatible, "", "");
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12, boolean_true_false) {
   const sourcemeta::core::JSON left{true};
   const sourcemeta::core::JSON right{false};
 
-  const auto result{octue::is_compatible_with(
-      left, right,
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
-      // We need to manually specify dialects for boolean schemas
-      "https://json-schema.org/draft/2020-12/schema",
-      "https://json-schema.org/draft/2020-12/schema")};
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
 
-  EXPECT_EQ(result.size(), 1);
-  EXPECT_COMPATIBILITY(result, 0, Compatible, "", "");
-}
-
-TEST(Cruzer_is_compatible_with_2020_12, boolean_false_true) {
-  const sourcemeta::core::JSON left{false};
-  const sourcemeta::core::JSON right{true};
-
-  const auto result{octue::is_compatible_with(
-      left, right,
-
-      // We need to manually specify dialects for boolean schemas
-      "https://json-schema.org/draft/2020-12/schema",
-      "https://json-schema.org/draft/2020-12/schema")};
-
-  EXPECT_EQ(result.size(), 1);
-  EXPECT_COMPATIBILITY(result, 0, Incompatible, "", "");
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Incompatible, "", "");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12, boolean_false_false) {
   const sourcemeta::core::JSON left{false};
   const sourcemeta::core::JSON right{false};
 
-  const auto result{octue::is_compatible_with(
-      left, right,
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
-      // We need to manually specify dialects for boolean schemas
-      "https://json-schema.org/draft/2020-12/schema",
-      "https://json-schema.org/draft/2020-12/schema")};
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
 
-  EXPECT_EQ(result.size(), 1);
-  EXPECT_COMPATIBILITY(result, 0, Compatible, "", "");
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12, empty_empty) {
   const auto left{sourcemeta::core::parse_json(R"JSON({})JSON")};
   const auto right{sourcemeta::core::parse_json(R"JSON({})JSON")};
 
-  const auto result{octue::is_compatible_with(
-      left, right, "https://json-schema.org/draft/2020-12/schema",
-      "https://json-schema.org/draft/2020-12/schema")};
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
-  EXPECT_EQ(result.size(), 1);
-  EXPECT_COMPATIBILITY(result, 0, Compatible, "", "");
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12, core_schema_core_schema_equal) {
@@ -84,8 +64,11 @@ TEST(Cruzer_is_compatible_with_2020_12, core_schema_core_schema_equal) {
     "$schema": "https://json-schema.org/draft/2020-12/schema"
   })JSON")};
 
-  const auto result{octue::is_compatible_with(left, right)};
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
-  EXPECT_EQ(result.size(), 1);
-  EXPECT_COMPATIBILITY(result, 0, Compatible, "", "");
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
