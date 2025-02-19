@@ -3,7 +3,7 @@
 
 #include "macros.h"
 
-TEST(Cruzer_is_compatible_with_2020_12, core_schema_core_schema) {
+TEST(Cruzer_is_compatible_with_2020_12_core_schema, core_schema) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
     "$schema": "https://json-schema.org/draft/2020-12/schema"
   })JSON")};
