@@ -29,34 +29,8 @@ TEST(Cruzer_is_compatible_with_2020_12, boolean_true_false) {
   EXPECT_COMPATIBILITY(right_result, 0, Incompatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12, boolean_false_false) {
-  const sourcemeta::core::JSON left{false};
-  const sourcemeta::core::JSON right{false};
-
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
-}
-
-TEST(Cruzer_is_compatible_with_2020_12, empty_empty) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({})JSON")};
-  const auto right{sourcemeta::core::parse_json(R"JSON({})JSON")};
-
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
-}
-
-TEST(Cruzer_is_compatible_with_2020_12, empty_core_schema) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({})JSON")};
+TEST(Cruzer_is_compatible_with_2020_12, boolean_true_core_schema) {
+  const sourcemeta::core::JSON left{true};
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$schema": "https://json-schema.org/draft/2020-12/schema"
   })JSON")};
@@ -70,8 +44,8 @@ TEST(Cruzer_is_compatible_with_2020_12, empty_core_schema) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12, empty_core_id) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({})JSON")};
+TEST(Cruzer_is_compatible_with_2020_12, boolean_true_core_id) {
+  const sourcemeta::core::JSON left{true};
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$id": "https://www.example.com"
   })JSON")};
@@ -85,8 +59,8 @@ TEST(Cruzer_is_compatible_with_2020_12, empty_core_id) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12, empty_core_comment) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({})JSON")};
+TEST(Cruzer_is_compatible_with_2020_12, boolean_true_core_comment) {
+  const sourcemeta::core::JSON left{true};
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$comment": "Foo"
   })JSON")};
@@ -100,8 +74,8 @@ TEST(Cruzer_is_compatible_with_2020_12, empty_core_comment) {
   EXPECT_COMPATIBILITY(right_result, 0, Annotation, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12, empty_core_ref) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({})JSON")};
+TEST(Cruzer_is_compatible_with_2020_12, boolean_true_core_ref) {
+  const sourcemeta::core::JSON left{true};
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$ref": "#"
   })JSON")};
@@ -115,8 +89,8 @@ TEST(Cruzer_is_compatible_with_2020_12, empty_core_ref) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12, empty_core_anchor) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({})JSON")};
+TEST(Cruzer_is_compatible_with_2020_12, boolean_true_core_anchor) {
+  const sourcemeta::core::JSON left{true};
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$anchor": "foo"
   })JSON")};
@@ -130,8 +104,8 @@ TEST(Cruzer_is_compatible_with_2020_12, empty_core_anchor) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12, empty_core_dynamicanchor) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({})JSON")};
+TEST(Cruzer_is_compatible_with_2020_12, boolean_true_core_dynamicanchor) {
+  const sourcemeta::core::JSON left{true};
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$dynamicAnchor": "foo"
   })JSON")};
@@ -145,8 +119,8 @@ TEST(Cruzer_is_compatible_with_2020_12, empty_core_dynamicanchor) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12, empty_core_vocabulary) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({})JSON")};
+TEST(Cruzer_is_compatible_with_2020_12, boolean_true_core_vocabulary) {
+  const sourcemeta::core::JSON left{true};
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$vocabulary": {
       "https://json-schema.org/draft/2020-12/vocab/core": true
@@ -162,8 +136,8 @@ TEST(Cruzer_is_compatible_with_2020_12, empty_core_vocabulary) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12, empty_core_defs) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({})JSON")};
+TEST(Cruzer_is_compatible_with_2020_12, boolean_true_core_defs) {
+  const sourcemeta::core::JSON left{true};
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$defs": {
       "foo": false
@@ -179,30 +153,12 @@ TEST(Cruzer_is_compatible_with_2020_12, empty_core_defs) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12, empty_core_definitions) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({})JSON")};
+TEST(Cruzer_is_compatible_with_2020_12, boolean_true_core_definitions) {
+  const sourcemeta::core::JSON left{true};
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "definitions": {
       "foo": false
     }
-  })JSON")};
-
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
-}
-
-TEST(Cruzer_is_compatible_with_2020_12, core_schema_core_schema) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  })JSON")};
-
-  const auto right{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
   })JSON")};
 
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
