@@ -13,7 +13,7 @@ static auto compare(
     // Left keyword vocabulary
     const std::optional<sourcemeta::core::JSON::String> &,
     // Left keyword type
-    const sourcemeta::core::SchemaKeywordType &,
+    const sourcemeta::core::SchemaKeywordType &left_type,
     // Left schema location
     const sourcemeta::core::Pointer &left_schema_location,
 
@@ -24,7 +24,7 @@ static auto compare(
     // Right keyword vocabulary
     const std::optional<sourcemeta::core::JSON::String> &,
     // Right keyword type
-    const sourcemeta::core::SchemaKeywordType &,
+    const sourcemeta::core::SchemaKeywordType &right_type,
     // Right schema location
     const sourcemeta::core::Pointer &right_schema_location) -> octue::Result {
 
@@ -33,6 +33,13 @@ static auto compare(
                 ? Compatibility::Incompatible
                 : Compatibility::Compatible,
             left_schema_location, right_schema_location};
+  }
+
+  // "Other" keywords never count
+  if (left_type == sourcemeta::core::SchemaKeywordType::Other &&
+      right_type == sourcemeta::core::SchemaKeywordType::Other) {
+    return {Compatibility::Compatible, left_schema_location,
+            right_schema_location};
   }
 
   return {Compatibility::Unknown, left_schema_location, right_schema_location};
