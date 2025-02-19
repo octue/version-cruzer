@@ -3,7 +3,7 @@
 
 #include "macros.h"
 
-TEST(Cruzer_is_compatible_with_2020_12, boolean_false_false) {
+TEST(Cruzer_is_compatible_with_2020_12_boolean_false, false) {
   const sourcemeta::core::JSON left{false};
   const sourcemeta::core::JSON right{false};
 
@@ -16,7 +16,7 @@ TEST(Cruzer_is_compatible_with_2020_12, boolean_false_false) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12, boolean_false_true) {
+TEST(Cruzer_is_compatible_with_2020_12_boolean_false, true) {
   const sourcemeta::core::JSON left{false};
   const sourcemeta::core::JSON right{true};
 
@@ -29,7 +29,7 @@ TEST(Cruzer_is_compatible_with_2020_12, boolean_false_true) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12, boolean_false_core_schema) {
+TEST(Cruzer_is_compatible_with_2020_12_boolean_false, core_schema) {
   const sourcemeta::core::JSON left{false};
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$schema": "https://json-schema.org/draft/2020-12/schema"
@@ -44,7 +44,7 @@ TEST(Cruzer_is_compatible_with_2020_12, boolean_false_core_schema) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12, boolean_false_core_id) {
+TEST(Cruzer_is_compatible_with_2020_12_boolean_false, core_id) {
   const sourcemeta::core::JSON left{false};
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$id": "https://www.example.com"
@@ -59,7 +59,7 @@ TEST(Cruzer_is_compatible_with_2020_12, boolean_false_core_id) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12, boolean_false_core_comment) {
+TEST(Cruzer_is_compatible_with_2020_12_boolean_false, core_comment) {
   const sourcemeta::core::JSON left{false};
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$comment": "Foo"
@@ -74,7 +74,7 @@ TEST(Cruzer_is_compatible_with_2020_12, boolean_false_core_comment) {
   EXPECT_COMPATIBILITY(right_result, 0, Annotation, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12, boolean_false_core_ref) {
+TEST(Cruzer_is_compatible_with_2020_12_boolean_false, core_ref) {
   const sourcemeta::core::JSON left{false};
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$ref": "#"
@@ -89,7 +89,7 @@ TEST(Cruzer_is_compatible_with_2020_12, boolean_false_core_ref) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12, boolean_false_core_anchor) {
+TEST(Cruzer_is_compatible_with_2020_12_boolean_false, core_anchor) {
   const sourcemeta::core::JSON left{false};
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$anchor": "foo"
@@ -104,7 +104,7 @@ TEST(Cruzer_is_compatible_with_2020_12, boolean_false_core_anchor) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12, boolean_false_core_dynamicanchor) {
+TEST(Cruzer_is_compatible_with_2020_12_boolean_false, core_dynamicanchor) {
   const sourcemeta::core::JSON left{false};
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$dynamicAnchor": "foo"
@@ -119,7 +119,7 @@ TEST(Cruzer_is_compatible_with_2020_12, boolean_false_core_dynamicanchor) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12, boolean_false_core_vocabulary) {
+TEST(Cruzer_is_compatible_with_2020_12_boolean_false, core_vocabulary) {
   const sourcemeta::core::JSON left{false};
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$vocabulary": {
@@ -136,7 +136,7 @@ TEST(Cruzer_is_compatible_with_2020_12, boolean_false_core_vocabulary) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12, boolean_false_core_defs) {
+TEST(Cruzer_is_compatible_with_2020_12_boolean_false, core_defs) {
   const sourcemeta::core::JSON left{false};
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$defs": {
@@ -153,7 +153,7 @@ TEST(Cruzer_is_compatible_with_2020_12, boolean_false_core_defs) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12, boolean_false_core_definitions) {
+TEST(Cruzer_is_compatible_with_2020_12_boolean_false, core_definitions) {
   const sourcemeta::core::JSON left{false};
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "definitions": {
