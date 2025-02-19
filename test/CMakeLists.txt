@@ -3,7 +3,15 @@ sourcemeta_googletest(PROJECT octue NAME cruzer FOLDER "Octue"
     2020_12_is_compatible_with_boolean_true_test.cc
     2020_12_is_compatible_with_boolean_false_test.cc
     2020_12_is_compatible_with_empty_test.cc
+    2020_12_is_compatible_with_core_anchor_test.cc
+    2020_12_is_compatible_with_core_comment_test.cc
+    2020_12_is_compatible_with_core_definitions_test.cc
+    2020_12_is_compatible_with_core_defs_test.cc
+    2020_12_is_compatible_with_core_dynamicanchor_test.cc
+    2020_12_is_compatible_with_core_id_test.cc
+    2020_12_is_compatible_with_core_ref_test.cc
     2020_12_is_compatible_with_core_schema_test.cc
+    2020_12_is_compatible_with_core_vocabulary_test.cc
     2020_12_version_test.cc)
 
 target_link_libraries(octue_cruzer_unit PRIVATE octue::cruzer)
