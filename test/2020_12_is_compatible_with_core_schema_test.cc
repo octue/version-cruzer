@@ -54,7 +54,7 @@ TEST(Cruzer_is_compatible_with_2020_12_core_schema, core_comment) {
   EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Annotation, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_schema, core_ref) {
@@ -160,6 +160,132 @@ TEST(Cruzer_is_compatible_with_2020_12_core_schema, core_definitions) {
     "definitions": {
       "foo": false
     }
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_schema, metadata_title) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "title": "Foo"
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_schema, metadata_description) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "description": "Foo"
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_schema, metadata_default) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "default": "Foo"
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_schema, metadata_deprecated) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "deprecated": true
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_schema, metadata_examples) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "examples": [ 1 ]
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_schema, metadata_readonly) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "readOnly": true
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_schema, metadata_writeonly) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "writeOnly": true
   })JSON")};
 
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);

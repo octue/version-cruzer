@@ -54,7 +54,7 @@ TEST(Cruzer_is_compatible_with_2020_12_core_ref, core_comment) {
   EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Annotation, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_ref, core_ref) {
@@ -160,6 +160,132 @@ TEST(Cruzer_is_compatible_with_2020_12_core_ref, core_definitions) {
     "definitions": {
       "foo": false
     }
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_ref, metadata_title) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$ref": "#"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "title": "Foo"
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_ref, metadata_description) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$ref": "#"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "description": "Foo"
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_ref, metadata_default) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$ref": "#"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "default": "Foo"
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_ref, metadata_deprecated) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$ref": "#"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "deprecated": true
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_ref, metadata_examples) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$ref": "#"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "examples": [ 1 ]
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_ref, metadata_readonly) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$ref": "#"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "readOnly": true
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_ref, metadata_writeonly) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$ref": "#"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "writeOnly": true
   })JSON")};
 
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);

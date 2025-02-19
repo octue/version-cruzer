@@ -12,6 +12,13 @@ sourcemeta_googletest(PROJECT octue NAME cruzer FOLDER "Octue"
     2020_12_is_compatible_with_core_ref_test.cc
     2020_12_is_compatible_with_core_schema_test.cc
     2020_12_is_compatible_with_core_vocabulary_test.cc
+    2020_12_is_compatible_with_metadata_default_test.cc
+    2020_12_is_compatible_with_metadata_deprecated_test.cc
+    2020_12_is_compatible_with_metadata_description_test.cc
+    2020_12_is_compatible_with_metadata_examples_test.cc
+    2020_12_is_compatible_with_metadata_readonly_test.cc
+    2020_12_is_compatible_with_metadata_title_test.cc
+    2020_12_is_compatible_with_metadata_writeonly_test.cc
     2020_12_version_test.cc)
 
 target_link_libraries(octue_cruzer_unit PRIVATE octue::cruzer)

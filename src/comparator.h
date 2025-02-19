@@ -57,7 +57,10 @@ static auto compare(
       return {Compatibility::Compatible, left_schema_location,
               right_schema_location};
     case sourcemeta::core::SchemaKeywordType::Comment:
-      return {Compatibility::Annotation, left_schema_location,
+      return {Compatibility::Compatible, left_schema_location,
+              right_schema_location};
+    case sourcemeta::core::SchemaKeywordType::Annotation:
+      return {Compatibility::Compatible, left_schema_location,
               right_schema_location};
     case sourcemeta::core::SchemaKeywordType::Reference:
       return {Compatibility::Compatible, left_schema_location,
