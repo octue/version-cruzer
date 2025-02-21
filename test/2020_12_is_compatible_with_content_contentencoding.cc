@@ -3,9 +3,9 @@
 
 #include "macros.h"
 
-TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_schema) {
+TEST(Cruzer_is_compatible_with_2020_12_content_contentencoding, core_schema) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "default": {}
+    "contentEncoding": "base64"
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -21,9 +21,9 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_schema) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_id) {
+TEST(Cruzer_is_compatible_with_2020_12_content_contentencoding, core_id) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "default": {}
+    "contentEncoding": "base64"
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -39,9 +39,9 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_id) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_comment) {
+TEST(Cruzer_is_compatible_with_2020_12_content_contentencoding, core_comment) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "default": {}
+    "contentEncoding": "base64"
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -57,9 +57,9 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_comment) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_ref) {
+TEST(Cruzer_is_compatible_with_2020_12_content_contentencoding, core_ref) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "default": {}
+    "contentEncoding": "base64"
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -75,9 +75,9 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_ref) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_anchor) {
+TEST(Cruzer_is_compatible_with_2020_12_content_contentencoding, core_anchor) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "default": {}
+    "contentEncoding": "base64"
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -93,9 +93,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_anchor) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_dynamicanchor) {
+TEST(Cruzer_is_compatible_with_2020_12_content_contentencoding,
+     core_dynamicanchor) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "default": {}
+    "contentEncoding": "base64"
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -111,9 +112,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_dynamicanchor) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_vocabulary) {
+TEST(Cruzer_is_compatible_with_2020_12_content_contentencoding,
+     core_vocabulary) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "default": {}
+    "contentEncoding": "base64"
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -131,9 +133,9 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_vocabulary) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_defs) {
+TEST(Cruzer_is_compatible_with_2020_12_content_contentencoding, core_defs) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "default": {}
+    "contentEncoding": "base64"
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -151,9 +153,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_defs) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_definitions) {
+TEST(Cruzer_is_compatible_with_2020_12_content_contentencoding,
+     core_definitions) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "default": {}
+    "contentEncoding": "base64"
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -171,9 +174,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_definitions) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_title) {
+TEST(Cruzer_is_compatible_with_2020_12_content_contentencoding,
+     metadata_title) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "default": {}
+    "contentEncoding": "base64"
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -189,9 +193,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_title) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_description) {
+TEST(Cruzer_is_compatible_with_2020_12_content_contentencoding,
+     metadata_description) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "default": {}
+    "contentEncoding": "base64"
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -207,9 +212,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_description) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_default) {
+TEST(Cruzer_is_compatible_with_2020_12_content_contentencoding,
+     metadata_default) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "default": {}
+    "contentEncoding": "base64"
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -225,9 +231,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_default) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_deprecated) {
+TEST(Cruzer_is_compatible_with_2020_12_content_contentencoding,
+     metadata_deprecated) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "default": {}
+    "contentEncoding": "base64"
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -243,9 +250,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_deprecated) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_examples) {
+TEST(Cruzer_is_compatible_with_2020_12_content_contentencoding,
+     metadata_examples) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "default": {}
+    "contentEncoding": "base64"
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -261,9 +269,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_examples) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_readonly) {
+TEST(Cruzer_is_compatible_with_2020_12_content_contentencoding,
+     metadata_readonly) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "default": {}
+    "contentEncoding": "base64"
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -279,9 +288,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_readonly) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_writeonly) {
+TEST(Cruzer_is_compatible_with_2020_12_content_contentencoding,
+     metadata_writeonly) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "default": {}
+    "contentEncoding": "base64"
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -297,14 +307,14 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_writeonly) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_metadata_default,
+TEST(Cruzer_is_compatible_with_2020_12_content_contentencoding,
      content_contentencoding) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "default": {}
+    "contentEncoding": "base64"
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
-    "contentEncoding": "base64"
+    "contentEncoding": "base16"
   })JSON")};
 
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
@@ -316,10 +326,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default,
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_metadata_default,
+TEST(Cruzer_is_compatible_with_2020_12_content_contentencoding,
      content_contentmediatype) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "default": {}
+    "contentEncoding": "base64"
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -335,10 +345,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default,
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_metadata_default,
+TEST(Cruzer_is_compatible_with_2020_12_content_contentencoding,
      content_contentschema) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "default": {}
+    "contentEncoding": "base64"
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
