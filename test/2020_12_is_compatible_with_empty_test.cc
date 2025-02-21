@@ -342,3 +342,19 @@ TEST(Cruzer_is_compatible_with_2020_12_empty, content_contentschema) {
   EXPECT_EQ(right_result.size(), 1);
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_empty, format_annotation_format) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({})JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "format": "email"
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
