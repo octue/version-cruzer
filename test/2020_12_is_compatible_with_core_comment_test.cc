@@ -15,7 +15,7 @@ TEST(Cruzer_is_compatible_with_2020_12_core_comment, core_schema) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Annotation, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
 
   EXPECT_EQ(right_result.size(), 1);
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
@@ -33,7 +33,7 @@ TEST(Cruzer_is_compatible_with_2020_12_core_comment, core_id) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Annotation, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
 
   EXPECT_EQ(right_result.size(), 1);
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
@@ -69,7 +69,7 @@ TEST(Cruzer_is_compatible_with_2020_12_core_comment, core_ref) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Annotation, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
 
   EXPECT_EQ(right_result.size(), 1);
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
@@ -87,7 +87,7 @@ TEST(Cruzer_is_compatible_with_2020_12_core_comment, core_anchor) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Annotation, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
 
   EXPECT_EQ(right_result.size(), 1);
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
@@ -105,7 +105,7 @@ TEST(Cruzer_is_compatible_with_2020_12_core_comment, core_dynamicanchor) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Annotation, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
 
   EXPECT_EQ(right_result.size(), 1);
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
@@ -125,7 +125,7 @@ TEST(Cruzer_is_compatible_with_2020_12_core_comment, core_vocabulary) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Annotation, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
 
   EXPECT_EQ(right_result.size(), 1);
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
@@ -145,7 +145,7 @@ TEST(Cruzer_is_compatible_with_2020_12_core_comment, core_defs) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Annotation, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
 
   EXPECT_EQ(right_result.size(), 1);
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
@@ -165,7 +165,133 @@ TEST(Cruzer_is_compatible_with_2020_12_core_comment, core_definitions) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Annotation, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_comment, metadata_title) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$comment": "Foo"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "title": "Foo"
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_comment, metadata_description) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$comment": "Foo"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "description": "Foo"
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_comment, metadata_default) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$comment": "Foo"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "default": "Foo"
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_comment, metadata_deprecated) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$comment": "Foo"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "deprecated": true
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_comment, metadata_examples) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$comment": "Foo"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "examples": [ 1 ]
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_comment, metadata_readonly) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$comment": "Foo"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "readOnly": true
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+
+  EXPECT_EQ(right_result.size(), 1);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_comment, metadata_writeonly) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "$comment": "Foo"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "writeOnly": true
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 1);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
 
   EXPECT_EQ(right_result.size(), 1);
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");

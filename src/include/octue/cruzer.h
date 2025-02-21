@@ -15,7 +15,7 @@
 #include <vector>        // std::vector
 
 namespace octue::cruzer {
-enum class Compatibility { Compatible, Incompatible, Annotation, Unknown };
+enum class Compatibility { Compatible, Incompatible, Unknown };
 
 struct Trace {
   const Compatibility compatibility;

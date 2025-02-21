@@ -3,9 +3,9 @@
 
 #include "macros.h"
 
-TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, core_schema) {
+TEST(Cruzer_is_compatible_with_2020_12_metadata_deprecated, core_schema) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$dynamicAnchor": "foo"
+    "deprecated": true
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -21,9 +21,9 @@ TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, core_schema) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, core_id) {
+TEST(Cruzer_is_compatible_with_2020_12_metadata_deprecated, core_id) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$dynamicAnchor": "foo"
+    "deprecated": true
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -39,9 +39,9 @@ TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, core_id) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, core_comment) {
+TEST(Cruzer_is_compatible_with_2020_12_metadata_deprecated, core_comment) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$dynamicAnchor": "foo"
+    "deprecated": true
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -57,9 +57,9 @@ TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, core_comment) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, core_ref) {
+TEST(Cruzer_is_compatible_with_2020_12_metadata_deprecated, core_ref) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$dynamicAnchor": "foo"
+    "deprecated": true
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -75,9 +75,9 @@ TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, core_ref) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, core_anchor) {
+TEST(Cruzer_is_compatible_with_2020_12_metadata_deprecated, core_anchor) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$dynamicAnchor": "foo"
+    "deprecated": true
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -93,9 +93,10 @@ TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, core_anchor) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, core_dynamicanchor) {
+TEST(Cruzer_is_compatible_with_2020_12_metadata_deprecated,
+     core_dynamicanchor) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$dynamicAnchor": "foo"
+    "deprecated": true
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -111,9 +112,9 @@ TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, core_dynamicanchor) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, core_vocabulary) {
+TEST(Cruzer_is_compatible_with_2020_12_metadata_deprecated, core_vocabulary) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$dynamicAnchor": "foo"
+    "deprecated": true
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -131,9 +132,9 @@ TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, core_vocabulary) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, core_defs) {
+TEST(Cruzer_is_compatible_with_2020_12_metadata_deprecated, core_defs) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$dynamicAnchor": "foo"
+    "deprecated": true
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -151,9 +152,9 @@ TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, core_defs) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, core_definitions) {
+TEST(Cruzer_is_compatible_with_2020_12_metadata_deprecated, core_definitions) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$dynamicAnchor": "foo"
+    "deprecated": true
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -171,9 +172,9 @@ TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, core_definitions) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, metadata_title) {
+TEST(Cruzer_is_compatible_with_2020_12_metadata_deprecated, metadata_title) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$dynamicAnchor": "foo"
+    "deprecated": true
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -189,10 +190,10 @@ TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, metadata_title) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor,
+TEST(Cruzer_is_compatible_with_2020_12_metadata_deprecated,
      metadata_description) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$dynamicAnchor": "foo"
+    "deprecated": true
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -208,9 +209,9 @@ TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor,
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, metadata_default) {
+TEST(Cruzer_is_compatible_with_2020_12_metadata_deprecated, metadata_default) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$dynamicAnchor": "foo"
+    "deprecated": true
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -226,10 +227,10 @@ TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, metadata_default) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor,
+TEST(Cruzer_is_compatible_with_2020_12_metadata_deprecated,
      metadata_deprecated) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$dynamicAnchor": "foo"
+    "deprecated": true
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -245,9 +246,9 @@ TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor,
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, metadata_examples) {
+TEST(Cruzer_is_compatible_with_2020_12_metadata_deprecated, metadata_examples) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$dynamicAnchor": "foo"
+    "deprecated": true
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -263,9 +264,9 @@ TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, metadata_examples) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, metadata_readonly) {
+TEST(Cruzer_is_compatible_with_2020_12_metadata_deprecated, metadata_readonly) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$dynamicAnchor": "foo"
+    "deprecated": true
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
@@ -281,9 +282,10 @@ TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, metadata_readonly) {
   EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, metadata_writeonly) {
+TEST(Cruzer_is_compatible_with_2020_12_metadata_deprecated,
+     metadata_writeonly) {
   const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$dynamicAnchor": "foo"
+    "deprecated": true
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({

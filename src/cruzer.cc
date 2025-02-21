@@ -231,7 +231,6 @@ auto version(
   // (3) Collect all version compatibility traces
   std::vector<Trace> from_to_to_incompatibilities;
   std::vector<Trace> from_to_to_unknowns;
-  std::vector<Trace> from_to_to_annotations;
   std::vector<Trace> to_to_from_incompatibilities;
   std::vector<Trace> to_to_from_unknowns;
 
@@ -245,9 +244,6 @@ auto version(
         break;
       case Compatibility::Unknown:
         from_to_to_unknowns.push_back(std::move(trace));
-        break;
-      case Compatibility::Annotation:
-        from_to_to_annotations.push_back(std::move(trace));
         break;
       default:
         continue;
@@ -283,7 +279,7 @@ auto version(
   } else if (!from_to_to_incompatibilities.empty()) {
     return {SemVer::Minor, std::move(from_to_to_incompatibilities)};
   } else {
-    return {SemVer::Patch, std::move(from_to_to_annotations)};
+    return {SemVer::Patch, {}};
   }
 }
 
