@@ -6,6 +6,7 @@ sourcemeta_googletest(PROJECT octue NAME cruzer FOLDER "Octue"
     2020_12_is_compatible_with_content_contentmediatype.cc
     2020_12_is_compatible_with_content_contentschema.cc
     2020_12_is_compatible_with_empty_test.cc
+    2020_12_is_compatible_with_format_annotation_format_test.cc
     2020_12_is_compatible_with_core_anchor_test.cc
     2020_12_is_compatible_with_core_comment_test.cc
     2020_12_is_compatible_with_core_definitions_test.cc
