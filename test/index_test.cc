@@ -81,3 +81,37 @@ TEST(Cruzer_index, example_2020_12_1) {
   EXPECT_EQ(index.at("/bar").at(1).base_dialect,
             "https://json-schema.org/draft/2020-12/schema");
 }
+
+TEST(Cruzer_index, example_2020_12_2) {
+  const auto schema{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "contentSchema": {
+      "additionalProperties": {
+        "properties": {
+          "foo": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  })JSON")};
+
+  sourcemeta::core::SchemaFrame frame{
+      sourcemeta::core::SchemaFrame::Mode::Instances};
+  frame.analyse(schema, sourcemeta::core::schema_official_walker,
+                sourcemeta::core::schema_official_resolver);
+
+  const auto index{octue::cruzer::index(
+      frame, schema, sourcemeta::core::schema_official_walker,
+      sourcemeta::core::schema_official_resolver)};
+
+  EXPECT_EQ(index.size(), 1);
+
+  EXPECT_TRUE(index.contains(""));
+  EXPECT_EQ(sourcemeta::core::to_string(index.at("").at(0).pointer), "");
+  EXPECT_EQ(index.at("").at(0).subschema.get(), schema);
+  EXPECT_EQ(index.at("").at(0).dialect,
+            "https://json-schema.org/draft/2020-12/schema");
+  EXPECT_EQ(index.at("").at(0).base_dialect,
+            "https://json-schema.org/draft/2020-12/schema");
+}

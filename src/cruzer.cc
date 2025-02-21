@@ -116,6 +116,46 @@ static auto compare_subschemas(const octue::cruzer::SchemaLocation &left,
 #pragma GCC diagnostic pop
 #endif
 
+static auto
+is_annotation_subschema(const sourcemeta::core::SchemaFrame &frame,
+                        const sourcemeta::core::SchemaFrame::Location &location,
+                        const sourcemeta::core::SchemaWalker &walker,
+                        const sourcemeta::core::SchemaResolver &resolver)
+    -> bool {
+  if (!location.parent.has_value()) {
+    return false;
+  }
+
+  const auto &keyword{location.parent.value().empty()
+                          ? location.pointer.back().to_property()
+                          : location.parent.value().back().to_property()};
+  const auto walker_result{
+      walker(keyword, frame.vocabularies(location, resolver))};
+  if (walker_result.type ==
+      sourcemeta::core::SchemaKeywordType::ApplicatorValueInPlaceOther) {
+    return true;
+  }
+
+  // TODO: It sucks that we have to loop over all entries to find subschema
+  // location parents. Sourcemeta Core should provide a better interface for
+  // this
+  for (const auto &sublocation : frame.locations()) {
+    if (sublocation.second.type !=
+            sourcemeta::core::SchemaFrame::LocationType::Resource &&
+        sublocation.second.type !=
+            sourcemeta::core::SchemaFrame::LocationType::Subschema) {
+      continue;
+    }
+
+    if (sublocation.second.pointer == location.parent.value() &&
+        is_annotation_subschema(frame, sublocation.second, walker, resolver)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 namespace octue::cruzer {
 
 auto is_compatible_with(const SchemaIndex &left, const SchemaIndex &right)
@@ -183,6 +223,10 @@ auto index(const sourcemeta::core::SchemaFrame &frame,
             sourcemeta::core::SchemaFrame::LocationType::Resource &&
         location.second.type !=
             sourcemeta::core::SchemaFrame::LocationType::Subschema) {
+      continue;
+    }
+
+    if (is_annotation_subschema(frame, location.second, walker, resolver)) {
       continue;
     }
 

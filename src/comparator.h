@@ -68,6 +68,12 @@ static auto compare(
     case sourcemeta::core::SchemaKeywordType::LocationMembers:
       return {Compatibility::Compatible, left_schema_location,
               right_schema_location};
+
+      // We treat this as an annotation
+    case sourcemeta::core::SchemaKeywordType::ApplicatorValueInPlaceOther:
+      return {Compatibility::Compatible, left_schema_location,
+              right_schema_location};
+
     default:
       break;
   }
