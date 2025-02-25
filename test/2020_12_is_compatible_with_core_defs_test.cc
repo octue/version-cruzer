@@ -189,3 +189,11 @@ TEST(Cruzer_is_compatible_with_2020_12_core_defs, format_annotation_format) {
 
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$defs", "/format");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_core_defs, validation_type) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "type": "string"
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$defs", "/type");
+}

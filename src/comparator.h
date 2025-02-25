@@ -1,7 +1,8 @@
 #ifndef OCTUE_CRUZER_COMPARATOR_H_
 #define OCTUE_CRUZER_COMPARATOR_H_
 
-#include <cassert> // assert
+#include <cassert>       // assert
+#include <unordered_set> // std::unordered_set
 
 static auto does_not_validate(const sourcemeta::core::SchemaKeywordType &type)
     -> bool {
@@ -79,6 +80,58 @@ static auto compare(
     if (right_subschema.is_boolean() && right_subschema.to_boolean()) {
       return {Compatibility::Incompatible, left_schema_location,
               right_schema_location};
+    }
+
+    assert(left_vocabulary.has_value());
+
+    // "type"
+    if (left_vocabulary.value() ==
+            "https://json-schema.org/draft/2020-12/vocab/validation" &&
+        left_keyword == "type") {
+      if (right_vocabulary.has_value() &&
+          right_vocabulary.value() ==
+              "https://json-schema.org/draft/2020-12/vocab/validation" &&
+          right_keyword == "type") {
+        const auto &left_value{left_subschema.at(left_keyword)};
+        const auto &right_value{right_subschema.at(right_keyword)};
+
+        std::unordered_set<sourcemeta::core::JSON::String> left_set;
+        std::unordered_set<sourcemeta::core::JSON::String> right_set;
+
+        if (left_value.is_string()) {
+          left_set.insert(left_value.to_string());
+        } else if (left_value.is_array()) {
+          for (const auto &value : left_value.as_array()) {
+            left_set.insert(value.to_string());
+          }
+        }
+
+        if (right_value.is_string()) {
+          right_set.insert(right_value.to_string());
+        } else if (right_value.is_array()) {
+          for (const auto &value : right_value.as_array()) {
+            right_set.insert(value.to_string());
+          }
+        }
+
+        if (left_set.contains("number")) {
+          left_set.emplace("integer");
+        }
+
+        if (right_set.contains("number")) {
+          right_set.emplace("integer");
+        }
+
+        for (const auto &right_entry : right_set) {
+          if (!left_set.contains(right_entry)) {
+            return {Compatibility::Incompatible, left_schema_location,
+                    right_schema_location};
+          }
+        }
+
+        return {Compatibility::Compatible, left_schema_location,
+                right_schema_location};
+      }
     }
   }
 
