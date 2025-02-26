@@ -3,368 +3,190 @@
 
 #include "macros.h"
 
-TEST(Cruzer_is_compatible_with_2020_12_core_schema, core_schema) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  })JSON")};
+static const auto schema{sourcemeta::core::parse_json(R"JSON({
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+})JSON")};
 
+TEST(Cruzer_is_compatible_with_2020_12_core_schema, core_schema) {
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$schema": "https://json-schema.org/draft/2020-12/schema"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$schema", "/$schema");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$schema", "/$schema");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/$schema");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_schema, core_id) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$id": "https://www.example.com"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$schema", "/$id");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$id", "/$schema");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema", "/$id");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_schema, core_comment) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$comment": "Foo"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$schema", "/$comment");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$comment", "/$schema");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/$comment");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_schema, core_ref) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$ref": "#"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$schema", "/$ref");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$ref", "/$schema");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema", "/$ref");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_schema, core_anchor) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$anchor": "foo"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$schema", "/$anchor");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$anchor", "/$schema");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/$anchor");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_schema, core_dynamicanchor) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$dynamicAnchor": "foo"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$schema", "/$dynamicAnchor");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$dynamicAnchor", "/$schema");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/$dynamicAnchor");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_schema, core_vocabulary) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$vocabulary": {
       "https://json-schema.org/draft/2020-12/vocab/core": true
     }
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$schema", "/$vocabulary");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$vocabulary", "/$schema");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/$vocabulary");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_schema, core_defs) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$defs": {
       "foo": false
     }
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$schema", "/$defs");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$defs", "/$schema");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/$defs");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_schema, core_definitions) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "definitions": {
       "foo": false
     }
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$schema", "/definitions");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/definitions", "/$schema");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/definitions");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_schema, metadata_title) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "title": "Foo"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$schema", "/title");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/title", "/$schema");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/title");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_schema, metadata_description) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "description": "Foo"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$schema", "/description");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/description", "/$schema");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/description");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_schema, metadata_default) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "default": "Foo"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$schema", "/default");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/default", "/$schema");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/default");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_schema, metadata_deprecated) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "deprecated": true
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$schema", "/deprecated");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/deprecated", "/$schema");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/deprecated");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_schema, metadata_examples) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "examples": [ 1 ]
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$schema", "/examples");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/examples", "/$schema");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/examples");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_schema, metadata_readonly) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "readOnly": true
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$schema", "/readOnly");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/readOnly", "/$schema");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/readOnly");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_schema, metadata_writeonly) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "writeOnly": true
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$schema", "/writeOnly");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/writeOnly", "/$schema");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/writeOnly");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_schema, content_contentencoding) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "contentEncoding": "base64"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$schema", "/contentEncoding");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/contentEncoding", "/$schema");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/contentEncoding");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_schema, content_contentmediatype) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "contentMediaType": "application/yaml"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$schema", "/contentMediaType");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/contentMediaType", "/$schema");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/contentMediaType");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_schema, content_contentschema) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "contentSchema": { "type": "string" }
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$schema", "/contentSchema");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/contentSchema", "/$schema");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/contentSchema");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_schema, format_annotation_format) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "$schema": "https://json-schema.org/draft/2020-12/schema"
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "format": "email"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$schema", "/format");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/format", "/$schema");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/format");
 }

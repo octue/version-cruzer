@@ -3,375 +3,198 @@
 
 #include "macros.h"
 
-TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly, core_schema) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "writeOnly": true
-  })JSON")};
+static const auto schema{sourcemeta::core::parse_json(R"JSON({
+  "writeOnly": true
+})JSON")};
 
+TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly, core_schema) {
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$schema": "https://json-schema.org/draft/2020-12/schema"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/writeOnly", "/$schema");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$schema", "/writeOnly");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/$schema");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly, core_id) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "writeOnly": true
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$id": "https://www.example.com"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/writeOnly", "/$id");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$id", "/writeOnly");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/$id");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly, core_comment) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "writeOnly": true
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$comment": "Foo"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/writeOnly", "/$comment");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$comment", "/writeOnly");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/$comment");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly, core_ref) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "writeOnly": true
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$ref": "#"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/writeOnly", "/$ref");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$ref", "/writeOnly");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/$ref");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly, core_anchor) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "writeOnly": true
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$anchor": "foo"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/writeOnly", "/$anchor");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$anchor", "/writeOnly");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/$anchor");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly, core_dynamicanchor) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "writeOnly": true
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$dynamicAnchor": "foo"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/writeOnly", "/$dynamicAnchor");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$dynamicAnchor", "/writeOnly");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/$dynamicAnchor");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly, core_vocabulary) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "writeOnly": true
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$vocabulary": {
       "https://json-schema.org/draft/2020-12/vocab/core": true
     }
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/writeOnly", "/$vocabulary");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$vocabulary", "/writeOnly");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/$vocabulary");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly, core_defs) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "writeOnly": true
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "$defs": {
       "foo": false
     }
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/writeOnly", "/$defs");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$defs", "/writeOnly");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/$defs");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly, core_definitions) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "writeOnly": true
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "definitions": {
       "foo": false
     }
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/writeOnly", "/definitions");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/definitions", "/writeOnly");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/definitions");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly, metadata_title) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "writeOnly": true
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "title": "Foo"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/writeOnly", "/title");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/title", "/writeOnly");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/title");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly,
      metadata_description) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "writeOnly": true
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "description": "Foo"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/writeOnly", "/description");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/description", "/writeOnly");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/description");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly, metadata_default) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "writeOnly": true
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "default": "Foo"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/writeOnly", "/default");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/default", "/writeOnly");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/default");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly,
      metadata_deprecated) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "writeOnly": true
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "deprecated": true
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/writeOnly", "/deprecated");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/deprecated", "/writeOnly");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/deprecated");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly, metadata_examples) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "writeOnly": true
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "examples": [ 1 ]
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/writeOnly", "/examples");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/examples", "/writeOnly");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/examples");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly, metadata_readonly) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "writeOnly": true
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "readOnly": true
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/writeOnly", "/readOnly");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/readOnly", "/writeOnly");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/readOnly");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly, metadata_writeonly) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "writeOnly": true
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "writeOnly": true
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/writeOnly", "/writeOnly");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/writeOnly", "/writeOnly");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/writeOnly");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly,
      content_contentencoding) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "writeOnly": true
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "contentEncoding": "base64"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/writeOnly", "/contentEncoding");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/contentEncoding", "/writeOnly");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/contentEncoding");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly,
      content_contentmediatype) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "writeOnly": true
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "contentMediaType": "application/yaml"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/writeOnly", "/contentMediaType");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/contentMediaType",
-                       "/writeOnly");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/contentMediaType");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly,
      content_contentschema) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "writeOnly": true
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "contentSchema": { "type": "string" }
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/writeOnly", "/contentSchema");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/contentSchema", "/writeOnly");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/contentSchema");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly,
      format_annotation_format) {
-  const auto left{sourcemeta::core::parse_json(R"JSON({
-    "writeOnly": true
-  })JSON")};
-
   const auto right{sourcemeta::core::parse_json(R"JSON({
     "format": "email"
   })JSON")};
 
-  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
-
-  EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/writeOnly", "/format");
-
-  EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/format", "/writeOnly");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/format");
 }
