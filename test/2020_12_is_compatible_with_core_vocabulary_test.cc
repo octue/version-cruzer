@@ -11,16 +11,16 @@ TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, core_schema) {
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
-    "$id": "https://www.example.com"
+    "$schema": "https://json-schema.org/draft/2020-12/schema"
   })JSON")};
 
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$vocabulary", "/$schema");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$schema", "/$vocabulary");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, core_id) {
@@ -37,10 +37,10 @@ TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, core_id) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$vocabulary", "/$id");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$id", "/$vocabulary");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, core_comment) {
@@ -57,10 +57,10 @@ TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, core_comment) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$vocabulary", "/$comment");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$comment", "/$vocabulary");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, core_ref) {
@@ -77,10 +77,10 @@ TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, core_ref) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$vocabulary", "/$ref");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$ref", "/$vocabulary");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, core_anchor) {
@@ -97,10 +97,10 @@ TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, core_anchor) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$vocabulary", "/$anchor");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$anchor", "/$vocabulary");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, core_dynamicanchor) {
@@ -117,10 +117,11 @@ TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, core_dynamicanchor) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$vocabulary", "/$dynamicAnchor");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$dynamicAnchor",
+                       "/$vocabulary");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, core_vocabulary) {
@@ -139,10 +140,10 @@ TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, core_vocabulary) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$vocabulary", "/$vocabulary");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$vocabulary", "/$vocabulary");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, core_defs) {
@@ -161,10 +162,10 @@ TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, core_defs) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$vocabulary", "/$defs");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$defs", "/$vocabulary");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, core_definitions) {
@@ -183,10 +184,10 @@ TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, core_definitions) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$vocabulary", "/definitions");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/definitions", "/$vocabulary");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, metadata_title) {
@@ -203,10 +204,10 @@ TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, metadata_title) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$vocabulary", "/title");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/title", "/$vocabulary");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, metadata_description) {
@@ -223,10 +224,10 @@ TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, metadata_description) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$vocabulary", "/description");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/description", "/$vocabulary");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, metadata_default) {
@@ -243,10 +244,10 @@ TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, metadata_default) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$vocabulary", "/default");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/default", "/$vocabulary");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, metadata_deprecated) {
@@ -263,10 +264,10 @@ TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, metadata_deprecated) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$vocabulary", "/deprecated");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/deprecated", "/$vocabulary");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, metadata_examples) {
@@ -283,10 +284,10 @@ TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, metadata_examples) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$vocabulary", "/examples");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/examples", "/$vocabulary");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, metadata_readonly) {
@@ -303,10 +304,10 @@ TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, metadata_readonly) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$vocabulary", "/readOnly");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/readOnly", "/$vocabulary");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, metadata_writeonly) {
@@ -323,10 +324,10 @@ TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, metadata_writeonly) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$vocabulary", "/writeOnly");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/writeOnly", "/$vocabulary");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary,
@@ -344,10 +345,12 @@ TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary,
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$vocabulary",
+                       "/contentEncoding");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/contentEncoding",
+                       "/$vocabulary");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary,
@@ -365,10 +368,12 @@ TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary,
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$vocabulary",
+                       "/contentMediaType");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/contentMediaType",
+                       "/$vocabulary");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, content_contentschema) {
@@ -385,10 +390,10 @@ TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, content_contentschema) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$vocabulary", "/contentSchema");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/contentSchema", "/$vocabulary");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary,
@@ -406,8 +411,8 @@ TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary,
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/$vocabulary", "/format");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/format", "/$vocabulary");
 }

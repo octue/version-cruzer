@@ -50,9 +50,10 @@ static auto compare_subschemas(const octue::cruzer::SchemaLocation &left,
         result.push_back(octue::cruzer::compare(
             left.subschema.get(), left_entry.first,
             left_walker_result.vocabulary, left_walker_result.type,
-            left.pointer, right.subschema.get(), right_entry.first,
-            right_walker_result.vocabulary, right_walker_result.type,
-            right.pointer));
+            left.pointer.concat({left_entry.first}), right.subschema.get(),
+            right_entry.first, right_walker_result.vocabulary,
+            right_walker_result.type,
+            right.pointer.concat({right_entry.first})));
       }
     }
   } else if (left.subschema.get().is_object() &&
@@ -71,9 +72,9 @@ static auto compare_subschemas(const octue::cruzer::SchemaLocation &left,
         result.push_back(octue::cruzer::compare(
             left.subschema.get(), left_entry.first,
             left_walker_result.vocabulary, left_walker_result.type,
-            left.pointer, effective_subschema(right), BOOLEAN_KEYWORD_NAME,
-            std::nullopt, sourcemeta::core::SchemaKeywordType::Assertion,
-            right.pointer));
+            left.pointer.concat({left_entry.first}), effective_subschema(right),
+            BOOLEAN_KEYWORD_NAME, std::nullopt,
+            sourcemeta::core::SchemaKeywordType::Assertion, right.pointer));
       }
     }
   } else if (right.subschema.get().is_object() &&
@@ -94,7 +95,7 @@ static auto compare_subschemas(const octue::cruzer::SchemaLocation &left,
             sourcemeta::core::SchemaKeywordType::Assertion, left.pointer,
             right.subschema.get(), right_entry.first,
             right_walker_result.vocabulary, right_walker_result.type,
-            right.pointer));
+            right.pointer.concat({right_entry.first})));
       }
     }
   } else {

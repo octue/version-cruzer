@@ -3,6 +3,17 @@
 
 #include <cassert> // assert
 
+static auto does_not_validate(const sourcemeta::core::SchemaKeywordType &type)
+    -> bool {
+  return type == sourcemeta::core::SchemaKeywordType::Other ||
+         type == sourcemeta::core::SchemaKeywordType::Comment ||
+         type == sourcemeta::core::SchemaKeywordType::Annotation ||
+         type == sourcemeta::core::SchemaKeywordType::Reference ||
+         type == sourcemeta::core::SchemaKeywordType::LocationMembers ||
+         type ==
+             sourcemeta::core::SchemaKeywordType::ApplicatorValueInPlaceOther;
+}
+
 namespace octue::cruzer {
 
 static auto compare(
@@ -28,13 +39,10 @@ static auto compare(
     // Right schema location
     const sourcemeta::core::Pointer &right_schema_location) -> Trace {
 
-  // If things are equal, then they are compatible by definition
-  if (left_type == right_type && left_keyword == right_keyword &&
-      left_vocabulary == right_vocabulary && left_subschema.is_object() &&
-      right_subschema.is_object() &&
-      left_subschema.at(left_keyword) == right_subschema.at(right_keyword)) {
-    return {Compatibility::Compatible, left_schema_location,
-            right_schema_location};
+  // Annotations / comments do not participate
+  if (does_not_validate(left_type) || does_not_validate(right_type)) {
+    return {Compatibility::Skip, left_schema_location, right_schema_location};
+
     // Handle boolean schemas on both sides
   } else if (left_subschema.is_boolean() && right_subschema.is_boolean()) {
     return {!left_subschema.to_boolean() && right_subschema.to_boolean()
@@ -45,37 +53,33 @@ static auto compare(
   } else if (left_subschema.is_boolean() && left_subschema.to_boolean()) {
     return {Compatibility::Compatible, left_schema_location,
             right_schema_location};
-
     // TODO: The "false" schema is compatible against impossible schemas
   } else if (left_subschema.is_boolean() && !left_subschema.to_boolean()) {
     return {Compatibility::Incompatible, left_schema_location,
             right_schema_location};
+
+    // If things are equal, then they are compatible by definition
+  } else if (left_type == right_type && left_keyword == right_keyword &&
+             left_vocabulary == right_vocabulary &&
+             left_subschema.is_object() && right_subschema.is_object() &&
+             left_subschema.at(left_keyword) ==
+                 right_subschema.at(right_keyword)) {
+    return {Compatibility::Compatible, left_schema_location,
+            right_schema_location};
   }
 
-  switch (left_type) {
-    case sourcemeta::core::SchemaKeywordType::Other:
+  if (left_type == sourcemeta::core::SchemaKeywordType::Assertion) {
+    // Any assertion is more open than the "false" schema, by definition
+    if (right_subschema.is_boolean() && !right_subschema.to_boolean()) {
       return {Compatibility::Compatible, left_schema_location,
               right_schema_location};
-    case sourcemeta::core::SchemaKeywordType::Comment:
-      return {Compatibility::Compatible, left_schema_location,
-              right_schema_location};
-    case sourcemeta::core::SchemaKeywordType::Annotation:
-      return {Compatibility::Compatible, left_schema_location,
-              right_schema_location};
-    case sourcemeta::core::SchemaKeywordType::Reference:
-      return {Compatibility::Compatible, left_schema_location,
-              right_schema_location};
-    case sourcemeta::core::SchemaKeywordType::LocationMembers:
-      return {Compatibility::Compatible, left_schema_location,
-              right_schema_location};
+    }
 
-      // We treat this as an annotation
-    case sourcemeta::core::SchemaKeywordType::ApplicatorValueInPlaceOther:
-      return {Compatibility::Compatible, left_schema_location,
+    // Any assertion is less open than the "true" schema, by definition
+    if (right_subschema.is_boolean() && right_subschema.to_boolean()) {
+      return {Compatibility::Incompatible, left_schema_location,
               right_schema_location};
-
-    default:
-      break;
+    }
   }
 
   return {Compatibility::Unknown, left_schema_location, right_schema_location};
