@@ -9,16 +9,16 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_schema) {
   })JSON")};
 
   const auto right{sourcemeta::core::parse_json(R"JSON({
-    "$id": "https://www.example.com"
+    "$schema": "https://json-schema.org/draft/2020-12/schema"
   })JSON")};
 
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/default", "/$schema");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$schema", "/default");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_id) {
@@ -33,10 +33,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_id) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/default", "/$id");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$id", "/default");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_comment) {
@@ -51,10 +51,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_comment) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/default", "/$comment");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$comment", "/default");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_ref) {
@@ -69,10 +69,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_ref) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/default", "/$ref");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$ref", "/default");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_anchor) {
@@ -87,10 +87,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_anchor) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/default", "/$anchor");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$anchor", "/default");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_dynamicanchor) {
@@ -105,10 +105,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_dynamicanchor) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/default", "/$dynamicAnchor");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$dynamicAnchor", "/default");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_vocabulary) {
@@ -125,10 +125,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_vocabulary) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/default", "/$vocabulary");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$vocabulary", "/default");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_defs) {
@@ -145,10 +145,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_defs) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/default", "/$defs");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/$defs", "/default");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_definitions) {
@@ -165,10 +165,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, core_definitions) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/default", "/definitions");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/definitions", "/default");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_title) {
@@ -183,10 +183,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_title) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/default", "/title");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/title", "/default");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_description) {
@@ -201,10 +201,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_description) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/default", "/description");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/description", "/default");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_default) {
@@ -219,10 +219,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_default) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/default", "/default");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/default", "/default");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_deprecated) {
@@ -237,10 +237,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_deprecated) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/default", "/deprecated");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/deprecated", "/default");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_examples) {
@@ -255,10 +255,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_examples) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/default", "/examples");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/examples", "/default");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_readonly) {
@@ -273,10 +273,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_readonly) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/default", "/readOnly");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/readOnly", "/default");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_writeonly) {
@@ -291,10 +291,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, metadata_writeonly) {
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/default", "/writeOnly");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/writeOnly", "/default");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_default,
@@ -310,10 +310,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default,
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/default", "/contentEncoding");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/contentEncoding", "/default");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_default,
@@ -329,10 +329,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default,
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/default", "/contentMediaType");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/contentMediaType", "/default");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_default,
@@ -348,10 +348,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default,
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/default", "/contentSchema");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/contentSchema", "/default");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_metadata_default,
@@ -367,8 +367,8 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default,
   COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
 
   EXPECT_EQ(left_result.size(), 1);
-  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(left_result, 0, Skip, "/default", "/format");
 
   EXPECT_EQ(right_result.size(), 1);
-  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "", "");
+  EXPECT_COMPATIBILITY(right_result, 0, Skip, "/format", "/default");
 }
