@@ -202,3 +202,12 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_description,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/description",
                                       "/format");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_metadata_description, validation_type) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "type": "string"
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/description",
+                                      "/type");
+}
