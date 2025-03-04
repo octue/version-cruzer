@@ -295,3 +295,48 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_const,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
                                       "/enum");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_required_object_match) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": {
+      "foo": 1,
+      "bar": 2
+    }
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "foo" ]
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/const",
+                                      "/required");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_required_object_mismatch) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": { "bar": 2 }
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "foo" ]
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
+                                      "/required");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_required_non_object) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": [ 1, 2, 3 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "foo" ]
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
+                                      "/required");
+}
