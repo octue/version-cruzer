@@ -15,6 +15,49 @@ static auto does_not_validate(const sourcemeta::core::SchemaKeywordType &type)
              sourcemeta::core::SchemaKeywordType::ApplicatorValueInPlaceOther;
 }
 
+static auto type_to_set(const sourcemeta::core::JSON::String &value)
+    -> std::unordered_set<sourcemeta::core::JSON::Type> {
+  std::unordered_set<sourcemeta::core::JSON::Type> result;
+  if (value == "null") {
+    result.emplace(sourcemeta::core::JSON::Type::Null);
+  } else if (value == "boolean") {
+    result.emplace(sourcemeta::core::JSON::Type::Boolean);
+  } else if (value == "object") {
+    result.emplace(sourcemeta::core::JSON::Type::Object);
+  } else if (value == "array") {
+    result.emplace(sourcemeta::core::JSON::Type::Array);
+  } else if (value == "number") {
+    result.emplace(sourcemeta::core::JSON::Type::Real);
+    result.emplace(sourcemeta::core::JSON::Type::Integer);
+  } else if (value == "integer") {
+    result.emplace(sourcemeta::core::JSON::Type::Integer);
+  } else if (value == "string") {
+    result.emplace(sourcemeta::core::JSON::Type::String);
+  }
+
+  return result;
+}
+
+static auto type_to_set(const sourcemeta::core::JSON &value)
+    -> std::unordered_set<sourcemeta::core::JSON::Type> {
+  if (value.is_string()) {
+    return type_to_set(value.to_string());
+  }
+
+  std::unordered_set<sourcemeta::core::JSON::Type> result;
+  if (value.is_array()) {
+    for (const auto &type : value.as_array()) {
+      if (type.is_string()) {
+        for (auto &&new_type : type_to_set(type.to_string())) {
+          result.insert(std::move(new_type));
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
 namespace octue::cruzer {
 
 static auto compare(
@@ -92,35 +135,10 @@ static auto compare(
           right_vocabulary.value() ==
               "https://json-schema.org/draft/2020-12/vocab/validation" &&
           right_keyword == "type") {
-        const auto &left_value{left_subschema.at(left_keyword)};
-        const auto &right_value{right_subschema.at(right_keyword)};
-
-        std::unordered_set<sourcemeta::core::JSON::String> left_set;
-        std::unordered_set<sourcemeta::core::JSON::String> right_set;
-
-        if (left_value.is_string()) {
-          left_set.insert(left_value.to_string());
-        } else if (left_value.is_array()) {
-          for (const auto &value : left_value.as_array()) {
-            left_set.insert(value.to_string());
-          }
-        }
-
-        if (right_value.is_string()) {
-          right_set.insert(right_value.to_string());
-        } else if (right_value.is_array()) {
-          for (const auto &value : right_value.as_array()) {
-            right_set.insert(value.to_string());
-          }
-        }
-
-        if (left_set.contains("number")) {
-          left_set.emplace("integer");
-        }
-
-        if (right_set.contains("number")) {
-          right_set.emplace("integer");
-        }
+        std::unordered_set<sourcemeta::core::JSON::Type> left_set{
+            type_to_set(left_subschema.at(left_keyword))};
+        std::unordered_set<sourcemeta::core::JSON::Type> right_set{
+            type_to_set(right_subschema.at(right_keyword))};
 
         for (const auto &right_entry : right_set) {
           if (!left_set.contains(right_entry)) {
