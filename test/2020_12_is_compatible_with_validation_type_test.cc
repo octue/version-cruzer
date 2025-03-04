@@ -444,3 +444,87 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/const");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_enum_single_match) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "string"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo" ]
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+                                      "/enum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_enum_single_mismatch) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "string"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1 ]
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
+                                      "/enum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_enum_many_match) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "string"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo", "bar" ]
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+                                      "/enum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_enum_many_mismatch) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "string"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo", 1 ]
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
+                                      "/enum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_enum_type_array_match) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": [ "string", "integer", "null" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo", 1, 2, null ]
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+                                      "/enum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_enum_type_array_mismatch) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": [ "string", "integer", "null" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo", 1, 2, true ]
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
+                                      "/enum");
+}

@@ -203,11 +203,10 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default, validation_type) {
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/default", "/type");
 }
 
-TEST(Cruzer_is_compatible_with_2020_12_metadata_default, validation_const) {
+TEST(Cruzer_is_compatible_with_2020_12_metadata_default, validation_enum) {
   const auto right{sourcemeta::core::parse_json(R"JSON({
-    "const": 1
+    "enum": [ 1, 2, 3 ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/default",
-                                      "/const");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/default", "/enum");
 }

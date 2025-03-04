@@ -216,3 +216,12 @@ TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, validation_const) {
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$dynamicAnchor",
                                       "/const");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, validation_enum) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, 2, 3 ]
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$dynamicAnchor",
+                                      "/enum");
+}
