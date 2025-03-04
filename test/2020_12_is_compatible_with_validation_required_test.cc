@@ -262,7 +262,6 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_required,
 
 TEST(Cruzer_is_compatible_with_2020_12_validation_required,
      validation_required_same) {
-
   const auto left{sourcemeta::core::parse_json(R"JSON({
     "required": [ "foo" ]
   })JSON")};
@@ -277,7 +276,6 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_required,
 
 TEST(Cruzer_is_compatible_with_2020_12_validation_required,
      validation_required_reorder) {
-
   const auto left{sourcemeta::core::parse_json(R"JSON({
     "required": [ "foo", "bar", "baz" ]
   })JSON")};
@@ -292,7 +290,6 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_required,
 
 TEST(Cruzer_is_compatible_with_2020_12_validation_required,
      validation_required_superset) {
-
   const auto left{sourcemeta::core::parse_json(R"JSON({
     "required": [ "foo", "bar", "baz" ]
   })JSON")};
@@ -307,7 +304,6 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_required,
 
 TEST(Cruzer_is_compatible_with_2020_12_validation_required,
      validation_required_subset) {
-
   const auto left{sourcemeta::core::parse_json(R"JSON({
     "required": [ "foo" ]
   })JSON")};
@@ -318,4 +314,32 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_required,
 
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Compatible, "/required",
                                       "/required");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_required,
+     validation_uniqueitems_true) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "foo" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "uniqueItems": true
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Compatible, "/required",
+                                      "/uniqueItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_required,
+     validation_uniqueitems_false) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "foo" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "uniqueItems": false
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Compatible, "/required",
+                                      "/uniqueItems");
 }

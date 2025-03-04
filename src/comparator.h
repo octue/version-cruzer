@@ -196,6 +196,15 @@ static auto compare(
       }
     }
 
+    if (COMPARISON_2020_12("validation", "type", "validation", "uniqueItems")) {
+      const auto left_set{type_to_set(left_value)};
+      if (left_set.contains(sourcemeta::core::JSON::Type::Array)) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
+
     if (COMPARISON_2020_12("validation", "const", "validation", "type")) {
       const auto right_set{type_to_set(right_value)};
       // If the type matches the enumeration, there are cases where
@@ -238,6 +247,22 @@ static auto compare(
         // In general, this will be incompatible, but there are some corner
         // cases where it will not. We can ignore those for now
         return MAKE_RESULT(Unknown);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "const", "validation",
+                           "uniqueItems")) {
+      if (left_value.is_array()) {
+        if (left_value.unique() && right_value.is_boolean() &&
+            right_value.to_boolean()) {
+          // In general, this will be incompatible, but there are some corner
+          // cases where it will not. We can ignore those for now
+          return MAKE_RESULT(Unknown);
+        } else {
+          return MAKE_RESULT(Incompatible);
+        }
       } else {
         return MAKE_RESULT(Incompatible);
       }
@@ -295,6 +320,21 @@ static auto compare(
       }
     }
 
+    if (COMPARISON_2020_12("validation", "enum", "validation", "uniqueItems")) {
+      for (const auto &value : left_value.as_array()) {
+        if (value.is_array()) {
+          if (value.unique() && right_value.is_boolean() &&
+              right_value.to_boolean()) {
+            // In general, this will be incompatible, but there are some corner
+            // cases where it will not. We can ignore those for now
+            return MAKE_RESULT(Unknown);
+          }
+        }
+      }
+
+      return MAKE_RESULT(Incompatible);
+    }
+
     if (COMPARISON_2020_12("validation", "required", "validation", "type")) {
       return MAKE_RESULT(Compatible);
     }
@@ -313,6 +353,59 @@ static auto compare(
         return MAKE_RESULT(Compatible);
       } else {
         return MAKE_RESULT(Incompatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "required", "validation",
+                           "uniqueItems")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "uniqueItems", "validation", "type")) {
+      if (left_value.is_boolean() && !left_value.to_boolean()) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "uniqueItems", "validation",
+                           "const")) {
+      if (left_value.is_boolean() && !left_value.to_boolean()) {
+        return MAKE_RESULT(Compatible);
+      } else if (right_value.is_array() && right_value.unique()) {
+        return MAKE_RESULT(Compatible);
+      } else if (right_value.is_array()) {
+        return MAKE_RESULT(Incompatible);
+      } else {
+        return MAKE_RESULT(Compatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "uniqueItems", "validation", "enum")) {
+      for (const auto &value : right_value.as_array()) {
+        if (left_value.is_boolean() && !left_value.to_boolean()) {
+          continue;
+        } else if (value.is_array() && !value.unique()) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "uniqueItems", "validation",
+                           "required")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "uniqueItems", "validation",
+                           "uniqueItems")) {
+      if (left_value.is_boolean() && left_value.to_boolean() &&
+          right_value.is_boolean() && !right_value.to_boolean()) {
+        return MAKE_RESULT(Incompatible);
+      } else {
+        return MAKE_RESULT(Compatible);
       }
     }
   }

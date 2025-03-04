@@ -224,3 +224,12 @@ TEST(Cruzer_is_compatible_with_2020_12_core_anchor, validation_required) {
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$anchor",
                                       "/required");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_core_anchor, validation_uniqueitems) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "uniqueItems": true
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$anchor",
+                                      "/uniqueItems");
+}
