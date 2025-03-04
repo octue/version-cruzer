@@ -27,6 +27,7 @@ sourcemeta_googletest(PROJECT octue NAME cruzer FOLDER "Octue"
     2020_12_is_compatible_with_validation_enum_test.cc
     2020_12_is_compatible_with_validation_required_test.cc
     2020_12_is_compatible_with_validation_type_test.cc
+    2020_12_is_compatible_with_validation_uniqueitems_test.cc
     2020_12_is_compatible_with_test.cc
     2020_12_version_test.cc)
 

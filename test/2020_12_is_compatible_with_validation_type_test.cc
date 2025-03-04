@@ -584,3 +584,31 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/required");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_uniqueitems_array_true) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "array"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "uniqueItems": true
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+                                      "/uniqueItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_uniqueitems_array_false) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "array"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "uniqueItems": false
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+                                      "/uniqueItems");
+}

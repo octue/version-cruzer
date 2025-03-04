@@ -62,3 +62,24 @@ TEST(Cruzer_is_compatible_with_2020_12, test_3) {
   EXPECT_COMPATIBILITY(right_result, 0, Unknown, "/const", "/type");
   EXPECT_COMPATIBILITY(right_result, 1, Compatible, "/const", "/const");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12, test_4) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "array"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "type": "array",
+    "uniqueItems": true
+  })JSON")};
+
+  COMPARE_TWO_WAY_2020_12(left, right, left_result, right_result);
+
+  EXPECT_EQ(left_result.size(), 2);
+  EXPECT_COMPATIBILITY(left_result, 0, Compatible, "/type", "/type");
+  EXPECT_COMPATIBILITY(left_result, 1, Compatible, "/type", "/uniqueItems");
+
+  EXPECT_EQ(right_result.size(), 2);
+  EXPECT_COMPATIBILITY(right_result, 0, Compatible, "/type", "/type");
+  EXPECT_COMPATIBILITY(right_result, 1, Incompatible, "/uniqueItems", "/type");
+}

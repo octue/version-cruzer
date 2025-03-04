@@ -235,3 +235,13 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
                                       "/required");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly,
+     validation_uniqueitems) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "uniqueItems": true
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/uniqueItems");
+}
