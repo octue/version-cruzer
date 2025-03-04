@@ -360,3 +360,87 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
                                       "/type");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_const_single_type_match) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "string"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "const": "foo"
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+                                      "/const");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_const_single_type_array_match) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": [ "string" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "const": "foo"
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+                                      "/const");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_const_type_array_match) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": [ "string", "integer" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "const": 1
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+                                      "/const");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_const_single_type_mismatch) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "string"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "const": 1
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
+                                      "/const");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_const_single_type_array_mismatch) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": [ "string" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "const": 1
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
+                                      "/const");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_const_type_array_mismatch) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": [ "string", "integer" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "const": 3.14
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
+                                      "/const");
+}

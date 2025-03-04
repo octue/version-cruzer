@@ -58,6 +58,17 @@ static auto type_to_set(const sourcemeta::core::JSON &value)
   return result;
 }
 
+template <typename T>
+static auto is_superset(const T &left, const T &right) -> bool {
+  for (const auto &right_entry : right) {
+    if (!left.contains(right_entry)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 namespace octue::cruzer {
 
 static auto compare(
@@ -112,48 +123,77 @@ static auto compare(
             right_schema_location};
   }
 
+  const auto &left_value{left_subschema.at(left_keyword)};
+  const auto &right_value{right_subschema.at(right_keyword)};
+
+#define COMPARISON_2020_12(expected_left_vocabulary, expected_left_name,       \
+                           expected_right_vocabulary, expected_right_name)     \
+  (left_vocabulary.has_value() &&                                              \
+   left_vocabulary.value() == "https://json-schema.org/draft/2020-12/"         \
+                              "vocab/" expected_left_vocabulary &&             \
+   left_keyword == (expected_left_name) && right_vocabulary.has_value() &&     \
+   right_vocabulary.value() == "https://json-schema.org/draft/2020-12/"        \
+                               "vocab/" expected_right_vocabulary &&           \
+   right_keyword == (expected_right_name))
+
+#define MAKE_RESULT(expected_compatibility)                                    \
+  Trace{Compatibility::expected_compatibility, left_schema_location,           \
+        right_schema_location};
+
   if (left_type == sourcemeta::core::SchemaKeywordType::Assertion) {
     // Any assertion is more open than the "false" schema, by definition
     if (right_subschema.is_boolean() && !right_subschema.to_boolean()) {
-      return {Compatibility::Compatible, left_schema_location,
-              right_schema_location};
+      return MAKE_RESULT(Compatible);
     }
 
     // Any assertion is less open than the "true" schema, by definition
     if (right_subschema.is_boolean() && right_subschema.to_boolean()) {
-      return {Compatibility::Incompatible, left_schema_location,
-              right_schema_location};
+      return MAKE_RESULT(Incompatible);
     }
 
-    assert(left_vocabulary.has_value());
+    if (COMPARISON_2020_12("validation", "type", "validation", "type")) {
+      const auto left_set{type_to_set(left_value)};
+      const auto right_set{type_to_set(right_value)};
+      if (is_superset(left_set, right_set)) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
 
-    // "type"
-    if (left_vocabulary.value() ==
-            "https://json-schema.org/draft/2020-12/vocab/validation" &&
-        left_keyword == "type") {
-      if (right_vocabulary.has_value() &&
-          right_vocabulary.value() ==
-              "https://json-schema.org/draft/2020-12/vocab/validation" &&
-          right_keyword == "type") {
-        std::unordered_set<sourcemeta::core::JSON::Type> left_set{
-            type_to_set(left_subschema.at(left_keyword))};
-        std::unordered_set<sourcemeta::core::JSON::Type> right_set{
-            type_to_set(right_subschema.at(right_keyword))};
+    if (COMPARISON_2020_12("validation", "type", "validation", "const")) {
+      const auto left_set{type_to_set(left_value)};
+      if (left_set.contains(right_value.type())) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
 
-        for (const auto &right_entry : right_set) {
-          if (!left_set.contains(right_entry)) {
-            return {Compatibility::Incompatible, left_schema_location,
-                    right_schema_location};
-          }
-        }
+    if (COMPARISON_2020_12("validation", "const", "validation", "type")) {
+      const auto right_set{type_to_set(right_value)};
+      // If the type matches the enumeration, there are cases where
+      // compatibility remains, like if the "type" subschema comes with other
+      // constraints that reduce the possible instances to a limited set, but
+      // that's hard to check right now.
+      if (!right_set.contains(left_value.type())) {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
 
-        return {Compatibility::Compatible, left_schema_location,
-                right_schema_location};
+    if (COMPARISON_2020_12("validation", "const", "validation", "const")) {
+      if (left_value == right_value) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
       }
     }
   }
 
-  return {Compatibility::Unknown, left_schema_location, right_schema_location};
+  return MAKE_RESULT(Unknown);
+
+#undef COMPARISON_2020_12
+#undef MAKE_RESULT
 }
 
 } // namespace octue::cruzer

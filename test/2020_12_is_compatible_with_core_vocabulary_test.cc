@@ -206,3 +206,12 @@ TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, validation_type) {
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$vocabulary",
                                       "/type");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_core_vocabulary, validation_const) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "const": 1
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$vocabulary",
+                                      "/const");
+}
