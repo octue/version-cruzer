@@ -240,3 +240,58 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_const,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
                                       "/const");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const, validation_enum_same) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": 1
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1 ]
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/const",
+                                      "/enum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_enum_different) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": 1
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 2 ]
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
+                                      "/enum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_enum_subset) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": 2
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, 2, 3 ]
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
+                                      "/enum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_enum_disjoint) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": 2
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, 3 ]
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
+                                      "/enum");
+}

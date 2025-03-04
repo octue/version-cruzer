@@ -58,6 +58,12 @@ static auto type_to_set(const sourcemeta::core::JSON &value)
   return result;
 }
 
+static auto array_to_set(const sourcemeta::core::JSON &array)
+    -> std::unordered_set<sourcemeta::core::JSON,
+                          sourcemeta::core::HashJSON<sourcemeta::core::JSON>> {
+  return {array.as_array().cbegin(), array.as_array().end()};
+}
+
 template <typename T>
 static auto is_superset(const T &left, const T &right) -> bool {
   for (const auto &right_entry : right) {
@@ -170,6 +176,17 @@ static auto compare(
       }
     }
 
+    if (COMPARISON_2020_12("validation", "type", "validation", "enum")) {
+      const auto left_set{type_to_set(left_value)};
+      for (const auto &entry : right_value.as_array()) {
+        if (!left_set.contains(entry.type())) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
     if (COMPARISON_2020_12("validation", "const", "validation", "type")) {
       const auto right_set{type_to_set(right_value)};
       // If the type matches the enumeration, there are cases where
@@ -183,6 +200,47 @@ static auto compare(
 
     if (COMPARISON_2020_12("validation", "const", "validation", "const")) {
       if (left_value == right_value) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "const", "validation", "enum")) {
+      if (right_value.size() == 1) {
+        if (left_value == right_value.front()) {
+          return MAKE_RESULT(Compatible);
+        } else {
+          return MAKE_RESULT(Incompatible);
+        }
+      } else if (right_value.size() > 1) {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "enum", "validation", "type")) {
+      const auto right_set{type_to_set(right_value)};
+      for (const auto &entry : left_value.as_array()) {
+        // If the type matches the enumeration, there are cases where
+        // compatibility remains, like if the "type" subschema comes with other
+        // constraints that reduce the possible instances to a limited set, but
+        // that's hard to check right now.
+        if (!right_set.contains(entry.type())) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "enum", "validation", "const")) {
+      if (left_value.contains(right_value)) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "enum", "validation", "enum")) {
+      if (is_superset(array_to_set(left_value), array_to_set(right_value))) {
         return MAKE_RESULT(Compatible);
       } else {
         return MAKE_RESULT(Incompatible);
