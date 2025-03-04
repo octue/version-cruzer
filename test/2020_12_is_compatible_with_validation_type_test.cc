@@ -528,3 +528,59 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/enum");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_required_object) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "object"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "foo" ]
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+                                      "/required");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_required_object_plus_others) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": [ "integer", "object" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "foo" ]
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+                                      "/required");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_required_non_object) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "string"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "foo" ]
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
+                                      "/required");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_required_non_object_array) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": [ "string", "integer" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "foo" ]
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
+                                      "/required");
+}

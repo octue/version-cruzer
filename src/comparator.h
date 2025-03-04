@@ -187,6 +187,15 @@ static auto compare(
       return MAKE_RESULT(Compatible);
     }
 
+    if (COMPARISON_2020_12("validation", "type", "validation", "required")) {
+      const auto left_set{type_to_set(left_value)};
+      if (left_set.contains(sourcemeta::core::JSON::Type::Object)) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
+
     if (COMPARISON_2020_12("validation", "const", "validation", "type")) {
       const auto right_set{type_to_set(right_value)};
       // If the type matches the enumeration, there are cases where
@@ -218,6 +227,22 @@ static auto compare(
       }
     }
 
+    if (COMPARISON_2020_12("validation", "const", "validation", "required")) {
+      if (left_value.is_object()) {
+        for (const auto &entry : right_value.as_array()) {
+          if (!left_value.defines(entry.to_string())) {
+            return MAKE_RESULT(Incompatible);
+          }
+        }
+
+        // In general, this will be incompatible, but there are some corner
+        // cases where it will not. We can ignore those for now
+        return MAKE_RESULT(Unknown);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
+
     if (COMPARISON_2020_12("validation", "enum", "validation", "type")) {
       const auto right_set{type_to_set(right_value)};
       for (const auto &entry : left_value.as_array()) {
@@ -241,6 +266,50 @@ static auto compare(
 
     if (COMPARISON_2020_12("validation", "enum", "validation", "enum")) {
       if (is_superset(array_to_set(left_value), array_to_set(right_value))) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "enum", "validation", "required")) {
+      bool potential_match{false};
+      for (const auto &value : left_value.as_array()) {
+        if (value.is_object()) {
+          for (const auto &entry : right_value.as_array()) {
+            if (!value.defines(entry.to_string())) {
+              return MAKE_RESULT(Incompatible);
+            }
+          }
+
+          potential_match = true;
+        }
+      }
+
+      if (potential_match) {
+        // In general, this will be incompatible, but there are some corner
+        // cases where it will not. We can ignore those for now
+        return MAKE_RESULT(Unknown);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "required", "validation", "type")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "required", "validation", "const")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "required", "validation", "enum")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "required", "validation",
+                           "required")) {
+      if (is_superset(array_to_set(right_value), array_to_set(left_value))) {
         return MAKE_RESULT(Compatible);
       } else {
         return MAKE_RESULT(Incompatible);

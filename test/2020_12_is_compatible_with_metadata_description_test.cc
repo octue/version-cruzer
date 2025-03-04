@@ -229,3 +229,13 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_description, validation_enum) {
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/description",
                                       "/enum");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_metadata_description,
+     validation_required) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "foo" ]
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/description",
+                                      "/required");
+}

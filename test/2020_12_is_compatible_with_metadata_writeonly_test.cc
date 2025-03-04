@@ -225,3 +225,13 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly, validation_enum) {
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
                                       "/enum");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_metadata_writeonly,
+     validation_required) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "foo" ]
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/writeOnly",
+                                      "/required");
+}
