@@ -4,6 +4,8 @@
 #include <sourcemeta/core/regex.h>
 
 #include <cassert>       // assert
+#include <optional>      // std::optional, std::nullopt
+#include <unordered_map> // std::unordered_map
 #include <unordered_set> // std::unordered_set
 
 static auto does_not_validate(const sourcemeta::core::SchemaKeywordType &type)
@@ -77,6 +79,112 @@ static auto is_superset(const T &left, const T &right) -> bool {
   return true;
 }
 
+// TODO: Move association of keywords to instance types to the Core official
+// walker
+// By convention, if a keyword is not here, we assume it affects all types
+static const std::unordered_map<
+    sourcemeta::core::JSON::String,
+    std::unordered_map<sourcemeta::core::JSON::String,
+                       std::unordered_set<sourcemeta::core::JSON::Type>>>
+    KEYWORD_TYPES{
+        {"https://json-schema.org/draft/2020-12/vocab/applicator",
+         {
+             {"properties", {sourcemeta::core::JSON::Type::Object}},
+             {"patternProperties", {sourcemeta::core::JSON::Type::Object}},
+             {"additionalProperties", {sourcemeta::core::JSON::Type::Object}},
+             {"dependentSchemas", {sourcemeta::core::JSON::Type::Object}},
+             {"propertyNames", {sourcemeta::core::JSON::Type::Object}},
+             {"contains", {sourcemeta::core::JSON::Type::Array}},
+             {"items", {sourcemeta::core::JSON::Type::Array}},
+             {"prefixItems", {sourcemeta::core::JSON::Type::Array}},
+         }},
+
+        {"https://json-schema.org/draft/2020-12/vocab/unevaluated",
+         {
+             {"unevaluatedProperties", {sourcemeta::core::JSON::Type::Object}},
+             {"unevaluatedItems", {sourcemeta::core::JSON::Type::Array}},
+         }},
+
+        {"https://json-schema.org/draft/2020-12/vocab/format-assertion",
+         {
+             {"format", {sourcemeta::core::JSON::Type::String}},
+         }},
+
+        {"https://json-schema.org/draft/2020-12/vocab/validation",
+         {
+             {"maxLength", {sourcemeta::core::JSON::Type::String}},
+             {"minLength", {sourcemeta::core::JSON::Type::String}},
+             {"pattern", {sourcemeta::core::JSON::Type::String}},
+             {"exclusiveMaximum",
+              {sourcemeta::core::JSON::Type::Integer,
+               sourcemeta::core::JSON::Type::Real}},
+             {"exclusiveMinimum",
+              {sourcemeta::core::JSON::Type::Integer,
+               sourcemeta::core::JSON::Type::Real}},
+             {"maximum",
+              {sourcemeta::core::JSON::Type::Integer,
+               sourcemeta::core::JSON::Type::Real}},
+             {"minimum",
+              {sourcemeta::core::JSON::Type::Integer,
+               sourcemeta::core::JSON::Type::Real}},
+             {"multipleOf",
+              {sourcemeta::core::JSON::Type::Integer,
+               sourcemeta::core::JSON::Type::Real}},
+             {"dependentRequired", {sourcemeta::core::JSON::Type::Object}},
+             {"maxProperties", {sourcemeta::core::JSON::Type::Object}},
+             {"minProperties", {sourcemeta::core::JSON::Type::Object}},
+             {"required", {sourcemeta::core::JSON::Type::Object}},
+             {"maxItems", {sourcemeta::core::JSON::Type::Array}},
+             {"minItems", {sourcemeta::core::JSON::Type::Array}},
+             {"maxContains", {sourcemeta::core::JSON::Type::Array}},
+             {"minContains", {sourcemeta::core::JSON::Type::Array}},
+             {"uniqueItems", {sourcemeta::core::JSON::Type::Array}},
+         }}};
+
+static auto keyword_types(const sourcemeta::core::JSON::String &vocabulary,
+                          const sourcemeta::core::JSON::String &keyword)
+    -> std::optional<std::reference_wrapper<
+        const std::unordered_set<sourcemeta::core::JSON::Type>>> {
+  const auto vocabulary_result{KEYWORD_TYPES.find(vocabulary)};
+  if (vocabulary_result == KEYWORD_TYPES.cend()) {
+    return std::nullopt;
+  }
+
+  const auto keyword_result{vocabulary_result->second.find(keyword)};
+  if (keyword_result == vocabulary_result->second.cend()) {
+    return std::nullopt;
+  }
+
+  return keyword_result->second;
+}
+
+static auto
+have_common_types(const sourcemeta::core::JSON::String &left_vocabulary,
+                  const sourcemeta::core::JSON::String &left_keyword,
+                  const sourcemeta::core::JSON::String &right_vocabulary,
+                  const sourcemeta::core::JSON::String &right_keyword) -> bool {
+  const auto left_types{keyword_types(left_vocabulary, left_keyword)};
+  const auto right_types{keyword_types(right_vocabulary, right_keyword)};
+
+  if (left_types.has_value() && right_types.has_value()) {
+    for (const auto &value : left_types.value().get()) {
+      if (right_types.value().get().contains(value)) {
+        return true;
+      }
+    }
+
+    for (const auto &value : right_types.value().get()) {
+      if (left_types.value().get().contains(value)) {
+        return true;
+      }
+    }
+
+    return false;
+  } else {
+    return true;
+  }
+}
+
 namespace octue::cruzer {
 
 static auto compare(
@@ -129,6 +237,12 @@ static auto compare(
                  right_subschema.at(right_keyword)) {
     return {Compatibility::Compatible, left_schema_location,
             right_schema_location};
+
+    // If the keywords match totally different types, then we shouldn't be
+    // comparing at all
+  } else if (!have_common_types(left_vocabulary.value_or(""), left_keyword,
+                                right_vocabulary.value_or(""), right_keyword)) {
+    return {Compatibility::Skip, left_schema_location, right_schema_location};
   }
 
   const auto &left_value{left_subschema.at(left_keyword)};
@@ -426,19 +540,6 @@ static auto compare(
       }
     }
 
-    if (COMPARISON_2020_12("validation", "required", "validation", "pattern")) {
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "required", "validation",
-                           "uniqueItems")) {
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "required", "validation", "minimum")) {
-      return MAKE_RESULT(Compatible);
-    }
-
     if (COMPARISON_2020_12("validation", "uniqueItems", "validation", "type")) {
       if (left_value.is_boolean() && !left_value.to_boolean()) {
         return MAKE_RESULT(Compatible);
@@ -473,11 +574,6 @@ static auto compare(
     }
 
     if (COMPARISON_2020_12("validation", "uniqueItems", "validation",
-                           "required")) {
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "uniqueItems", "validation",
                            "uniqueItems")) {
       if (left_value.is_boolean() && left_value.to_boolean() &&
           right_value.is_boolean() && !right_value.to_boolean()) {
@@ -485,16 +581,6 @@ static auto compare(
       } else {
         return MAKE_RESULT(Compatible);
       }
-    }
-
-    if (COMPARISON_2020_12("validation", "uniqueItems", "validation",
-                           "pattern")) {
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "uniqueItems", "validation",
-                           "minimum")) {
-      return MAKE_RESULT(Compatible);
     }
 
     if (COMPARISON_2020_12("validation", "pattern", "validation", "type")) {
@@ -537,19 +623,6 @@ static auto compare(
       return MAKE_RESULT(Compatible);
     }
 
-    if (COMPARISON_2020_12("validation", "pattern", "validation", "required")) {
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "pattern", "validation",
-                           "uniqueItems")) {
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "pattern", "validation", "minimum")) {
-      return MAKE_RESULT(Compatible);
-    }
-
     if (COMPARISON_2020_12("validation", "minimum", "validation", "type")) {
       const auto right_set{type_to_set(right_value)};
       if (right_set.contains(sourcemeta::core::JSON::Type::Integer) ||
@@ -575,22 +648,6 @@ static auto compare(
         }
       }
 
-      return MAKE_RESULT(Compatible);
-    }
-
-    // TODO: Should all of these comparisons for different types by "Skip"
-    // instead?
-
-    if (COMPARISON_2020_12("validation", "minimum", "validation", "required")) {
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "minimum", "validation",
-                           "uniqueItems")) {
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "minimum", "validation", "pattern")) {
       return MAKE_RESULT(Compatible);
     }
 
