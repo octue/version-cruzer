@@ -1,6 +1,8 @@
 #ifndef OCTUE_CRUZER_COMPARATOR_H_
 #define OCTUE_CRUZER_COMPARATOR_H_
 
+#include <sourcemeta/core/regex.h>
+
 #include <cassert>       // assert
 #include <unordered_set> // std::unordered_set
 
@@ -205,6 +207,15 @@ static auto compare(
       }
     }
 
+    if (COMPARISON_2020_12("validation", "type", "validation", "pattern")) {
+      const auto left_set{type_to_set(left_value)};
+      if (left_set.contains(sourcemeta::core::JSON::Type::String)) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
+
     if (COMPARISON_2020_12("validation", "const", "validation", "type")) {
       const auto right_set{type_to_set(right_value)};
       // If the type matches the enumeration, there are cases where
@@ -266,6 +277,18 @@ static auto compare(
       } else {
         return MAKE_RESULT(Incompatible);
       }
+    }
+
+    if (COMPARISON_2020_12("validation", "const", "validation", "pattern")) {
+      if (left_value.is_string()) {
+        const auto regex{sourcemeta::core::to_regex(right_value.to_string())};
+        if (!regex.has_value() ||
+            sourcemeta::core::matches(regex.value(), left_value.to_string())) {
+          return MAKE_RESULT(Unknown);
+        }
+      }
+
+      return MAKE_RESULT(Incompatible);
     }
 
     if (COMPARISON_2020_12("validation", "enum", "validation", "type")) {
@@ -335,6 +358,23 @@ static auto compare(
       return MAKE_RESULT(Incompatible);
     }
 
+    if (COMPARISON_2020_12("validation", "enum", "validation", "pattern")) {
+      const auto regex{sourcemeta::core::to_regex(right_value.to_string())};
+      if (!regex.has_value()) {
+        return MAKE_RESULT(Unknown);
+      }
+
+      for (const auto &value : left_value.as_array()) {
+        if (value.is_string()) {
+          if (sourcemeta::core::matches(regex.value(), value.to_string())) {
+            return MAKE_RESULT(Unknown);
+          }
+        }
+      }
+
+      return MAKE_RESULT(Incompatible);
+    }
+
     if (COMPARISON_2020_12("validation", "required", "validation", "type")) {
       return MAKE_RESULT(Compatible);
     }
@@ -354,6 +394,10 @@ static auto compare(
       } else {
         return MAKE_RESULT(Incompatible);
       }
+    }
+
+    if (COMPARISON_2020_12("validation", "required", "validation", "pattern")) {
+      return MAKE_RESULT(Compatible);
     }
 
     if (COMPARISON_2020_12("validation", "required", "validation",
@@ -407,6 +451,60 @@ static auto compare(
       } else {
         return MAKE_RESULT(Compatible);
       }
+    }
+
+    if (COMPARISON_2020_12("validation", "uniqueItems", "validation",
+                           "pattern")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "pattern", "validation", "type")) {
+      const auto right_set{type_to_set(right_value)};
+      if (right_set.contains(sourcemeta::core::JSON::Type::String)) {
+        // For example, what if the regex allows everything?
+        return MAKE_RESULT(Unknown);
+      } else {
+        return MAKE_RESULT(Compatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "pattern", "validation", "const")) {
+      const auto regex{sourcemeta::core::to_regex(left_value.to_string())};
+      if (!regex.has_value()) {
+        return MAKE_RESULT(Unknown);
+      }
+
+      if (!right_value.is_string() ||
+          sourcemeta::core::matches(regex.value(), right_value.to_string())) {
+        return MAKE_RESULT(Compatible);
+      }
+
+      return MAKE_RESULT(Incompatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "pattern", "validation", "enum")) {
+      const auto regex{sourcemeta::core::to_regex(left_value.to_string())};
+      if (!regex.has_value()) {
+        return MAKE_RESULT(Unknown);
+      }
+
+      for (const auto &value : right_value.as_array()) {
+        if (value.is_string() &&
+            !sourcemeta::core::matches(regex.value(), value.to_string())) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "pattern", "validation", "required")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "pattern", "validation",
+                           "uniqueItems")) {
+      return MAKE_RESULT(Compatible);
     }
   }
 
