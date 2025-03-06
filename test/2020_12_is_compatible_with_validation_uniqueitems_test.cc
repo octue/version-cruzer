@@ -569,3 +569,17 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_uniqueitems,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/uniqueItems",
                                       "/pattern");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_uniqueitems,
+     validation_minimum) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "uniqueItems": false
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minimum": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/uniqueItems",
+                                      "/minimum");
+}

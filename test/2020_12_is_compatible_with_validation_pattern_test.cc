@@ -392,3 +392,16 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_pattern,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/pattern",
                                       "/pattern");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_pattern, validation_minimum) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "pattern": "^f"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minimum": 0
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/pattern",
+                                      "/minimum");
+}
