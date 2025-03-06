@@ -216,6 +216,16 @@ static auto compare(
       }
     }
 
+    if (COMPARISON_2020_12("validation", "type", "validation", "minimum")) {
+      const auto left_set{type_to_set(left_value)};
+      if (left_set.contains(sourcemeta::core::JSON::Type::Integer) ||
+          left_set.contains(sourcemeta::core::JSON::Type::Real)) {
+        return MAKE_RESULT(Incompatible);
+      } else {
+        return MAKE_RESULT(Compatible);
+      }
+    }
+
     if (COMPARISON_2020_12("validation", "const", "validation", "type")) {
       const auto right_set{type_to_set(right_value)};
       // If the type matches the enumeration, there are cases where
@@ -289,6 +299,14 @@ static auto compare(
       }
 
       return MAKE_RESULT(Incompatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "const", "validation", "minimum")) {
+      if (left_value.is_number() && left_value <= right_value) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
     }
 
     if (COMPARISON_2020_12("validation", "enum", "validation", "type")) {
@@ -375,6 +393,18 @@ static auto compare(
       return MAKE_RESULT(Incompatible);
     }
 
+    if (COMPARISON_2020_12("validation", "enum", "validation", "minimum")) {
+      for (const auto &value : left_value.as_array()) {
+        if (!value.is_number()) {
+          return MAKE_RESULT(Incompatible);
+        } else if (value < right_value) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
     if (COMPARISON_2020_12("validation", "required", "validation", "type")) {
       return MAKE_RESULT(Compatible);
     }
@@ -402,6 +432,10 @@ static auto compare(
 
     if (COMPARISON_2020_12("validation", "required", "validation",
                            "uniqueItems")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "required", "validation", "minimum")) {
       return MAKE_RESULT(Compatible);
     }
 
@@ -458,6 +492,11 @@ static auto compare(
       return MAKE_RESULT(Compatible);
     }
 
+    if (COMPARISON_2020_12("validation", "uniqueItems", "validation",
+                           "minimum")) {
+      return MAKE_RESULT(Compatible);
+    }
+
     if (COMPARISON_2020_12("validation", "pattern", "validation", "type")) {
       const auto right_set{type_to_set(right_value)};
       if (right_set.contains(sourcemeta::core::JSON::Type::String)) {
@@ -505,6 +544,62 @@ static auto compare(
     if (COMPARISON_2020_12("validation", "pattern", "validation",
                            "uniqueItems")) {
       return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "pattern", "validation", "minimum")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "minimum", "validation", "type")) {
+      const auto right_set{type_to_set(right_value)};
+      if (right_set.contains(sourcemeta::core::JSON::Type::Integer) ||
+          right_set.contains(sourcemeta::core::JSON::Type::Real)) {
+        return MAKE_RESULT(Incompatible);
+      } else {
+        return MAKE_RESULT(Compatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "minimum", "validation", "const")) {
+      if (!right_value.is_number() || right_value >= left_value) {
+        return MAKE_RESULT(Compatible);
+      }
+
+      return MAKE_RESULT(Incompatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "minimum", "validation", "enum")) {
+      for (const auto &value : right_value.as_array()) {
+        if (value.is_number() && value < left_value) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
+    // TODO: Should all of these comparisons for different types by "Skip"
+    // instead?
+
+    if (COMPARISON_2020_12("validation", "minimum", "validation", "required")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "minimum", "validation",
+                           "uniqueItems")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "minimum", "validation", "pattern")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "minimum", "validation", "minimum")) {
+      if (left_value <= right_value) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
     }
   }
 

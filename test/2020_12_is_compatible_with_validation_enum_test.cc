@@ -476,3 +476,73 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/enum",
                                       "/pattern");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_minimum_numbers_less) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, 2, 3 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minimum": 0
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/minimum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_minimum_numbers_greater) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, 2, 3 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minimum": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/enum",
+                                      "/minimum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_minimum_numbers_mixed) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, 2, 3 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minimum": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/enum",
+                                      "/minimum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_minimum_non_numbers) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo", "bar" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minimum": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/enum",
+                                      "/minimum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_minimum_hybrid_match) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo", 2 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minimum": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/enum",
+                                      "/minimum");
+}
