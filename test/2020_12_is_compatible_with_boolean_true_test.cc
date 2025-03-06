@@ -225,3 +225,12 @@ TEST(Cruzer_is_compatible_with_2020_12_boolean_true, validation_uniqueitems) {
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Compatible, "",
                                       "/uniqueItems");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_boolean_true, validation_pattern) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "pattern": "^foo"
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Compatible, "",
+                                      "/pattern");
+}

@@ -343,3 +343,17 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_required,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Compatible, "/required",
                                       "/uniqueItems");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_required,
+     validation_pattern) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "foo" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "pattern": "^f"
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Compatible, "/required",
+                                      "/pattern");
+}

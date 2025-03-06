@@ -244,3 +244,12 @@ TEST(Cruzer_is_compatible_with_2020_12_core_definitions,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/definitions",
                                       "/uniqueItems");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_core_definitions, validation_pattern) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "pattern": "^foo"
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/definitions",
+                                      "/pattern");
+}

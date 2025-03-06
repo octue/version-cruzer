@@ -242,3 +242,12 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_readonly,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/readOnly",
                                       "/uniqueItems");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_metadata_readonly, validation_pattern) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "pattern": "^foo"
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/readOnly",
+                                      "/pattern");
+}

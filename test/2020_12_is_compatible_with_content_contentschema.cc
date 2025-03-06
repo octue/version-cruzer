@@ -248,3 +248,13 @@ TEST(Cruzer_is_compatible_with_2020_12_content_contentschema,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/contentSchema",
                                       "/uniqueItems");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_content_contentschema,
+     validation_pattern) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "pattern": "^foo"
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/contentSchema",
+                                      "/pattern");
+}

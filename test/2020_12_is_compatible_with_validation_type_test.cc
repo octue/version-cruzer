@@ -612,3 +612,45 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
                                       "/uniqueItems");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_pattern_string) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "string"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "pattern": "^f"
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+                                      "/pattern");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_pattern_string_plus_more) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": [ "string", "integer" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "pattern": "^f"
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+                                      "/pattern");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_pattern_non_string) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "integer"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "pattern": "^f"
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
+                                      "/pattern");
+}

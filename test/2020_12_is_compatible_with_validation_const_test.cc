@@ -424,3 +424,45 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_const,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
                                       "/uniqueItems");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_pattern_string_match) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": "foo"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "pattern": "^f"
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/const",
+                                      "/pattern");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_pattern_string_no_match) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": "foo"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "pattern": "^b"
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
+                                      "/pattern");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_pattern_non_string) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": 1
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "pattern": "^b"
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
+                                      "/pattern");
+}
