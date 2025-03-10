@@ -418,3 +418,31 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_pattern, validation_maximum) {
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Skip, "/pattern",
                                       "/maximum");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_pattern,
+     validation_exclusiveminimum) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "pattern": "^f"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMinimum": 0
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Skip, "/pattern",
+                                      "/exclusiveMinimum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_pattern,
+     validation_exclusivemaximum) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "pattern": "^f"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMaximum": 0
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Skip, "/pattern",
+                                      "/exclusiveMaximum");
+}
