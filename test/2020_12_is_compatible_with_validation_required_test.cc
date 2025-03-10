@@ -206,7 +206,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_required,
     "type": "object"
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Compatible, "/required",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Incompatible, "/required",
                                       "/type");
 }
 
@@ -370,4 +370,18 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_required,
 
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/required",
                                       "/minimum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_required,
+     validation_maximum) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "foo" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maximum": 0
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/required",
+                                      "/maximum");
 }

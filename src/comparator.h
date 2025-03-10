@@ -185,6 +185,22 @@ have_common_types(const sourcemeta::core::JSON::String &left_vocabulary,
   }
 }
 
+static auto defines_any_relevant_type(
+    const std::unordered_set<sourcemeta::core::JSON::Type> &types,
+    const sourcemeta::core::JSON::String &vocabulary,
+    const sourcemeta::core::JSON::String &keyword) -> bool {
+  const auto expected_types{keyword_types(vocabulary, keyword)};
+  if (expected_types.has_value()) {
+    for (const auto &type : expected_types.value().get()) {
+      if (types.contains(type)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 namespace octue::cruzer {
 
 static auto compare(
@@ -303,42 +319,56 @@ static auto compare(
       return MAKE_RESULT(Compatible);
     }
 
-    if (COMPARISON_2020_12("validation", "type", "validation", "required")) {
-      const auto left_set{type_to_set(left_value)};
-      if (left_set.contains(sourcemeta::core::JSON::Type::Object)) {
+    if (COMPARISON_2020_12("validation", "pattern", "validation", "type")) {
+      const auto right_set{type_to_set(right_value)};
+      if (right_set.contains(sourcemeta::core::JSON::Type::String)) {
+        // For example, what if the regex allows everything?
+        return MAKE_RESULT(Unknown);
+      } else {
+        return MAKE_RESULT(Compatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "uniqueItems", "validation", "type")) {
+      if (left_value.is_boolean() && !left_value.to_boolean()) {
         return MAKE_RESULT(Compatible);
       } else {
         return MAKE_RESULT(Incompatible);
       }
     }
 
-    if (COMPARISON_2020_12("validation", "type", "validation", "uniqueItems")) {
-      const auto left_set{type_to_set(left_value)};
-      if (left_set.contains(sourcemeta::core::JSON::Type::Array)) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
+#define COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION(expected_vocabulary,          \
+                                                 expected_keyword)             \
+  if (COMPARISON_2020_12("validation", "type", expected_vocabulary,            \
+                         expected_keyword)) {                                  \
+    if (defines_any_relevant_type(type_to_set(left_value),                     \
+                                  "https://json-schema.org/draft/2020-12/"     \
+                                  "vocab/" expected_vocabulary,                \
+                                  expected_keyword)) {                         \
+      return MAKE_RESULT(Compatible);                                          \
+    } else {                                                                   \
+      return MAKE_RESULT(Incompatible);                                        \
+    }                                                                          \
+  }                                                                            \
+  if (COMPARISON_2020_12(expected_vocabulary, expected_keyword, "validation",  \
+                         "type")) {                                            \
+    if (defines_any_relevant_type(type_to_set(right_value),                    \
+                                  "https://json-schema.org/draft/2020-12/"     \
+                                  "vocab/" expected_vocabulary,                \
+                                  expected_keyword)) {                         \
+      return MAKE_RESULT(Incompatible);                                        \
+    } else {                                                                   \
+      return MAKE_RESULT(Compatible);                                          \
+    }                                                                          \
+  }
 
-    if (COMPARISON_2020_12("validation", "type", "validation", "pattern")) {
-      const auto left_set{type_to_set(left_value)};
-      if (left_set.contains(sourcemeta::core::JSON::Type::String)) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
+    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "required");
+    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "uniqueItems");
+    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "pattern");
+    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "minimum");
+    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "maximum");
 
-    if (COMPARISON_2020_12("validation", "type", "validation", "minimum")) {
-      const auto left_set{type_to_set(left_value)};
-      if (left_set.contains(sourcemeta::core::JSON::Type::Integer) ||
-          left_set.contains(sourcemeta::core::JSON::Type::Real)) {
-        return MAKE_RESULT(Incompatible);
-      } else {
-        return MAKE_RESULT(Compatible);
-      }
-    }
+#undef COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION
 
     if (COMPARISON_2020_12("validation", "const", "validation", "type")) {
       const auto right_set{type_to_set(right_value)};
@@ -416,6 +446,14 @@ static auto compare(
     }
 
     if (COMPARISON_2020_12("validation", "const", "validation", "minimum")) {
+      if (left_value.is_number() && left_value >= right_value) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "const", "validation", "maximum")) {
       if (left_value.is_number() && left_value <= right_value) {
         return MAKE_RESULT(Compatible);
       } else {
@@ -510,7 +548,7 @@ static auto compare(
     if (COMPARISON_2020_12("validation", "enum", "validation", "minimum")) {
       for (const auto &value : left_value.as_array()) {
         if (!value.is_number()) {
-          return MAKE_RESULT(Incompatible);
+          continue;
         } else if (value < right_value) {
           return MAKE_RESULT(Incompatible);
         }
@@ -519,7 +557,15 @@ static auto compare(
       return MAKE_RESULT(Compatible);
     }
 
-    if (COMPARISON_2020_12("validation", "required", "validation", "type")) {
+    if (COMPARISON_2020_12("validation", "enum", "validation", "maximum")) {
+      for (const auto &value : left_value.as_array()) {
+        if (!value.is_number()) {
+          continue;
+        } else if (value > right_value) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+
       return MAKE_RESULT(Compatible);
     }
 
@@ -534,14 +580,6 @@ static auto compare(
     if (COMPARISON_2020_12("validation", "required", "validation",
                            "required")) {
       if (is_superset(array_to_set(right_value), array_to_set(left_value))) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "uniqueItems", "validation", "type")) {
-      if (left_value.is_boolean() && !left_value.to_boolean()) {
         return MAKE_RESULT(Compatible);
       } else {
         return MAKE_RESULT(Incompatible);
@@ -583,16 +621,6 @@ static auto compare(
       }
     }
 
-    if (COMPARISON_2020_12("validation", "pattern", "validation", "type")) {
-      const auto right_set{type_to_set(right_value)};
-      if (right_set.contains(sourcemeta::core::JSON::Type::String)) {
-        // For example, what if the regex allows everything?
-        return MAKE_RESULT(Unknown);
-      } else {
-        return MAKE_RESULT(Compatible);
-      }
-    }
-
     if (COMPARISON_2020_12("validation", "pattern", "validation", "const")) {
       const auto regex{sourcemeta::core::to_regex(left_value.to_string())};
       if (!regex.has_value()) {
@@ -623,16 +651,6 @@ static auto compare(
       return MAKE_RESULT(Compatible);
     }
 
-    if (COMPARISON_2020_12("validation", "minimum", "validation", "type")) {
-      const auto right_set{type_to_set(right_value)};
-      if (right_set.contains(sourcemeta::core::JSON::Type::Integer) ||
-          right_set.contains(sourcemeta::core::JSON::Type::Real)) {
-        return MAKE_RESULT(Incompatible);
-      } else {
-        return MAKE_RESULT(Compatible);
-      }
-    }
-
     if (COMPARISON_2020_12("validation", "minimum", "validation", "const")) {
       if (!right_value.is_number() || right_value >= left_value) {
         return MAKE_RESULT(Compatible);
@@ -651,13 +669,68 @@ static auto compare(
       return MAKE_RESULT(Compatible);
     }
 
-    if (COMPARISON_2020_12("validation", "minimum", "validation", "minimum")) {
-      if (left_value <= right_value) {
+    if (COMPARISON_2020_12("validation", "maximum", "validation", "const")) {
+      if (!right_value.is_number() || right_value <= left_value) {
         return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
       }
+
+      return MAKE_RESULT(Incompatible);
     }
+
+    if (COMPARISON_2020_12("validation", "maximum", "validation", "enum")) {
+      for (const auto &value : right_value.as_array()) {
+        if (value.is_number() && value > left_value) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
+#define COMPARE_2020_12_BOUNDS(expected_vocabulary, expected_keyword_minimum,  \
+                               expected_keyword_maximum)                       \
+  if (COMPARISON_2020_12(expected_vocabulary, expected_keyword_minimum,        \
+                         expected_vocabulary, expected_keyword_minimum)) {     \
+    if (left_value <= right_value) {                                           \
+      return MAKE_RESULT(Compatible);                                          \
+    } else {                                                                   \
+      return MAKE_RESULT(Incompatible);                                        \
+    }                                                                          \
+  } else if (COMPARISON_2020_12(expected_vocabulary, expected_keyword_minimum, \
+                                expected_vocabulary,                           \
+                                expected_keyword_maximum)) {                   \
+    if (left_value <= right_value) {                                           \
+      return MAKE_RESULT(Compatible);                                          \
+    } else {                                                                   \
+      return MAKE_RESULT(Incompatible);                                        \
+    }                                                                          \
+  } else if (COMPARISON_2020_12(expected_vocabulary, expected_keyword_maximum, \
+                                expected_vocabulary,                           \
+                                expected_keyword_minimum)) {                   \
+    if (left_value >= right_value) {                                           \
+      return MAKE_RESULT(Compatible);                                          \
+    } else {                                                                   \
+      return MAKE_RESULT(Incompatible);                                        \
+    }                                                                          \
+  } else if (COMPARISON_2020_12(expected_vocabulary, expected_keyword_maximum, \
+                                expected_vocabulary,                           \
+                                expected_keyword_maximum)) {                   \
+    if (left_value >= right_value) {                                           \
+      return MAKE_RESULT(Compatible);                                          \
+    } else {                                                                   \
+      return MAKE_RESULT(Incompatible);                                        \
+    }                                                                          \
+  }
+
+    COMPARE_2020_12_BOUNDS("validation", "minimum", "maximum");
+    COMPARE_2020_12_BOUNDS("validation", "exclusiveMinimum",
+                           "exclusiveMaximum");
+    COMPARE_2020_12_BOUNDS("validation", "minLength", "maxLength");
+    COMPARE_2020_12_BOUNDS("validation", "minItems", "maxItems");
+    COMPARE_2020_12_BOUNDS("validation", "minProperties", "maxProperties");
+    COMPARE_2020_12_BOUNDS("validation", "minContains", "maxContains");
+
+#undef COMPARE_2020_12_BOUNDS
   }
 
   return MAKE_RESULT(Unknown);
