@@ -242,3 +242,119 @@ TEST(Cruzer_is_compatible_with_2020_12_core_ref, validation_minimum) {
 
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$ref", "/minimum");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_core_ref, validation_maximum) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maximum": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$ref", "/maximum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_ref, validation_exclusiveminimum) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMinimum": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$ref",
+                                      "/exclusiveMinimum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_ref, validation_exclusivemaximum) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMaximum": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$ref",
+                                      "/exclusiveMaximum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_ref, validation_minlength) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minLength": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$ref",
+                                      "/minLength");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_ref, validation_maxlength) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxLength": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$ref",
+                                      "/maxLength");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_ref, validation_minitems) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minItems": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$ref",
+                                      "/minItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_ref, validation_maxitems) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxItems": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$ref",
+                                      "/maxItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_ref, validation_minproperties) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minProperties": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$ref",
+                                      "/minProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_ref, validation_maxproperties) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxProperties": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$ref",
+                                      "/maxProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_ref, validation_mincontains) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minContains": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$ref",
+                                      "/minContains");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_ref, validation_maxcontains) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxContains": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$ref",
+                                      "/maxContains");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_ref, validation_multipleof) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "multipleOf": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$ref",
+                                      "/multipleOf");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_ref, validation_dependentrequired) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "dependentRequired": { "foo": [ "bar" ] }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$ref",
+                                      "/dependentRequired");
+}

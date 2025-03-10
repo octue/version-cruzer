@@ -260,3 +260,130 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_examples, validation_minimum) {
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/examples",
                                       "/minimum");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_metadata_examples, validation_maximum) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maximum": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/examples",
+                                      "/maximum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_metadata_examples,
+     validation_exclusiveminimum) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMinimum": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/examples",
+                                      "/exclusiveMinimum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_metadata_examples,
+     validation_exclusivemaximum) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMaximum": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/examples",
+                                      "/exclusiveMaximum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_metadata_examples,
+     validation_minlength) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minLength": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/examples",
+                                      "/minLength");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_metadata_examples,
+     validation_maxlength) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxLength": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/examples",
+                                      "/maxLength");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_metadata_examples, validation_minitems) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minItems": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/examples",
+                                      "/minItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_metadata_examples, validation_maxitems) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxItems": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/examples",
+                                      "/maxItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_metadata_examples,
+     validation_minproperties) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minProperties": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/examples",
+                                      "/minProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_metadata_examples,
+     validation_maxproperties) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxProperties": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/examples",
+                                      "/maxProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_metadata_examples,
+     validation_mincontains) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minContains": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/examples",
+                                      "/minContains");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_metadata_examples,
+     validation_maxcontains) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxContains": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/examples",
+                                      "/maxContains");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_metadata_examples,
+     validation_multipleof) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "multipleOf": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/examples",
+                                      "/multipleOf");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_metadata_examples,
+     validation_dependentrequired) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "dependentRequired": { "foo": [ "bar" ] }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/examples",
+                                      "/dependentRequired");
+}

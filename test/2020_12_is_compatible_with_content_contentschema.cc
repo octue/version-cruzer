@@ -268,3 +268,133 @@ TEST(Cruzer_is_compatible_with_2020_12_content_contentschema,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/contentSchema",
                                       "/minimum");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_content_contentschema,
+     validation_maximum) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maximum": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/contentSchema",
+                                      "/maximum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_content_contentschema,
+     validation_exclusiveminimum) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMinimum": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/contentSchema",
+                                      "/exclusiveMinimum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_content_contentschema,
+     validation_exclusivemaximum) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMaximum": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/contentSchema",
+                                      "/exclusiveMaximum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_content_contentschema,
+     validation_minlength) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minLength": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/contentSchema",
+                                      "/minLength");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_content_contentschema,
+     validation_maxlength) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxLength": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/contentSchema",
+                                      "/maxLength");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_content_contentschema,
+     validation_minitems) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minItems": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/contentSchema",
+                                      "/minItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_content_contentschema,
+     validation_maxitems) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxItems": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/contentSchema",
+                                      "/maxItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_content_contentschema,
+     validation_minproperties) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minProperties": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/contentSchema",
+                                      "/minProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_content_contentschema,
+     validation_maxproperties) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxProperties": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/contentSchema",
+                                      "/maxProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_content_contentschema,
+     validation_mincontains) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minContains": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/contentSchema",
+                                      "/minContains");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_content_contentschema,
+     validation_maxcontains) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxContains": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/contentSchema",
+                                      "/maxContains");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_content_contentschema,
+     validation_multipleof) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "multipleOf": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/contentSchema",
+                                      "/multipleOf");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_content_contentschema,
+     validation_dependentrequired) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "dependentRequired": { "foo": [ "bar" ] }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/contentSchema",
+                                      "/dependentRequired");
+}

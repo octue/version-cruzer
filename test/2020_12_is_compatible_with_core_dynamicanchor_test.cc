@@ -263,3 +263,132 @@ TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, validation_minimum) {
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$dynamicAnchor",
                                       "/minimum");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor, validation_maximum) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maximum": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$dynamicAnchor",
+                                      "/maximum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor,
+     validation_exclusiveminimum) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMinimum": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$dynamicAnchor",
+                                      "/exclusiveMinimum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor,
+     validation_exclusivemaximum) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMaximum": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$dynamicAnchor",
+                                      "/exclusiveMaximum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor,
+     validation_minlength) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minLength": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$dynamicAnchor",
+                                      "/minLength");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor,
+     validation_maxlength) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxLength": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$dynamicAnchor",
+                                      "/maxLength");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor,
+     validation_minitems) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minItems": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$dynamicAnchor",
+                                      "/minItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor,
+     validation_maxitems) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxItems": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$dynamicAnchor",
+                                      "/maxItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor,
+     validation_minproperties) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minProperties": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$dynamicAnchor",
+                                      "/minProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor,
+     validation_maxproperties) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxProperties": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$dynamicAnchor",
+                                      "/maxProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor,
+     validation_mincontains) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minContains": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$dynamicAnchor",
+                                      "/minContains");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor,
+     validation_maxcontains) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxContains": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$dynamicAnchor",
+                                      "/maxContains");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor,
+     validation_multipleof) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "multipleOf": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$dynamicAnchor",
+                                      "/multipleOf");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_dynamicanchor,
+     validation_dependentrequired) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "dependentRequired": { "foo": [ "bar" ] }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$dynamicAnchor",
+                                      "/dependentRequired");
+}

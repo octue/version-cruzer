@@ -251,3 +251,123 @@ TEST(Cruzer_is_compatible_with_2020_12_core_schema, validation_minimum) {
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
                                       "/minimum");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_core_schema, validation_maximum) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maximum": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/maximum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_schema,
+     validation_exclusiveminimum) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMinimum": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/exclusiveMinimum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_schema,
+     validation_exclusivemaximum) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMaximum": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/exclusiveMaximum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_schema, validation_minlength) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minLength": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/minLength");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_schema, validation_maxlength) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxLength": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/maxLength");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_schema, validation_minitems) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minItems": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/minItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_schema, validation_maxitems) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxItems": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/maxItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_schema, validation_minproperties) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minProperties": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/minProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_schema, validation_maxproperties) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxProperties": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/maxProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_schema, validation_mincontains) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minContains": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/minContains");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_schema, validation_maxcontains) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxContains": 5
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/maxContains");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_schema, validation_multipleof) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "multipleOf": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/multipleOf");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_core_schema,
+     validation_dependentrequired) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "dependentRequired": { "foo": [ "bar" ] }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$schema",
+                                      "/dependentRequired");
+}
