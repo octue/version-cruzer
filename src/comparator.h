@@ -367,6 +367,14 @@ static auto compare(
     COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "pattern");
     COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "minimum");
     COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "maximum");
+    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "exclusiveMinimum");
+    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "exclusiveMaximum");
+    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "minLength");
+    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "maxLength");
+    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "minItems");
+    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "maxItems");
+    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "minProperties");
+    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "maxProperties");
 
 #undef COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION
 
@@ -455,6 +463,24 @@ static auto compare(
 
     if (COMPARISON_2020_12("validation", "const", "validation", "maximum")) {
       if (left_value.is_number() && left_value <= right_value) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "const", "validation",
+                           "exclusiveMinimum")) {
+      if (left_value.is_number() && left_value > right_value) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "const", "validation",
+                           "exclusiveMaximum")) {
+      if (left_value.is_number() && left_value < right_value) {
         return MAKE_RESULT(Compatible);
       } else {
         return MAKE_RESULT(Incompatible);
@@ -562,6 +588,32 @@ static auto compare(
         if (!value.is_number()) {
           continue;
         } else if (value > right_value) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "enum", "validation",
+                           "exclusiveMinimum")) {
+      for (const auto &value : left_value.as_array()) {
+        if (!value.is_number()) {
+          continue;
+        } else if (value <= right_value) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "enum", "validation",
+                           "exclusiveMaximum")) {
+      for (const auto &value : left_value.as_array()) {
+        if (!value.is_number()) {
+          continue;
+        } else if (value >= right_value) {
           return MAKE_RESULT(Incompatible);
         }
       }
@@ -687,6 +739,142 @@ static auto compare(
       return MAKE_RESULT(Compatible);
     }
 
+    if (COMPARISON_2020_12("validation", "maximum", "validation",
+                           "exclusiveMinimum")) {
+      if (left_value > right_value) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "maximum", "validation",
+                           "exclusiveMaximum")) {
+      if (left_value < right_value - sourcemeta::core::JSON{1}) {
+        return MAKE_RESULT(Incompatible);
+      } else {
+        return MAKE_RESULT(Compatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "minimum", "validation",
+                           "exclusiveMinimum")) {
+      if (left_value > right_value + sourcemeta::core::JSON{1}) {
+        return MAKE_RESULT(Incompatible);
+      } else {
+        return MAKE_RESULT(Compatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "minimum", "validation",
+                           "exclusiveMaximum")) {
+      if (left_value < right_value) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "exclusiveMinimum", "validation",
+                           "enum")) {
+      for (const auto &value : right_value.as_array()) {
+        if (value.is_number() && value <= left_value) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "exclusiveMinimum", "validation",
+                           "const")) {
+      if (!right_value.is_number() || right_value > left_value) {
+        return MAKE_RESULT(Compatible);
+      }
+
+      return MAKE_RESULT(Incompatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "exclusiveMaximum", "validation",
+                           "enum")) {
+      for (const auto &value : right_value.as_array()) {
+        if (value.is_number() && value >= left_value) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "exclusiveMaximum", "validation",
+                           "const")) {
+      if (!right_value.is_number() || right_value < left_value) {
+        return MAKE_RESULT(Compatible);
+      }
+
+      return MAKE_RESULT(Incompatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "exclusiveMinimum", "validation",
+                           "exclusiveMinimum")) {
+      if (left_value < right_value) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    } else if (COMPARISON_2020_12("validation", "exclusiveMinimum",
+                                  "validation", "exclusiveMaximum")) {
+      if (left_value + sourcemeta::core::JSON{1} <
+          right_value - sourcemeta::core::JSON{1}) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    } else if (COMPARISON_2020_12("validation", "exclusiveMaximum",
+                                  "validation", "exclusiveMinimum")) {
+      if (left_value - sourcemeta::core::JSON{1} >=
+          right_value + sourcemeta::core::JSON{1}) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    } else if (COMPARISON_2020_12("validation", "exclusiveMaximum",
+                                  "validation", "exclusiveMaximum")) {
+      if (left_value > right_value) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    } else if (COMPARISON_2020_12("validation", "exclusiveMinimum",
+                                  "validation", "maximum")) {
+      if (left_value < right_value) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    } else if (COMPARISON_2020_12("validation", "exclusiveMinimum",
+                                  "validation", "minimum")) {
+      if (left_value < right_value) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    } else if (COMPARISON_2020_12("validation", "exclusiveMaximum",
+                                  "validation", "maximum")) {
+      if (left_value <= right_value) {
+        return MAKE_RESULT(Incompatible);
+      } else {
+        return MAKE_RESULT(Compatible);
+      }
+    } else if (COMPARISON_2020_12("validation", "exclusiveMaximum",
+                                  "validation", "minimum")) {
+      if (left_value <= right_value) {
+        return MAKE_RESULT(Incompatible);
+      } else {
+        return MAKE_RESULT(Compatible);
+      }
+    }
+
 #define COMPARE_2020_12_BOUNDS(expected_vocabulary, expected_keyword_minimum,  \
                                expected_keyword_maximum)                       \
   if (COMPARISON_2020_12(expected_vocabulary, expected_keyword_minimum,        \
@@ -723,8 +911,6 @@ static auto compare(
   }
 
     COMPARE_2020_12_BOUNDS("validation", "minimum", "maximum");
-    COMPARE_2020_12_BOUNDS("validation", "exclusiveMinimum",
-                           "exclusiveMaximum");
     COMPARE_2020_12_BOUNDS("validation", "minLength", "maxLength");
     COMPARE_2020_12_BOUNDS("validation", "minItems", "maxItems");
     COMPARE_2020_12_BOUNDS("validation", "minProperties", "maxProperties");

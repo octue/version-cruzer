@@ -710,3 +710,59 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/maximum");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_exclusiveminimum_integer) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "integer"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMinimum": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+                                      "/exclusiveMinimum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_exclusiveminimum_non_number) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "string"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMinimum": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
+                                      "/exclusiveMinimum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_exclusivemaximum_integer) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "integer"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMaximum": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+                                      "/exclusiveMaximum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_exclusivemaximum_non_number) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "string"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMaximum": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
+                                      "/exclusiveMaximum");
+}

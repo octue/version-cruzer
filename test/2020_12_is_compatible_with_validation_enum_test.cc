@@ -602,3 +602,115 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
                                       "/maximum");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_exclusiveminimum_less) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo", 2 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMinimum": 1
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/exclusiveMinimum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_exclusiveminimum_equal) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo", 2 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMinimum": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/enum",
+                                      "/exclusiveMinimum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_exclusiveminimum_greater) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo", 2 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMinimum": 3
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/enum",
+                                      "/exclusiveMinimum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_exclusiveminimum_non_number) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo", "bar" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMinimum": 3
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/exclusiveMinimum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_exclusivemaximum_less) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo", 2 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMaximum": 1
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/enum",
+                                      "/exclusiveMaximum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_exclusivemaximum_equal) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo", 2 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMaximum": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/enum",
+                                      "/exclusiveMaximum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_exclusivemaximum_greater) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo", 2 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMaximum": 3
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/exclusiveMaximum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_exclusivemaximum_non_number) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo", "bar" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "exclusiveMaximum": 3
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/exclusiveMaximum");
+}
