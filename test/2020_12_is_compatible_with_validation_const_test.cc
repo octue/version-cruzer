@@ -477,7 +477,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_const,
     "minimum": 0
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/const",
                                       "/minimum");
 }
 
@@ -505,7 +505,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_const,
     "minimum": 2
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/const",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
                                       "/minimum");
 }
 
@@ -521,4 +521,60 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_const,
 
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
                                       "/minimum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_maximum_less) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": 1
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maximum": 0
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
+                                      "/maximum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_maximum_equal) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": 1
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maximum": 1
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/const",
+                                      "/maximum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_maximum_greater) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": 1
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maximum": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/const",
+                                      "/maximum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_maximum_non_string) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": "foo"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maximum": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
+                                      "/maximum");
 }

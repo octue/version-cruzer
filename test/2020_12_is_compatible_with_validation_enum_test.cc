@@ -529,7 +529,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
     "minimum": 2
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/enum",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
                                       "/minimum");
 }
 
@@ -543,6 +543,62 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
     "minimum": 2
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/enum",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
                                       "/minimum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_maximum_one_greater) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo", 2 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maximum": 3
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/maximum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_maximum_one_equal) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo", 2 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maximum": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/maximum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_maximum_one_less) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo", 2 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maximum": 1
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/enum",
+                                      "/maximum");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_maximum_non_numbers) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maximum": 1
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/maximum");
 }
