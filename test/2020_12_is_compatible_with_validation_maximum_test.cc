@@ -579,3 +579,23 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_maximum,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/maximum",
                                       "/maxLength");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_maximum,
+     validation_minitems) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minItems": 3
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/maximum",
+                                      "/minItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_maximum,
+     validation_maxitems) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxItems": 3
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/maximum",
+                                      "/maxItems");
+}
