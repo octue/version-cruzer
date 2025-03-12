@@ -487,6 +487,26 @@ static auto compare(
       }
     }
 
+    if (COMPARISON_2020_12("validation", "const", "validation", "minLength")) {
+      if (left_value.is_string() &&
+          static_cast<sourcemeta::core::JSON::Integer>(left_value.size()) >=
+              right_value.to_integer()) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "const", "validation", "maxLength")) {
+      if (left_value.is_string() &&
+          static_cast<sourcemeta::core::JSON::Integer>(left_value.size()) <=
+              right_value.to_integer()) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
+
     if (COMPARISON_2020_12("validation", "enum", "validation", "type")) {
       const auto right_set{type_to_set(right_value)};
       for (const auto &entry : left_value.as_array()) {
@@ -614,6 +634,32 @@ static auto compare(
         if (!value.is_number()) {
           continue;
         } else if (value >= right_value) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "enum", "validation", "minLength")) {
+      for (const auto &value : left_value.as_array()) {
+        if (!value.is_string()) {
+          continue;
+        } else if (static_cast<sourcemeta::core::JSON::Integer>(value.size()) <
+                   right_value.to_integer()) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "enum", "validation", "maxLength")) {
+      for (const auto &value : left_value.as_array()) {
+        if (!value.is_string()) {
+          continue;
+        } else if (static_cast<sourcemeta::core::JSON::Integer>(value.size()) >
+                   right_value.to_integer()) {
           return MAKE_RESULT(Incompatible);
         }
       }
@@ -873,6 +919,48 @@ static auto compare(
       } else {
         return MAKE_RESULT(Compatible);
       }
+    }
+
+    if (COMPARISON_2020_12("validation", "minLength", "validation", "enum")) {
+      for (const auto &value : right_value.as_array()) {
+        if (value.is_string() && static_cast<sourcemeta::core::JSON::Integer>(
+                                     value.size()) < left_value.to_integer()) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "maxLength", "validation", "enum")) {
+      for (const auto &value : right_value.as_array()) {
+        if (value.is_string() && static_cast<sourcemeta::core::JSON::Integer>(
+                                     value.size()) > left_value.to_integer()) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "minLength", "validation", "const")) {
+      if (!right_value.is_string() ||
+          static_cast<sourcemeta::core::JSON::Integer>(right_value.size()) >=
+              left_value.to_integer()) {
+        return MAKE_RESULT(Compatible);
+      }
+
+      return MAKE_RESULT(Incompatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "maxLength", "validation", "const")) {
+      if (!right_value.is_string() ||
+          static_cast<sourcemeta::core::JSON::Integer>(right_value.size()) <=
+              left_value.to_integer()) {
+        return MAKE_RESULT(Compatible);
+      }
+
+      return MAKE_RESULT(Incompatible);
     }
 
 #define COMPARE_2020_12_BOUNDS(expected_vocabulary, expected_keyword_minimum,  \
