@@ -337,6 +337,16 @@ static auto compare(
       }
     }
 
+    if (COMPARISON_2020_12("validation", "uniqueItems", "validation",
+                           "minItems")) {
+      return MAKE_RESULT(Skip);
+    }
+
+    if (COMPARISON_2020_12("validation", "uniqueItems", "validation",
+                           "maxItems")) {
+      return MAKE_RESULT(Skip);
+    }
+
 #define COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION(expected_vocabulary,          \
                                                  expected_keyword)             \
   if (COMPARISON_2020_12("validation", "type", expected_vocabulary,            \
@@ -1099,6 +1109,26 @@ static auto compare(
       }
 
       return MAKE_RESULT(Incompatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "minItems", "validation",
+                           "uniqueItems")) {
+      return MAKE_RESULT(Skip);
+    }
+
+    if (COMPARISON_2020_12("validation", "maxItems", "validation",
+                           "uniqueItems")) {
+      return MAKE_RESULT(Skip);
+    }
+
+    if (COMPARISON_2020_12("validation", "maxItems", "validation",
+                           "uniqueItems")) {
+      return MAKE_RESULT(Skip);
+    }
+
+    if (COMPARISON_2020_12("validation", "maxItems", "validation",
+                           "uniqueItems")) {
+      return MAKE_RESULT(Skip);
     }
 
     if (COMPARISON_2020_12("validation", "minProperties", "validation",

@@ -802,3 +802,115 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_const,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
                                       "/maxLength");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_minitems_less) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": [ 1, 2, 3 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minItems": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/const",
+                                      "/minItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_minitems_equal) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": [ 1, 2, 3 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minItems": 3
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/const",
+                                      "/minItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_minitems_greater) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": [ 1, 2, 3 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minItems": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
+                                      "/minItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_minitems_non_array) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": 1
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minItems": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
+                                      "/minItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_maxitems_less) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": [ 1, 2, 3 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxItems": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
+                                      "/maxItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_maxitems_equal) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": [ 1, 2, 3 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxItems": 3
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/const",
+                                      "/maxItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_maxitems_greater) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": [ 1, 2, 3 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxItems": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/const",
+                                      "/maxItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_maxitems_non_array) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": 1
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxItems": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
+                                      "/maxItems");
+}

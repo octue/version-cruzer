@@ -822,3 +822,59 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/maxLength");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_minitems_array) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "array"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minItems": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+                                      "/minItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_minitems_non_array) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "string"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minItems": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
+                                      "/minItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_maxitems_array) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "array"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxItems": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+                                      "/maxItems");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_maxitems_non_array) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "string"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxItems": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
+                                      "/maxItems");
+}
