@@ -714,3 +714,115 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
                                       "/exclusiveMaximum");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_minlength_less) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, "foo" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minLength": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/minLength");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_minlength_equal) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, "foo" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minLength": 3
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/minLength");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_minlength_greater) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, "foo" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minLength": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/enum",
+                                      "/minLength");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_minlength_non_string) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, 2 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minLength": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/minLength");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_maxlength_less) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, "foo" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxLength": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/enum",
+                                      "/maxLength");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_maxlength_equal) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, "foo" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxLength": 3
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/maxLength");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_maxlength_greater) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, "foo" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxLength": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/maxLength");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_maxlength_non_string) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, 2 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxLength": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/maxLength");
+}
