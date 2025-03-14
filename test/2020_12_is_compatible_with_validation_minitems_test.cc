@@ -589,3 +589,13 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_minitems,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/minItems",
                                       "/maxContains");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_minitems,
+     validation_multipleof) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "multipleOf": 3
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/minItems",
+                                      "/multipleOf");
+}
