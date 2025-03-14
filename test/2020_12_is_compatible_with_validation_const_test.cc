@@ -1050,3 +1050,59 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_const,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
                                       "/maxProperties");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_mincontains_array) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": [ 1, 2, 3 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minContains": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Skip, "/const",
+                                      "/minContains");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_mincontains_non_array) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": 1
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minContains": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Skip, "/const",
+                                      "/minContains");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_maxcontains_array) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": [ 1, 2, 3 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxContains": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Skip, "/const",
+                                      "/maxContains");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_maxcontains_non_array) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": 1
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxContains": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Skip, "/const",
+                                      "/maxContains");
+}

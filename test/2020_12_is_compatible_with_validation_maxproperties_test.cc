@@ -616,3 +616,23 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_maxproperties,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible,
                                       "/maxProperties", "/maxProperties");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_maxproperties,
+     validation_mincontains) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minContains": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/maxProperties",
+                                      "/minContains");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_maxproperties,
+     validation_maxcontains) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxContains": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/maxProperties",
+                                      "/maxContains");
+}

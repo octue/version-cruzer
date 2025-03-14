@@ -289,6 +289,28 @@ static auto compare(
       return MAKE_RESULT(Incompatible);
     }
 
+#define MARK_DEPENDENT_2020_12(expected_vocabulary, expected_name,             \
+                               expected_dependency)                            \
+  if (left_vocabulary.has_value() &&                                           \
+      left_vocabulary.value() == "https://json-schema.org/draft/2020-12/"      \
+                                 "vocab/" expected_vocabulary &&               \
+      left_keyword == (expected_name) &&                                       \
+      !left_subschema.defines(expected_dependency)) {                          \
+    return MAKE_RESULT(Skip);                                                  \
+  } else if (right_vocabulary.has_value() &&                                   \
+             right_vocabulary.value() ==                                       \
+                 "https://json-schema.org/draft/2020-12/"                      \
+                 "vocab/" expected_vocabulary &&                               \
+             right_keyword == (expected_name) &&                               \
+             !right_subschema.defines(expected_dependency)) {                  \
+    return MAKE_RESULT(Skip);                                                  \
+  }
+
+    MARK_DEPENDENT_2020_12("validation", "minContains", "contains");
+    MARK_DEPENDENT_2020_12("validation", "maxContains", "contains");
+
+#undef MARK_DEPENDENT_2020_12
+
     if (COMPARISON_2020_12("validation", "type", "validation", "type")) {
       const auto left_set{type_to_set(left_value)};
       const auto right_set{type_to_set(right_value)};
@@ -1260,7 +1282,7 @@ static auto compare(
 
 #undef COMPARISON_2020_12
 #undef MAKE_RESULT
-}
+} // namespace octue::cruzer
 
 } // namespace octue::cruzer
 
