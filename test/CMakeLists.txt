@@ -30,9 +30,11 @@ sourcemeta_googletest(PROJECT octue NAME cruzer FOLDER "Octue"
     2020_12_is_compatible_with_validation_maximum_test.cc
     2020_12_is_compatible_with_validation_maxitems_test.cc
     2020_12_is_compatible_with_validation_maxlength_test.cc
+    2020_12_is_compatible_with_validation_maxproperties_test.cc
     2020_12_is_compatible_with_validation_minimum_test.cc
     2020_12_is_compatible_with_validation_minitems_test.cc
     2020_12_is_compatible_with_validation_minlength_test.cc
+    2020_12_is_compatible_with_validation_minproperties_test.cc
     2020_12_is_compatible_with_validation_pattern_test.cc
     2020_12_is_compatible_with_validation_required_test.cc
     2020_12_is_compatible_with_validation_type_test.cc

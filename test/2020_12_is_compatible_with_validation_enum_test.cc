@@ -938,3 +938,115 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
                                       "/maxItems");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_minproperties_less) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, { "foo": 2, "bar": 3 } ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minProperties": 1
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/minProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_minproperties_equal) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, { "foo": 2, "bar": 3 } ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minProperties": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/minProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_minproperties_greater) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, { "foo": 2, "bar": 3 } ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minProperties": 3
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/enum",
+                                      "/minProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_minproperties_non_object) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, 2 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minProperties": 3
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/minProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_maxproperties_less) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, { "foo": 2, "bar": 3 } ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxProperties": 1
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/enum",
+                                      "/maxProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_maxproperties_equal) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, { "foo": 2, "bar": 3 } ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxProperties": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/maxProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_maxproperties_greater) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, { "foo": 2, "bar": 3 } ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxProperties": 3
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/maxProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_maxproperties_non_object) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, 2 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxProperties": 3
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/maxProperties");
+}
