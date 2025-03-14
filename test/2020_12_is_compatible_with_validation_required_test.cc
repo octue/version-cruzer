@@ -575,3 +575,45 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_required,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/required",
                                       "/multipleOf");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_required,
+     validation_dependentrequired_true_left) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "foo" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "dependentRequired": { "foo": [ "bar" ] }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/required",
+                                      "/dependentRequired");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_required,
+     validation_dependentrequired_true_left_and_right) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "foo", "bar" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "dependentRequired": { "foo": [ "bar" ] }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/required",
+                                      "/dependentRequired");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_required,
+     validation_dependentrequired_false) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "baz" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "dependentRequired": { "foo": [ "bar" ] }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/required",
+                                      "/dependentRequired");
+}

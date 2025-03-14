@@ -646,3 +646,45 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_maxproperties,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/maxProperties",
                                       "/multipleOf");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_maxproperties,
+     validation_dependentrequired_less) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "maxProperties": 1
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "dependentRequired": { "foo": [ "bar" ] }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible,
+                                      "/maxProperties", "/dependentRequired");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_maxproperties,
+     validation_dependentrequired_equal) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "maxProperties": 2
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "dependentRequired": { "foo": [ "bar" ] }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/maxProperties",
+                                      "/dependentRequired");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_maxproperties,
+     validation_dependentrequired_greater) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "maxProperties": 3
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "dependentRequired": { "foo": [ "bar" ] }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/maxProperties",
+                                      "/dependentRequired");
+}

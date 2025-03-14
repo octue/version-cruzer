@@ -1018,3 +1018,31 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/multipleOf");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_dependentrequired_object) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "object"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "dependentRequired": { "foo": [ "bar" ] }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+                                      "/dependentRequired");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_dependentrequired_non_object) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "array"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "dependentRequired": { "foo": [ "bar" ] }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
+                                      "/dependentRequired");
+}

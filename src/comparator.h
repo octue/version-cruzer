@@ -408,6 +408,7 @@ static auto compare(
     COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "minProperties");
     COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "maxProperties");
     COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "multipleOf");
+    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "dependentRequired");
 
 #undef COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION
 
@@ -588,6 +589,111 @@ static auto compare(
       } else {
         return MAKE_RESULT(Incompatible);
       }
+    }
+
+    if (COMPARISON_2020_12("validation", "const", "validation",
+                           "dependentRequired")) {
+      if (!left_value.is_object()) {
+        return MAKE_RESULT(Compatible);
+      }
+
+      for (const auto &dependency : right_value.as_object()) {
+        if (!left_value.defines(dependency.first)) {
+          continue;
+        }
+
+        for (const auto &property : dependency.second.as_array()) {
+          if (!left_value.defines(property.to_string())) {
+            return MAKE_RESULT(Incompatible);
+          }
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "dependentRequired", "validation",
+                           "dependentRequired")) {
+      for (const auto &dependency : left_value.as_object()) {
+        if (!right_value.defines(dependency.first)) {
+          return MAKE_RESULT(Incompatible);
+        }
+
+        for (const auto &property : dependency.second.as_array()) {
+          if (!right_value.at(dependency.first).contains(property)) {
+            return MAKE_RESULT(Incompatible);
+          }
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "dependentRequired", "validation",
+                           "const")) {
+      if (!right_value.is_object()) {
+        return MAKE_RESULT(Compatible);
+      }
+
+      for (const auto &dependency : left_value.as_object()) {
+        if (!right_value.defines(dependency.first)) {
+          continue;
+        }
+
+        for (const auto &property : dependency.second.as_array()) {
+          if (!right_value.defines(property.to_string())) {
+            return MAKE_RESULT(Incompatible);
+          }
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "enum", "validation",
+                           "dependentRequired")) {
+      for (const auto &value : left_value.as_array()) {
+        if (!value.is_object()) {
+          continue;
+        }
+
+        for (const auto &dependency : right_value.as_object()) {
+          if (!value.defines(dependency.first)) {
+            continue;
+          }
+
+          for (const auto &property : dependency.second.as_array()) {
+            if (!value.defines(property.to_string())) {
+              return MAKE_RESULT(Incompatible);
+            }
+          }
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "dependentRequired", "validation",
+                           "enum")) {
+      for (const auto &value : right_value.as_array()) {
+        if (!value.is_object()) {
+          continue;
+        }
+
+        for (const auto &dependency : left_value.as_object()) {
+          if (!value.defines(dependency.first)) {
+            continue;
+          }
+
+          for (const auto &property : dependency.second.as_array()) {
+            if (!value.defines(property.to_string())) {
+              return MAKE_RESULT(Incompatible);
+            }
+          }
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
     }
 
     if (COMPARISON_2020_12("validation", "enum", "validation", "type")) {
@@ -1235,6 +1341,54 @@ static auto compare(
         }
       }
 
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "maxProperties", "validation",
+                           "dependentRequired")) {
+      for (const auto &dependency : right_value.as_object()) {
+        if (static_cast<sourcemeta::core::JSON::Integer>(
+                dependency.second.size()) +
+                1 >
+            left_value.to_integer()) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "dependentRequired", "validation",
+                           "maxProperties")) {
+      for (const auto &dependency : left_value.as_object()) {
+        if (static_cast<sourcemeta::core::JSON::Integer>(
+                dependency.second.size()) +
+                1 >
+            right_value.to_integer()) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "required", "validation",
+                           "dependentRequired")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "dependentRequired", "validation",
+                           "required")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "minProperties", "validation",
+                           "dependentRequired")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "dependentRequired", "validation",
+                           "minProperties")) {
       return MAKE_RESULT(Compatible);
     }
 
