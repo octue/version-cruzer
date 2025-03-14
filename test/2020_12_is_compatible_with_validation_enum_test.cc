@@ -1078,3 +1078,45 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Skip, "/enum",
                                       "/maxContains");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_multipleof_true) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo", 6 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "multipleOf": 3
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/multipleOf");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_multipleof_false) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo", 6 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "multipleOf": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/enum",
+                                      "/multipleOf");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_multipleof_non_number) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ "foo", "bar" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "multipleOf": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/multipleOf");
+}

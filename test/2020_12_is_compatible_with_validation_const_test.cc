@@ -1106,3 +1106,45 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_const,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Skip, "/const",
                                       "/maxContains");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_multipleof_true) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": 6
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "multipleOf": 3
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/const",
+                                      "/multipleOf");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_multipleof_false) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": 6
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "multipleOf": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
+                                      "/multipleOf");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_multipleof_non_number) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "const": "foo"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "multipleOf": 4
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/const",
+                                      "/multipleOf");
+}

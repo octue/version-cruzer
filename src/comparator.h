@@ -407,6 +407,7 @@ static auto compare(
     COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "maxItems");
     COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "minProperties");
     COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "maxProperties");
+    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "multipleOf");
 
 #undef COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION
 
@@ -575,6 +576,14 @@ static auto compare(
       if (left_value.is_object() &&
           static_cast<sourcemeta::core::JSON::Integer>(left_value.size()) <=
               right_value.to_integer()) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "const", "validation", "multipleOf")) {
+      if (!left_value.is_number() || left_value.divisible_by(right_value)) {
         return MAKE_RESULT(Compatible);
       } else {
         return MAKE_RESULT(Incompatible);
@@ -795,6 +804,18 @@ static auto compare(
       return MAKE_RESULT(Compatible);
     }
 
+    if (COMPARISON_2020_12("validation", "enum", "validation", "multipleOf")) {
+      for (const auto &value : left_value.as_array()) {
+        if (!value.is_number()) {
+          continue;
+        } else if (!value.divisible_by(right_value)) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
     if (COMPARISON_2020_12("validation", "required", "validation", "const")) {
       return MAKE_RESULT(Compatible);
     }
@@ -912,6 +933,26 @@ static auto compare(
         }
       }
 
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "minimum", "validation",
+                           "multipleOf")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "maximum", "validation",
+                           "multipleOf")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "exclusiveMinimum", "validation",
+                           "multipleOf")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "exclusiveMaximum", "validation",
+                           "multipleOf")) {
       return MAKE_RESULT(Compatible);
     }
 
@@ -1231,6 +1272,55 @@ static auto compare(
         return MAKE_RESULT(Incompatible);
       } else {
         return MAKE_RESULT(Compatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "multipleOf", "validation", "const")) {
+      if (!right_value.is_number() || right_value.divisible_by(left_value)) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
+      }
+    }
+
+    if (COMPARISON_2020_12("validation", "multipleOf", "validation", "enum")) {
+      for (const auto &value : right_value.as_array()) {
+        if (!value.is_number()) {
+          continue;
+        } else if (!value.divisible_by(left_value)) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "multipleOf", "validation",
+                           "minimum")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "multipleOf", "validation",
+                           "maximum")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "multipleOf", "validation",
+                           "exclusiveMinimum")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "multipleOf", "validation",
+                           "exclusiveMaximum")) {
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("validation", "multipleOf", "validation",
+                           "multipleOf")) {
+      if (right_value.divisible_by(left_value)) {
+        return MAKE_RESULT(Compatible);
+      } else {
+        return MAKE_RESULT(Incompatible);
       }
     }
 
