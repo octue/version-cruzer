@@ -878,3 +878,59 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/maxItems");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_minproperties_object) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "object"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minProperties": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+                                      "/minProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_minproperties_non_object) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "string"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minProperties": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
+                                      "/minProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_maxproperties_object) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "object"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxProperties": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+                                      "/maxProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_type,
+     validation_maxproperties_non_object) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "type": "string"
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxProperties": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
+                                      "/maxProperties");
+}

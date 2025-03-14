@@ -453,3 +453,87 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_required,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/required",
                                       "/maxItems");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_required,
+     validation_minproperties_less) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "foo", "bar" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minProperties": 1
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/required",
+                                      "/minProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_required,
+     validation_minproperties_equal) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "foo", "bar" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minProperties": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/required",
+                                      "/minProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_required,
+     validation_minproperties_greater) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "foo", "bar" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "minProperties": 3
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/required",
+                                      "/minProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_required,
+     validation_maxproperties_less) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "foo", "bar" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxProperties": 1
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/required",
+                                      "/maxProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_required,
+     validation_maxproperties_equal) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "foo", "bar" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxProperties": 2
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/required",
+                                      "/maxProperties");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_required,
+     validation_maxproperties_greater) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "required": [ "foo", "bar" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "maxProperties": 3
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/required",
+                                      "/maxProperties");
+}
