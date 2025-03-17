@@ -500,7 +500,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_minimum,
     "exclusiveMinimum": 1
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/minimum",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/minimum",
                                       "/exclusiveMinimum");
 }
 

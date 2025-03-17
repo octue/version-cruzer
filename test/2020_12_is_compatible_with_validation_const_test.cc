@@ -309,7 +309,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_const,
     "required": [ "foo" ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/const",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/const",
                                       "/required");
 }
 
@@ -351,7 +351,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_const,
     "uniqueItems": true
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/const",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/const",
                                       "/uniqueItems");
 }
 
@@ -365,7 +365,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_const,
     "uniqueItems": false
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/const",
                                       "/uniqueItems");
 }
 
@@ -393,7 +393,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_const,
     "uniqueItems": false
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/const",
                                       "/uniqueItems");
 }
 
@@ -435,7 +435,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_const,
     "pattern": "^f"
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/const",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/const",
                                       "/pattern");
 }
 
@@ -1145,7 +1145,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_const,
     "multipleOf": 4
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/const",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
                                       "/multipleOf");
 }
 
@@ -1200,6 +1200,6 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_const,
     }
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/const",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/const",
                                       "/dependentRequired");
 }
