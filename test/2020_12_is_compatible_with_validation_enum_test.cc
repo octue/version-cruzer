@@ -1120,3 +1120,51 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
                                       "/multipleOf");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_dependentrequired_true) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ { "foo": 1, "bar": 2 }, "baz" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "dependentRequired": {
+      "foo": [ "bar" ]
+    }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/dependentRequired");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_dependentrequired_false) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ { "foo": 1 }, "baz" ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "dependentRequired": {
+      "foo": [ "bar" ]
+    }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/enum",
+                                      "/dependentRequired");
+}
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_enum,
+     validation_dependentrequired_non_object) {
+  const auto left{sourcemeta::core::parse_json(R"JSON({
+    "enum": [ 1, 2 ]
+  })JSON")};
+
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "dependentRequired": {
+      "foo": [ "bar" ]
+    }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/enum",
+                                      "/dependentRequired");
+}
