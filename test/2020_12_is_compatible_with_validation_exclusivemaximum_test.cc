@@ -514,7 +514,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_exclusivemaximum,
     "exclusiveMinimum": 1
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible,
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible,
                                       "/exclusiveMaximum", "/exclusiveMinimum");
 }
 

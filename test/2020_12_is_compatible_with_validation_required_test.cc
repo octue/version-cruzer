@@ -226,7 +226,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_required,
     "const": {}
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Compatible, "/required",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Incompatible, "/required",
                                       "/const");
 }
 
@@ -246,7 +246,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_required,
     "enum": [ 1, {}, 3 ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Compatible, "/required",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Incompatible, "/required",
                                       "/enum");
 }
 

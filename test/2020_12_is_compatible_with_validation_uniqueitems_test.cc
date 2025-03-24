@@ -652,7 +652,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_uniqueitems,
     "minItems": 3
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/uniqueItems",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Compatible, "/uniqueItems",
                                       "/minItems");
 }
 
@@ -662,7 +662,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_uniqueitems,
     "maxItems": 3
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/uniqueItems",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Compatible, "/uniqueItems",
                                       "/maxItems");
 }
 

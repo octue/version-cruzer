@@ -1,205 +1,9 @@
 #ifndef OCTUE_CRUZER_COMPARATOR_H_
 #define OCTUE_CRUZER_COMPARATOR_H_
 
-#include <sourcemeta/core/regex.h>
+#include <cassert> // assert
 
-#include <cassert>       // assert
-#include <optional>      // std::optional, std::nullopt
-#include <unordered_map> // std::unordered_map
-#include <unordered_set> // std::unordered_set
-
-static auto does_not_validate(const sourcemeta::core::SchemaKeywordType &type)
-    -> bool {
-  return type == sourcemeta::core::SchemaKeywordType::Other ||
-         type == sourcemeta::core::SchemaKeywordType::Comment ||
-         type == sourcemeta::core::SchemaKeywordType::Annotation ||
-         type == sourcemeta::core::SchemaKeywordType::Reference ||
-         type == sourcemeta::core::SchemaKeywordType::LocationMembers ||
-         type ==
-             sourcemeta::core::SchemaKeywordType::ApplicatorValueInPlaceOther;
-}
-
-static auto type_to_set(const sourcemeta::core::JSON::String &value)
-    -> std::unordered_set<sourcemeta::core::JSON::Type> {
-  std::unordered_set<sourcemeta::core::JSON::Type> result;
-  if (value == "null") {
-    result.emplace(sourcemeta::core::JSON::Type::Null);
-  } else if (value == "boolean") {
-    result.emplace(sourcemeta::core::JSON::Type::Boolean);
-  } else if (value == "object") {
-    result.emplace(sourcemeta::core::JSON::Type::Object);
-  } else if (value == "array") {
-    result.emplace(sourcemeta::core::JSON::Type::Array);
-  } else if (value == "number") {
-    result.emplace(sourcemeta::core::JSON::Type::Real);
-    result.emplace(sourcemeta::core::JSON::Type::Integer);
-  } else if (value == "integer") {
-    result.emplace(sourcemeta::core::JSON::Type::Integer);
-  } else if (value == "string") {
-    result.emplace(sourcemeta::core::JSON::Type::String);
-  }
-
-  return result;
-}
-
-static auto type_to_set(const sourcemeta::core::JSON &value)
-    -> std::unordered_set<sourcemeta::core::JSON::Type> {
-  if (value.is_string()) {
-    return type_to_set(value.to_string());
-  }
-
-  std::unordered_set<sourcemeta::core::JSON::Type> result;
-  if (value.is_array()) {
-    for (const auto &type : value.as_array()) {
-      if (type.is_string()) {
-        for (auto &&new_type : type_to_set(type.to_string())) {
-          result.insert(std::move(new_type));
-        }
-      }
-    }
-  }
-
-  return result;
-}
-
-static auto array_to_set(const sourcemeta::core::JSON &array)
-    -> std::unordered_set<sourcemeta::core::JSON,
-                          sourcemeta::core::HashJSON<sourcemeta::core::JSON>> {
-  return {array.as_array().cbegin(), array.as_array().end()};
-}
-
-template <typename T>
-static auto is_superset(const T &left, const T &right) -> bool {
-  for (const auto &right_entry : right) {
-    if (!left.contains(right_entry)) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-// TODO: Move association of keywords to instance types to the Core official
-// walker
-// By convention, if a keyword is not here, we assume it affects all types
-static const std::unordered_map<
-    sourcemeta::core::JSON::String,
-    std::unordered_map<sourcemeta::core::JSON::String,
-                       std::unordered_set<sourcemeta::core::JSON::Type>>>
-    KEYWORD_TYPES{
-        {"https://json-schema.org/draft/2020-12/vocab/applicator",
-         {
-             {"properties", {sourcemeta::core::JSON::Type::Object}},
-             {"patternProperties", {sourcemeta::core::JSON::Type::Object}},
-             {"additionalProperties", {sourcemeta::core::JSON::Type::Object}},
-             {"dependentSchemas", {sourcemeta::core::JSON::Type::Object}},
-             {"propertyNames", {sourcemeta::core::JSON::Type::Object}},
-             {"contains", {sourcemeta::core::JSON::Type::Array}},
-             {"items", {sourcemeta::core::JSON::Type::Array}},
-             {"prefixItems", {sourcemeta::core::JSON::Type::Array}},
-         }},
-
-        {"https://json-schema.org/draft/2020-12/vocab/unevaluated",
-         {
-             {"unevaluatedProperties", {sourcemeta::core::JSON::Type::Object}},
-             {"unevaluatedItems", {sourcemeta::core::JSON::Type::Array}},
-         }},
-
-        {"https://json-schema.org/draft/2020-12/vocab/format-assertion",
-         {
-             {"format", {sourcemeta::core::JSON::Type::String}},
-         }},
-
-        {"https://json-schema.org/draft/2020-12/vocab/validation",
-         {
-             {"maxLength", {sourcemeta::core::JSON::Type::String}},
-             {"minLength", {sourcemeta::core::JSON::Type::String}},
-             {"pattern", {sourcemeta::core::JSON::Type::String}},
-             {"exclusiveMaximum",
-              {sourcemeta::core::JSON::Type::Integer,
-               sourcemeta::core::JSON::Type::Real}},
-             {"exclusiveMinimum",
-              {sourcemeta::core::JSON::Type::Integer,
-               sourcemeta::core::JSON::Type::Real}},
-             {"maximum",
-              {sourcemeta::core::JSON::Type::Integer,
-               sourcemeta::core::JSON::Type::Real}},
-             {"minimum",
-              {sourcemeta::core::JSON::Type::Integer,
-               sourcemeta::core::JSON::Type::Real}},
-             {"multipleOf",
-              {sourcemeta::core::JSON::Type::Integer,
-               sourcemeta::core::JSON::Type::Real}},
-             {"dependentRequired", {sourcemeta::core::JSON::Type::Object}},
-             {"maxProperties", {sourcemeta::core::JSON::Type::Object}},
-             {"minProperties", {sourcemeta::core::JSON::Type::Object}},
-             {"required", {sourcemeta::core::JSON::Type::Object}},
-             {"maxItems", {sourcemeta::core::JSON::Type::Array}},
-             {"minItems", {sourcemeta::core::JSON::Type::Array}},
-             {"maxContains", {sourcemeta::core::JSON::Type::Array}},
-             {"minContains", {sourcemeta::core::JSON::Type::Array}},
-             {"uniqueItems", {sourcemeta::core::JSON::Type::Array}},
-         }}};
-
-static auto keyword_types(const sourcemeta::core::JSON::String &vocabulary,
-                          const sourcemeta::core::JSON::String &keyword)
-    -> std::optional<std::reference_wrapper<
-        const std::unordered_set<sourcemeta::core::JSON::Type>>> {
-  const auto vocabulary_result{KEYWORD_TYPES.find(vocabulary)};
-  if (vocabulary_result == KEYWORD_TYPES.cend()) {
-    return std::nullopt;
-  }
-
-  const auto keyword_result{vocabulary_result->second.find(keyword)};
-  if (keyword_result == vocabulary_result->second.cend()) {
-    return std::nullopt;
-  }
-
-  return keyword_result->second;
-}
-
-static auto
-have_common_types(const sourcemeta::core::JSON::String &left_vocabulary,
-                  const sourcemeta::core::JSON::String &left_keyword,
-                  const sourcemeta::core::JSON::String &right_vocabulary,
-                  const sourcemeta::core::JSON::String &right_keyword) -> bool {
-  const auto left_types{keyword_types(left_vocabulary, left_keyword)};
-  const auto right_types{keyword_types(right_vocabulary, right_keyword)};
-
-  if (left_types.has_value() && right_types.has_value()) {
-    for (const auto &value : left_types.value().get()) {
-      if (right_types.value().get().contains(value)) {
-        return true;
-      }
-    }
-
-    for (const auto &value : right_types.value().get()) {
-      if (left_types.value().get().contains(value)) {
-        return true;
-      }
-    }
-
-    return false;
-  } else {
-    return true;
-  }
-}
-
-static auto defines_any_relevant_type(
-    const std::unordered_set<sourcemeta::core::JSON::Type> &types,
-    const sourcemeta::core::JSON::String &vocabulary,
-    const sourcemeta::core::JSON::String &keyword) -> bool {
-  const auto expected_types{keyword_types(vocabulary, keyword)};
-  if (expected_types.has_value()) {
-    for (const auto &type : expected_types.value().get()) {
-      if (types.contains(type)) {
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
+#include "helpers.h"
 
 namespace octue::cruzer {
 
@@ -226,43 +30,63 @@ static auto compare(
     // Right schema location
     const sourcemeta::core::Pointer &right_schema_location) -> Trace {
 
-  // Annotations / comments do not participate
-  if (does_not_validate(left_type) || does_not_validate(right_type)) {
-    return {Compatibility::Skip, left_schema_location, right_schema_location};
+#define MAKE_RESULT(expected_compatibility)                                    \
+  Trace{Compatibility::expected_compatibility, left_schema_location,           \
+        right_schema_location};
 
-    // Handle boolean schemas on both sides
-  } else if (left_subschema.is_boolean() && right_subschema.is_boolean()) {
-    return {!left_subschema.to_boolean() && right_subschema.to_boolean()
-                ? Compatibility::Incompatible
-                : Compatibility::Compatible,
-            left_schema_location, right_schema_location};
-    // The "true" schema is by definition compatible to everything
-  } else if (left_subschema.is_boolean() && left_subschema.to_boolean()) {
-    return {Compatibility::Compatible, left_schema_location,
-            right_schema_location};
-    // TODO: The "false" schema is compatible against impossible schemas
-  } else if (left_subschema.is_boolean() && !left_subschema.to_boolean()) {
-    return {Compatibility::Incompatible, left_schema_location,
-            right_schema_location};
-
-    // If things are equal, then they are compatible by definition
-  } else if (left_type == right_type && left_keyword == right_keyword &&
-             left_vocabulary == right_vocabulary &&
-             left_subschema.is_object() && right_subschema.is_object() &&
-             left_subschema.at(left_keyword) ==
-                 right_subschema.at(right_keyword)) {
-    return {Compatibility::Compatible, left_schema_location,
-            right_schema_location};
-
-    // If the keywords match totally different types, then we shouldn't be
-    // comparing at all
-  } else if (!have_common_types(left_vocabulary.value_or(""), left_keyword,
-                                right_vocabulary.value_or(""), right_keyword)) {
-    return {Compatibility::Skip, left_schema_location, right_schema_location};
+#define MAKE_IF(expected_compatibility, expected_result)                       \
+  if ((expected_result)) {                                                     \
+    return MAKE_RESULT(expected_compatibility);                                \
   }
 
-  const auto &left_value{left_subschema.at(left_keyword)};
-  const auto &right_value{right_subschema.at(right_keyword)};
+#define MAKE_IF_ELSE(expected_compatibility, expected_else_compatibility,      \
+                     expected_result)                                          \
+  if ((expected_result)) {                                                     \
+    return MAKE_RESULT(expected_compatibility);                                \
+  } else {                                                                     \
+    return MAKE_RESULT(expected_else_compatibility);                           \
+  }
+
+#define MAKE_IF_ANY_ELSE(expected_compatibility, expected_else_compatibility,  \
+                         expected_iterator, expected_item_name,                \
+                         expected_result)                                      \
+  for (const auto &expected_item_name : (expected_iterator)) {                 \
+    MAKE_IF(expected_compatibility, (expected_result));                        \
+  }                                                                            \
+  return MAKE_RESULT(expected_else_compatibility);
+
+  // Annotations / comments do not participate
+  MAKE_IF(Skip, does_not_validate(left_type) || does_not_validate(right_type));
+
+  // Handle boolean schemas on both sides
+  MAKE_IF(Incompatible,
+          left_subschema.is_boolean() && right_subschema.is_boolean() &&
+              !left_subschema.to_boolean() && right_subschema.to_boolean());
+  MAKE_IF(Compatible,
+          left_subschema.is_boolean() && right_subschema.is_boolean());
+  assert(!left_subschema.is_boolean() || !right_subschema.is_boolean());
+
+  // The "true" schema is by definition compatible to everything
+  MAKE_IF(Compatible,
+          left_subschema.is_boolean() && left_subschema.to_boolean());
+
+  // TODO: The "false" schema is compatible against impossible schemas. Though
+  // we can probably do `Incompatible` for non-applicators?
+  MAKE_IF(Unknown, left_subschema.is_boolean() && !left_subschema.to_boolean());
+
+  // If things are equal, then they are compatible by definition
+  MAKE_IF(Compatible,
+          left_type == right_type && left_keyword == right_keyword &&
+              left_vocabulary == right_vocabulary &&
+              left_subschema.is_object() && right_subschema.is_object() &&
+              left_subschema.at(left_keyword) ==
+                  right_subschema.at(right_keyword));
+
+  // If the keywords match totally different types, then we shouldn't be
+  // comparing at all
+  MAKE_IF(Skip,
+          !have_common_types(left_vocabulary.value_or(""), left_keyword,
+                             right_vocabulary.value_or(""), right_keyword));
 
 #define COMPARISON_2020_12(expected_left_vocabulary, expected_left_name,       \
                            expected_right_vocabulary, expected_right_name)     \
@@ -274,20 +98,160 @@ static auto compare(
                                "vocab/" expected_right_vocabulary &&           \
    right_keyword == (expected_right_name))
 
-#define MAKE_RESULT(expected_compatibility)                                    \
-  Trace{Compatibility::expected_compatibility, left_schema_location,           \
-        right_schema_location};
+#define BIDIRECTIONAL_2020_12(expected_vocabulary, expected_keyword_left,      \
+                              expected_keyword_right, expected_result_left,    \
+                              expected_result_right)                           \
+  if (COMPARISON_2020_12(expected_vocabulary, expected_keyword_left,           \
+                         expected_vocabulary, expected_keyword_right)) {       \
+    MAKE_IF_ELSE(Compatible, Incompatible, (expected_result_left));            \
+  } else if (COMPARISON_2020_12(expected_vocabulary, expected_keyword_right,   \
+                                expected_vocabulary, expected_keyword_left)) { \
+    MAKE_IF_ELSE(Compatible, Incompatible, (expected_result_right));           \
+  }
+
+#define BIDIRECTIONAL_TYPED_2020_12(expected_vocabulary, expected_left_name,   \
+                                    expected_right_name,                       \
+                                    expected_type_function, expected_operator) \
+  BIDIRECTIONAL_2020_12(expected_vocabulary, expected_left_name,               \
+                        expected_right_name,                                   \
+                        left_value.expected_type_function() &&                 \
+                            expected_operator(left_value, right_value),        \
+                        !right_value.expected_type_function() ||               \
+                            expected_operator(right_value, left_value));
+
+#define BIDIRECTIONAL_TYPED_ANY_2020_12(                                       \
+    expected_vocabulary, expected_left_name, expected_right_name,              \
+    expected_iterator_function, expected_type_function, expected_operator)     \
+  if (COMPARISON_2020_12(expected_vocabulary, expected_left_name,              \
+                         expected_vocabulary, expected_right_name)) {          \
+    MAKE_IF_ANY_ELSE(Incompatible, Compatible,                                 \
+                     left_value.expected_iterator_function(), value,           \
+                     value.expected_type_function() &&                         \
+                         !expected_operator(value, right_value));              \
+  } else if (COMPARISON_2020_12(expected_vocabulary, expected_right_name,      \
+                                expected_vocabulary, expected_left_name)) {    \
+    MAKE_IF_ANY_ELSE(Incompatible, Compatible,                                 \
+                     right_value.expected_iterator_function(), value,          \
+                     value.expected_type_function() &&                         \
+                         !expected_operator(value, left_value));               \
+  }
+
+  const auto &left_value{left_subschema.at(left_keyword)};
+  const auto &right_value{right_subschema.at(right_keyword)};
 
   if (left_type == sourcemeta::core::SchemaKeywordType::Assertion) {
+    // Any assertion is less open than the "true" schema, by definition
+    MAKE_IF(Incompatible,
+            right_subschema.is_boolean() && right_subschema.to_boolean());
     // Any assertion is more open than the "false" schema, by definition
-    if (right_subschema.is_boolean() && !right_subschema.to_boolean()) {
+    MAKE_IF(Compatible,
+            right_subschema.is_boolean() && !right_subschema.to_boolean());
+    assert(right_subschema.is_object());
+
+    ///////////////////////////////////////////////////////////////////
+    // Self-checks
+    ///////////////////////////////////////////////////////////////////
+
+    if (COMPARISON_2020_12("validation", "type", "validation", "type")) {
+      MAKE_IF_ELSE(
+          Compatible, Incompatible,
+          is_superset(type_to_set(left_value), type_to_set(right_value)));
+    }
+
+    if (COMPARISON_2020_12("validation", "const", "validation", "const")) {
+      MAKE_IF_ELSE(Compatible, Incompatible, left_value == right_value);
+    }
+
+    if (COMPARISON_2020_12("validation", "enum", "validation", "enum")) {
+      MAKE_IF_ELSE(
+          Compatible, Incompatible,
+          is_superset(array_to_set(left_value), array_to_set(right_value)));
+    }
+
+    if (COMPARISON_2020_12("validation", "required", "validation",
+                           "required")) {
+      MAKE_IF_ELSE(
+          Compatible, Incompatible,
+          is_superset(array_to_set(right_value), array_to_set(left_value)));
+    }
+
+    if (COMPARISON_2020_12("validation", "uniqueItems", "validation",
+                           "uniqueItems")) {
+      MAKE_IF_ELSE(Incompatible, Compatible,
+                   left_value.is_boolean() && left_value.to_boolean() &&
+                       right_value.is_boolean() && !right_value.to_boolean());
+    }
+
+    if (COMPARISON_2020_12("validation", "multipleOf", "validation",
+                           "multipleOf")) {
+      MAKE_IF_ELSE(Compatible, Incompatible,
+                   right_value.divisible_by(left_value));
+    }
+
+    if (COMPARISON_2020_12("validation", "minLength", "validation",
+                           "minLength")) {
+      MAKE_IF_ELSE(Compatible, Incompatible, left_value <= right_value);
+    }
+
+    if (COMPARISON_2020_12("validation", "maxLength", "validation",
+                           "maxLength")) {
+      MAKE_IF_ELSE(Compatible, Incompatible, left_value >= right_value);
+    }
+
+    if (COMPARISON_2020_12("validation", "minItems", "validation",
+                           "minItems")) {
+      MAKE_IF_ELSE(Compatible, Incompatible, left_value <= right_value);
+    }
+
+    if (COMPARISON_2020_12("validation", "maxItems", "validation",
+                           "maxItems")) {
+      MAKE_IF_ELSE(Compatible, Incompatible, left_value >= right_value);
+    }
+
+    if (COMPARISON_2020_12("validation", "minProperties", "validation",
+                           "minProperties")) {
+      MAKE_IF_ELSE(Compatible, Incompatible, left_value <= right_value);
+    }
+
+    if (COMPARISON_2020_12("validation", "maxProperties", "validation",
+                           "maxProperties")) {
+      MAKE_IF_ELSE(Compatible, Incompatible, left_value >= right_value);
+    }
+
+    if (COMPARISON_2020_12("validation", "minimum", "validation", "minimum")) {
+      MAKE_IF_ELSE(Compatible, Incompatible, left_value <= right_value);
+    }
+
+    if (COMPARISON_2020_12("validation", "maximum", "validation", "maximum")) {
+      MAKE_IF_ELSE(Compatible, Incompatible, left_value >= right_value);
+    }
+
+    if (COMPARISON_2020_12("validation", "exclusiveMinimum", "validation",
+                           "exclusiveMinimum")) {
+      MAKE_IF_ELSE(Compatible, Incompatible, left_value < right_value);
+    }
+
+    if (COMPARISON_2020_12("validation", "exclusiveMaximum", "validation",
+                           "exclusiveMaximum")) {
+      MAKE_IF_ELSE(Compatible, Incompatible, left_value > right_value);
+    }
+
+    if (COMPARISON_2020_12("validation", "dependentRequired", "validation",
+                           "dependentRequired")) {
+      for (const auto &dependency : left_value.as_object()) {
+        MAKE_IF(Incompatible, !right_value.defines(dependency.first));
+        for (const auto &property : dependency.second.as_array()) {
+          MAKE_IF(Incompatible,
+                  !right_value.at(dependency.first).contains(property));
+        }
+      }
+
       return MAKE_RESULT(Compatible);
     }
 
-    // Any assertion is less open than the "true" schema, by definition
-    if (right_subschema.is_boolean() && right_subschema.to_boolean()) {
-      return MAKE_RESULT(Incompatible);
-    }
+    ///////////////////////////////////////////////////////////////////
+    // Trivial checks
+    ///////////////////////////////////////////////////////////////////
 
 #define MARK_DEPENDENT_2020_12(expected_vocabulary, expected_name,             \
                                expected_dependency)                            \
@@ -311,1221 +275,233 @@ static auto compare(
 
 #undef MARK_DEPENDENT_2020_12
 
-    if (COMPARISON_2020_12("validation", "type", "validation", "type")) {
-      const auto left_set{type_to_set(left_value)};
-      const auto right_set{type_to_set(right_value)};
-      if (is_superset(left_set, right_set)) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
+    // Always compatible
+    BIDIRECTIONAL_2020_12("validation", "uniqueItems", "minItems", true, true);
+    BIDIRECTIONAL_2020_12("validation", "uniqueItems", "maxItems", true, true);
+    BIDIRECTIONAL_2020_12("validation", "dependentRequired", "required", true,
+                          true);
+    BIDIRECTIONAL_2020_12("validation", "dependentRequired", "minProperties",
+                          true, true);
+    BIDIRECTIONAL_2020_12("validation", "multipleOf", "minimum", true, true);
+    BIDIRECTIONAL_2020_12("validation", "multipleOf", "maximum", true, true);
+    BIDIRECTIONAL_2020_12("validation", "multipleOf", "exclusiveMinimum", true,
+                          true);
+    BIDIRECTIONAL_2020_12("validation", "multipleOf", "exclusiveMaximum", true,
+                          true);
+
+    ///////////////////////////////////////////////////////////////////
+    // Special checks
+    ///////////////////////////////////////////////////////////////////
+
+    if (COMPARISON_2020_12("validation", "const", "validation", "enum")) {
+      MAKE_IF_ELSE(Compatible, Incompatible,
+                   right_value.size() <= 1 &&
+                       left_value == right_value.front());
+    } else if (COMPARISON_2020_12("validation", "enum", "validation",
+                                  "const")) {
+      MAKE_IF_ELSE(Compatible, Incompatible, left_value.contains(right_value));
     }
 
     if (COMPARISON_2020_12("validation", "type", "validation", "const")) {
-      const auto left_set{type_to_set(left_value)};
-      if (left_set.contains(right_value.type())) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
+      MAKE_IF_ELSE(Compatible, Incompatible,
+                   type_to_set(left_value).contains(right_value.type()));
+    } else if (COMPARISON_2020_12("validation", "const", "validation",
+                                  "type")) {
+      MAKE_IF_ELSE(Incompatible,
+                   // If the type matches the enumeration, there are cases where
+                   // compatibility remains, like if the "type" subschema comes
+                   // with other constraints that reduce the possible instances
+                   // to a limited set, but that's hard to check right now.
+                   Unknown,
+                   !type_to_set(right_value).contains(left_value.type()));
     }
 
     if (COMPARISON_2020_12("validation", "type", "validation", "enum")) {
-      const auto left_set{type_to_set(left_value)};
-      for (const auto &entry : right_value.as_array()) {
-        if (!left_set.contains(entry.type())) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
+      const auto type_set{type_to_set(left_value)};
+      MAKE_IF_ANY_ELSE(Incompatible, Compatible, right_value.as_array(), entry,
+                       !type_set.contains(entry.type()));
+    } else if (COMPARISON_2020_12("validation", "enum", "validation", "type")) {
+      const auto type_set{type_to_set(right_value)};
+      MAKE_IF_ANY_ELSE(Incompatible, Compatible, left_value.as_array(), entry,
+                       !type_set.contains(entry.type()));
     }
 
     if (COMPARISON_2020_12("validation", "pattern", "validation", "type")) {
-      const auto right_set{type_to_set(right_value)};
-      if (right_set.contains(sourcemeta::core::JSON::Type::String)) {
-        // For example, what if the regex allows everything?
-        return MAKE_RESULT(Unknown);
-      } else {
-        return MAKE_RESULT(Compatible);
-      }
+      MAKE_IF_ELSE(
+          // For example, what if the regex allows everything?
+          Unknown, Compatible,
+          type_to_set(right_value)
+              .contains(sourcemeta::core::JSON::Type::String));
     }
 
     if (COMPARISON_2020_12("validation", "uniqueItems", "validation", "type")) {
-      if (left_value.is_boolean() && !left_value.to_boolean()) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "uniqueItems", "validation",
-                           "minItems")) {
-      return MAKE_RESULT(Skip);
-    }
-
-    if (COMPARISON_2020_12("validation", "uniqueItems", "validation",
-                           "maxItems")) {
-      return MAKE_RESULT(Skip);
-    }
-
-#define COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION(expected_vocabulary,          \
-                                                 expected_keyword)             \
-  if (COMPARISON_2020_12("validation", "type", expected_vocabulary,            \
-                         expected_keyword)) {                                  \
-    if (defines_any_relevant_type(type_to_set(left_value),                     \
-                                  "https://json-schema.org/draft/2020-12/"     \
-                                  "vocab/" expected_vocabulary,                \
-                                  expected_keyword)) {                         \
-      return MAKE_RESULT(Compatible);                                          \
-    } else {                                                                   \
-      return MAKE_RESULT(Incompatible);                                        \
-    }                                                                          \
-  }                                                                            \
-  if (COMPARISON_2020_12(expected_vocabulary, expected_keyword, "validation",  \
-                         "type")) {                                            \
-    if (defines_any_relevant_type(type_to_set(right_value),                    \
-                                  "https://json-schema.org/draft/2020-12/"     \
-                                  "vocab/" expected_vocabulary,                \
-                                  expected_keyword)) {                         \
-      return MAKE_RESULT(Incompatible);                                        \
-    } else {                                                                   \
-      return MAKE_RESULT(Compatible);                                          \
-    }                                                                          \
-  }
-
-    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "required");
-    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "uniqueItems");
-    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "pattern");
-    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "minimum");
-    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "maximum");
-    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "exclusiveMinimum");
-    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "exclusiveMaximum");
-    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "minLength");
-    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "maxLength");
-    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "minItems");
-    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "maxItems");
-    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "minProperties");
-    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "maxProperties");
-    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "multipleOf");
-    COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION("validation", "dependentRequired");
-
-#undef COMPARE_2020_12_TYPE_WITH_TYPE_ASSERTION
-
-    if (COMPARISON_2020_12("validation", "const", "validation", "type")) {
-      const auto right_set{type_to_set(right_value)};
-      // If the type matches the enumeration, there are cases where
-      // compatibility remains, like if the "type" subschema comes with other
-      // constraints that reduce the possible instances to a limited set, but
-      // that's hard to check right now.
-      if (!right_set.contains(left_value.type())) {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "const", "validation", "const")) {
-      if (left_value == right_value) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "const", "validation", "enum")) {
-      if (right_value.size() == 1) {
-        if (left_value == right_value.front()) {
-          return MAKE_RESULT(Compatible);
-        } else {
-          return MAKE_RESULT(Incompatible);
-        }
-      } else if (right_value.size() > 1) {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "const", "validation", "required")) {
-      if (left_value.is_object()) {
-        for (const auto &entry : right_value.as_array()) {
-          if (!left_value.defines(entry.to_string())) {
-            return MAKE_RESULT(Incompatible);
-          }
-        }
-
-        // In general, this will be incompatible, but there are some corner
-        // cases where it will not. We can ignore those for now
-        return MAKE_RESULT(Unknown);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "const", "validation",
-                           "uniqueItems")) {
-      if (left_value.is_array()) {
-        if (left_value.unique() && right_value.is_boolean() &&
-            right_value.to_boolean()) {
-          // In general, this will be incompatible, but there are some corner
-          // cases where it will not. We can ignore those for now
-          return MAKE_RESULT(Unknown);
-        } else {
-          return MAKE_RESULT(Incompatible);
-        }
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "const", "validation", "pattern")) {
-      if (left_value.is_string()) {
-        const auto regex{sourcemeta::core::to_regex(right_value.to_string())};
-        if (!regex.has_value() ||
-            sourcemeta::core::matches(regex.value(), left_value.to_string())) {
-          return MAKE_RESULT(Unknown);
-        }
-      }
-
-      return MAKE_RESULT(Incompatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "const", "validation", "minimum")) {
-      if (left_value.is_number() && left_value >= right_value) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "const", "validation", "maximum")) {
-      if (left_value.is_number() && left_value <= right_value) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "const", "validation",
-                           "exclusiveMinimum")) {
-      if (left_value.is_number() && left_value > right_value) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "const", "validation",
-                           "exclusiveMaximum")) {
-      if (left_value.is_number() && left_value < right_value) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "const", "validation", "minLength")) {
-      if (left_value.is_string() &&
-          static_cast<sourcemeta::core::JSON::Integer>(left_value.size()) >=
-              right_value.to_integer()) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "const", "validation", "maxLength")) {
-      if (left_value.is_string() &&
-          static_cast<sourcemeta::core::JSON::Integer>(left_value.size()) <=
-              right_value.to_integer()) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "const", "validation", "minItems")) {
-      if (left_value.is_array() &&
-          static_cast<sourcemeta::core::JSON::Integer>(left_value.size()) >=
-              right_value.to_integer()) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "const", "validation", "maxItems")) {
-      if (left_value.is_array() &&
-          static_cast<sourcemeta::core::JSON::Integer>(left_value.size()) <=
-              right_value.to_integer()) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "const", "validation",
-                           "minProperties")) {
-      if (left_value.is_object() &&
-          static_cast<sourcemeta::core::JSON::Integer>(left_value.size()) >=
-              right_value.to_integer()) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "const", "validation",
-                           "maxProperties")) {
-      if (left_value.is_object() &&
-          static_cast<sourcemeta::core::JSON::Integer>(left_value.size()) <=
-              right_value.to_integer()) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "const", "validation", "multipleOf")) {
-      if (!left_value.is_number() || left_value.divisible_by(right_value)) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "const", "validation",
-                           "dependentRequired")) {
-      if (!left_value.is_object()) {
-        return MAKE_RESULT(Compatible);
-      }
-
-      for (const auto &dependency : right_value.as_object()) {
-        if (!left_value.defines(dependency.first)) {
-          continue;
-        }
-
-        for (const auto &property : dependency.second.as_array()) {
-          if (!left_value.defines(property.to_string())) {
-            return MAKE_RESULT(Incompatible);
-          }
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "dependentRequired", "validation",
-                           "dependentRequired")) {
-      for (const auto &dependency : left_value.as_object()) {
-        if (!right_value.defines(dependency.first)) {
-          return MAKE_RESULT(Incompatible);
-        }
-
-        for (const auto &property : dependency.second.as_array()) {
-          if (!right_value.at(dependency.first).contains(property)) {
-            return MAKE_RESULT(Incompatible);
-          }
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "dependentRequired", "validation",
-                           "const")) {
-      if (!right_value.is_object()) {
-        return MAKE_RESULT(Compatible);
-      }
-
-      for (const auto &dependency : left_value.as_object()) {
-        if (!right_value.defines(dependency.first)) {
-          continue;
-        }
-
-        for (const auto &property : dependency.second.as_array()) {
-          if (!right_value.defines(property.to_string())) {
-            return MAKE_RESULT(Incompatible);
-          }
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "enum", "validation",
-                           "dependentRequired")) {
-      for (const auto &value : left_value.as_array()) {
-        if (!value.is_object()) {
-          continue;
-        }
-
-        for (const auto &dependency : right_value.as_object()) {
-          if (!value.defines(dependency.first)) {
-            continue;
-          }
-
-          for (const auto &property : dependency.second.as_array()) {
-            if (!value.defines(property.to_string())) {
-              return MAKE_RESULT(Incompatible);
-            }
-          }
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "dependentRequired", "validation",
-                           "enum")) {
-      for (const auto &value : right_value.as_array()) {
-        if (!value.is_object()) {
-          continue;
-        }
-
-        for (const auto &dependency : left_value.as_object()) {
-          if (!value.defines(dependency.first)) {
-            continue;
-          }
-
-          for (const auto &property : dependency.second.as_array()) {
-            if (!value.defines(property.to_string())) {
-              return MAKE_RESULT(Incompatible);
-            }
-          }
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "enum", "validation", "type")) {
-      const auto right_set{type_to_set(right_value)};
-      for (const auto &entry : left_value.as_array()) {
-        // If the type matches the enumeration, there are cases where
-        // compatibility remains, like if the "type" subschema comes with other
-        // constraints that reduce the possible instances to a limited set, but
-        // that's hard to check right now.
-        if (!right_set.contains(entry.type())) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "enum", "validation", "const")) {
-      if (left_value.contains(right_value)) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "enum", "validation", "enum")) {
-      if (is_superset(array_to_set(left_value), array_to_set(right_value))) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "enum", "validation", "required")) {
-      bool potential_match{false};
-      for (const auto &value : left_value.as_array()) {
-        if (value.is_object()) {
-          for (const auto &entry : right_value.as_array()) {
-            if (!value.defines(entry.to_string())) {
-              return MAKE_RESULT(Incompatible);
-            }
-          }
-
-          potential_match = true;
-        }
-      }
-
-      if (potential_match) {
-        // In general, this will be incompatible, but there are some corner
-        // cases where it will not. We can ignore those for now
-        return MAKE_RESULT(Unknown);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "enum", "validation", "uniqueItems")) {
-      for (const auto &value : left_value.as_array()) {
-        if (value.is_array()) {
-          if (value.unique() && right_value.is_boolean() &&
-              right_value.to_boolean()) {
-            // In general, this will be incompatible, but there are some corner
-            // cases where it will not. We can ignore those for now
-            return MAKE_RESULT(Unknown);
-          }
-        }
-      }
-
-      return MAKE_RESULT(Incompatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "enum", "validation", "pattern")) {
-      const auto regex{sourcemeta::core::to_regex(right_value.to_string())};
-      if (!regex.has_value()) {
-        return MAKE_RESULT(Unknown);
-      }
-
-      for (const auto &value : left_value.as_array()) {
-        if (value.is_string()) {
-          if (sourcemeta::core::matches(regex.value(), value.to_string())) {
-            return MAKE_RESULT(Unknown);
-          }
-        }
-      }
-
-      return MAKE_RESULT(Incompatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "enum", "validation", "minimum")) {
-      for (const auto &value : left_value.as_array()) {
-        if (!value.is_number()) {
-          continue;
-        } else if (value < right_value) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "enum", "validation", "maximum")) {
-      for (const auto &value : left_value.as_array()) {
-        if (!value.is_number()) {
-          continue;
-        } else if (value > right_value) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "enum", "validation",
-                           "exclusiveMinimum")) {
-      for (const auto &value : left_value.as_array()) {
-        if (!value.is_number()) {
-          continue;
-        } else if (value <= right_value) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "enum", "validation",
-                           "exclusiveMaximum")) {
-      for (const auto &value : left_value.as_array()) {
-        if (!value.is_number()) {
-          continue;
-        } else if (value >= right_value) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "enum", "validation", "minLength")) {
-      for (const auto &value : left_value.as_array()) {
-        if (!value.is_string()) {
-          continue;
-        } else if (static_cast<sourcemeta::core::JSON::Integer>(value.size()) <
-                   right_value.to_integer()) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "enum", "validation", "maxLength")) {
-      for (const auto &value : left_value.as_array()) {
-        if (!value.is_string()) {
-          continue;
-        } else if (static_cast<sourcemeta::core::JSON::Integer>(value.size()) >
-                   right_value.to_integer()) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "enum", "validation", "minItems")) {
-      for (const auto &value : left_value.as_array()) {
-        if (!value.is_array()) {
-          continue;
-        } else if (static_cast<sourcemeta::core::JSON::Integer>(value.size()) <
-                   right_value.to_integer()) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "enum", "validation", "maxItems")) {
-      for (const auto &value : left_value.as_array()) {
-        if (!value.is_array()) {
-          continue;
-        } else if (static_cast<sourcemeta::core::JSON::Integer>(value.size()) >
-                   right_value.to_integer()) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "enum", "validation",
-                           "minProperties")) {
-      for (const auto &value : left_value.as_array()) {
-        if (!value.is_object()) {
-          continue;
-        } else if (static_cast<sourcemeta::core::JSON::Integer>(value.size()) <
-                   right_value.to_integer()) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "enum", "validation",
-                           "maxProperties")) {
-      for (const auto &value : left_value.as_array()) {
-        if (!value.is_object()) {
-          continue;
-        } else if (static_cast<sourcemeta::core::JSON::Integer>(value.size()) >
-                   right_value.to_integer()) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "enum", "validation", "multipleOf")) {
-      for (const auto &value : left_value.as_array()) {
-        if (!value.is_number()) {
-          continue;
-        } else if (!value.divisible_by(right_value)) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "required", "validation", "const")) {
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "required", "validation", "enum")) {
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "required", "validation",
-                           "required")) {
-      if (is_superset(array_to_set(right_value), array_to_set(left_value))) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
+      MAKE_IF_ELSE(Compatible, Incompatible,
+                   left_value.is_boolean() && !left_value.to_boolean());
     }
 
     if (COMPARISON_2020_12("validation", "required", "validation",
                            "minProperties")) {
-      if (static_cast<sourcemeta::core::JSON::Integer>(left_value.size()) >=
-          right_value.to_integer()) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "required", "validation",
-                           "maxProperties")) {
-      if (static_cast<sourcemeta::core::JSON::Integer>(left_value.size()) <=
-          right_value.to_integer()) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "uniqueItems", "validation",
-                           "const")) {
-      if (left_value.is_boolean() && !left_value.to_boolean()) {
-        return MAKE_RESULT(Compatible);
-      } else if (right_value.is_array() && right_value.unique()) {
-        return MAKE_RESULT(Compatible);
-      } else if (right_value.is_array()) {
-        return MAKE_RESULT(Incompatible);
-      } else {
-        return MAKE_RESULT(Compatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "uniqueItems", "validation", "enum")) {
-      for (const auto &value : right_value.as_array()) {
-        if (left_value.is_boolean() && !left_value.to_boolean()) {
-          continue;
-        } else if (value.is_array() && !value.unique()) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
+      MAKE_IF_ELSE(Compatible, Incompatible,
+                   size_geq_integer(left_value, right_value));
+    } else if (COMPARISON_2020_12("validation", "minProperties", "validation",
+                                  "required")) {
       return MAKE_RESULT(Compatible);
     }
 
-    if (COMPARISON_2020_12("validation", "uniqueItems", "validation",
-                           "uniqueItems")) {
-      if (left_value.is_boolean() && left_value.to_boolean() &&
-          right_value.is_boolean() && !right_value.to_boolean()) {
-        return MAKE_RESULT(Incompatible);
-      } else {
-        return MAKE_RESULT(Compatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "pattern", "validation", "const")) {
-      const auto regex{sourcemeta::core::to_regex(left_value.to_string())};
-      if (!regex.has_value()) {
-        return MAKE_RESULT(Unknown);
-      }
-
-      if (!right_value.is_string() ||
-          sourcemeta::core::matches(regex.value(), right_value.to_string())) {
-        return MAKE_RESULT(Compatible);
-      }
-
-      return MAKE_RESULT(Incompatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "pattern", "validation", "enum")) {
-      const auto regex{sourcemeta::core::to_regex(left_value.to_string())};
-      if (!regex.has_value()) {
-        return MAKE_RESULT(Unknown);
-      }
-
-      for (const auto &value : right_value.as_array()) {
-        if (value.is_string() &&
-            !sourcemeta::core::matches(regex.value(), value.to_string())) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "minimum", "validation", "const")) {
-      if (!right_value.is_number() || right_value >= left_value) {
-        return MAKE_RESULT(Compatible);
-      }
-
-      return MAKE_RESULT(Incompatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "minimum", "validation", "enum")) {
-      for (const auto &value : right_value.as_array()) {
-        if (value.is_number() && value < left_value) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "minimum", "validation",
-                           "multipleOf")) {
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "maximum", "validation",
-                           "multipleOf")) {
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "exclusiveMinimum", "validation",
-                           "multipleOf")) {
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "exclusiveMaximum", "validation",
-                           "multipleOf")) {
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "maximum", "validation", "const")) {
-      if (!right_value.is_number() || right_value <= left_value) {
-        return MAKE_RESULT(Compatible);
-      }
-
-      return MAKE_RESULT(Incompatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "maximum", "validation", "enum")) {
-      for (const auto &value : right_value.as_array()) {
-        if (value.is_number() && value > left_value) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "maximum", "validation",
-                           "exclusiveMinimum")) {
-      if (left_value > right_value) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "maximum", "validation",
-                           "exclusiveMaximum")) {
-      if (left_value < right_value - sourcemeta::core::JSON{1}) {
-        return MAKE_RESULT(Incompatible);
-      } else {
-        return MAKE_RESULT(Compatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "minimum", "validation",
-                           "exclusiveMinimum")) {
-      if (left_value > right_value + sourcemeta::core::JSON{1}) {
-        return MAKE_RESULT(Incompatible);
-      } else {
-        return MAKE_RESULT(Compatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "minimum", "validation",
-                           "exclusiveMaximum")) {
-      if (left_value < right_value) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "exclusiveMinimum", "validation",
-                           "enum")) {
-      for (const auto &value : right_value.as_array()) {
-        if (value.is_number() && value <= left_value) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "exclusiveMinimum", "validation",
-                           "const")) {
-      if (!right_value.is_number() || right_value > left_value) {
-        return MAKE_RESULT(Compatible);
-      }
-
-      return MAKE_RESULT(Incompatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "exclusiveMaximum", "validation",
-                           "enum")) {
-      for (const auto &value : right_value.as_array()) {
-        if (value.is_number() && value >= left_value) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "exclusiveMaximum", "validation",
-                           "const")) {
-      if (!right_value.is_number() || right_value < left_value) {
-        return MAKE_RESULT(Compatible);
-      }
-
-      return MAKE_RESULT(Incompatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "exclusiveMinimum", "validation",
-                           "exclusiveMinimum")) {
-      if (left_value < right_value) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    } else if (COMPARISON_2020_12("validation", "exclusiveMinimum",
-                                  "validation", "exclusiveMaximum")) {
-      if (left_value + sourcemeta::core::JSON{1} <
-          right_value - sourcemeta::core::JSON{1}) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    } else if (COMPARISON_2020_12("validation", "exclusiveMaximum",
-                                  "validation", "exclusiveMinimum")) {
-      if (left_value - sourcemeta::core::JSON{1} >=
-          right_value + sourcemeta::core::JSON{1}) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    } else if (COMPARISON_2020_12("validation", "exclusiveMaximum",
-                                  "validation", "exclusiveMaximum")) {
-      if (left_value > right_value) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    } else if (COMPARISON_2020_12("validation", "exclusiveMinimum",
-                                  "validation", "maximum")) {
-      if (left_value < right_value) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    } else if (COMPARISON_2020_12("validation", "exclusiveMinimum",
-                                  "validation", "minimum")) {
-      if (left_value < right_value) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    } else if (COMPARISON_2020_12("validation", "exclusiveMaximum",
-                                  "validation", "maximum")) {
-      if (left_value <= right_value) {
-        return MAKE_RESULT(Incompatible);
-      } else {
-        return MAKE_RESULT(Compatible);
-      }
-    } else if (COMPARISON_2020_12("validation", "exclusiveMaximum",
-                                  "validation", "minimum")) {
-      if (left_value <= right_value) {
-        return MAKE_RESULT(Incompatible);
-      } else {
-        return MAKE_RESULT(Compatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "minLength", "validation", "enum")) {
-      for (const auto &value : right_value.as_array()) {
-        if (value.is_string() && static_cast<sourcemeta::core::JSON::Integer>(
-                                     value.size()) < left_value.to_integer()) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "maxLength", "validation", "enum")) {
-      for (const auto &value : right_value.as_array()) {
-        if (value.is_string() && static_cast<sourcemeta::core::JSON::Integer>(
-                                     value.size()) > left_value.to_integer()) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "minLength", "validation", "const")) {
-      if (!right_value.is_string() ||
-          static_cast<sourcemeta::core::JSON::Integer>(right_value.size()) >=
-              left_value.to_integer()) {
-        return MAKE_RESULT(Compatible);
-      }
-
-      return MAKE_RESULT(Incompatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "maxLength", "validation", "const")) {
-      if (!right_value.is_string() ||
-          static_cast<sourcemeta::core::JSON::Integer>(right_value.size()) <=
-              left_value.to_integer()) {
-        return MAKE_RESULT(Compatible);
-      }
-
-      return MAKE_RESULT(Incompatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "minItems", "validation", "enum")) {
-      for (const auto &value : right_value.as_array()) {
-        if (value.is_array() && static_cast<sourcemeta::core::JSON::Integer>(
-                                    value.size()) < left_value.to_integer()) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "maxItems", "validation", "enum")) {
-      for (const auto &value : right_value.as_array()) {
-        if (value.is_array() && static_cast<sourcemeta::core::JSON::Integer>(
-                                    value.size()) > left_value.to_integer()) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "minItems", "validation", "const")) {
-      if (!right_value.is_array() ||
-          static_cast<sourcemeta::core::JSON::Integer>(right_value.size()) >=
-              left_value.to_integer()) {
-        return MAKE_RESULT(Compatible);
-      }
-
-      return MAKE_RESULT(Incompatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "maxItems", "validation", "const")) {
-      if (!right_value.is_array() ||
-          static_cast<sourcemeta::core::JSON::Integer>(right_value.size()) <=
-              left_value.to_integer()) {
-        return MAKE_RESULT(Compatible);
-      }
-
-      return MAKE_RESULT(Incompatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "minItems", "validation",
-                           "uniqueItems")) {
-      return MAKE_RESULT(Skip);
-    }
-
-    if (COMPARISON_2020_12("validation", "maxItems", "validation",
-                           "uniqueItems")) {
-      return MAKE_RESULT(Skip);
-    }
-
-    if (COMPARISON_2020_12("validation", "maxItems", "validation",
-                           "uniqueItems")) {
-      return MAKE_RESULT(Skip);
-    }
-
-    if (COMPARISON_2020_12("validation", "maxItems", "validation",
-                           "uniqueItems")) {
-      return MAKE_RESULT(Skip);
-    }
-
-    if (COMPARISON_2020_12("validation", "minProperties", "validation",
-                           "enum")) {
-      for (const auto &value : right_value.as_array()) {
-        if (value.is_object() && static_cast<sourcemeta::core::JSON::Integer>(
-                                     value.size()) < left_value.to_integer()) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "maxProperties", "validation",
-                           "enum")) {
-      for (const auto &value : right_value.as_array()) {
-        if (value.is_object() && static_cast<sourcemeta::core::JSON::Integer>(
-                                     value.size()) > left_value.to_integer()) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
+    BIDIRECTIONAL_2020_12("validation", "required", "maxProperties",
+                          size_leq_integer(left_value, right_value),
+                          size_leq_integer(right_value, left_value));
 
     if (COMPARISON_2020_12("validation", "maxProperties", "validation",
                            "dependentRequired")) {
-      for (const auto &dependency : right_value.as_object()) {
-        if (static_cast<sourcemeta::core::JSON::Integer>(
-                dependency.second.size()) +
-                1 >
-            left_value.to_integer()) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
+      MAKE_IF_ANY_ELSE(Incompatible, Compatible, right_value.as_object(),
+                       dependency,
+                       static_cast<sourcemeta::core::JSON::Integer>(
+                           dependency.second.size()) +
+                               1 >
+                           left_value.to_integer());
+    } else if (COMPARISON_2020_12("validation", "dependentRequired",
+                                  "validation", "maxProperties")) {
+      MAKE_IF_ANY_ELSE(Incompatible, Compatible, left_value.as_object(),
+                       dependency,
+                       static_cast<sourcemeta::core::JSON::Integer>(
+                           dependency.second.size()) +
+                               1 >
+                           right_value.to_integer());
     }
 
-    if (COMPARISON_2020_12("validation", "dependentRequired", "validation",
-                           "maxProperties")) {
-      for (const auto &dependency : left_value.as_object()) {
-        if (static_cast<sourcemeta::core::JSON::Integer>(
-                dependency.second.size()) +
-                1 >
-            right_value.to_integer()) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
+#define COMPARE_2020_12_TYPE_VALIDATION(expected_keyword)                      \
+  BIDIRECTIONAL_2020_12(                                                       \
+      "validation", "type", expected_keyword,                                  \
+      defines_any_relevant_type(type_to_set(left_value),                       \
+                                "https://json-schema.org/draft/2020-12/"       \
+                                "vocab/validation",                            \
+                                expected_keyword),                             \
+      !defines_any_relevant_type(type_to_set(right_value),                     \
+                                 "https://json-schema.org/draft/2020-12/"      \
+                                 "vocab/validation",                           \
+                                 expected_keyword));
 
-      return MAKE_RESULT(Compatible);
-    }
+    COMPARE_2020_12_TYPE_VALIDATION("required");
+    COMPARE_2020_12_TYPE_VALIDATION("uniqueItems");
+    COMPARE_2020_12_TYPE_VALIDATION("pattern");
+    COMPARE_2020_12_TYPE_VALIDATION("minimum");
+    COMPARE_2020_12_TYPE_VALIDATION("maximum");
+    COMPARE_2020_12_TYPE_VALIDATION("exclusiveMinimum");
+    COMPARE_2020_12_TYPE_VALIDATION("exclusiveMaximum");
+    COMPARE_2020_12_TYPE_VALIDATION("minLength");
+    COMPARE_2020_12_TYPE_VALIDATION("maxLength");
+    COMPARE_2020_12_TYPE_VALIDATION("minItems");
+    COMPARE_2020_12_TYPE_VALIDATION("maxItems");
+    COMPARE_2020_12_TYPE_VALIDATION("minProperties");
+    COMPARE_2020_12_TYPE_VALIDATION("maxProperties");
+    COMPARE_2020_12_TYPE_VALIDATION("multipleOf");
+    COMPARE_2020_12_TYPE_VALIDATION("dependentRequired");
 
-    if (COMPARISON_2020_12("validation", "required", "validation",
-                           "dependentRequired")) {
-      return MAKE_RESULT(Compatible);
-    }
+#undef COMPARE_2020_12_TYPE_VALIDATION
 
-    if (COMPARISON_2020_12("validation", "dependentRequired", "validation",
-                           "required")) {
-      return MAKE_RESULT(Compatible);
-    }
+    // `const`
 
-    if (COMPARISON_2020_12("validation", "minProperties", "validation",
-                           "dependentRequired")) {
-      return MAKE_RESULT(Compatible);
-    }
+    BIDIRECTIONAL_TYPED_2020_12("validation", "const", "uniqueItems", is_array,
+                                unique_items);
+    BIDIRECTIONAL_TYPED_2020_12("validation", "const", "pattern", is_string,
+                                pattern);
+    BIDIRECTIONAL_TYPED_2020_12("validation", "const", "required", is_object,
+                                defines_all_array);
+    BIDIRECTIONAL_TYPED_2020_12("validation", "const", "minimum", is_number,
+                                geq);
+    BIDIRECTIONAL_TYPED_2020_12("validation", "const", "maximum", is_number,
+                                leq);
+    BIDIRECTIONAL_TYPED_2020_12("validation", "const", "exclusiveMinimum",
+                                is_number,
+                                std::greater<sourcemeta::core::JSON>{});
+    BIDIRECTIONAL_TYPED_2020_12("validation", "const", "exclusiveMaximum",
+                                is_number, std::less<sourcemeta::core::JSON>{});
+    BIDIRECTIONAL_TYPED_2020_12("validation", "const", "multipleOf", is_number,
+                                divisible_by);
+    BIDIRECTIONAL_TYPED_2020_12("validation", "const", "minLength", is_string,
+                                size_geq_integer);
+    BIDIRECTIONAL_TYPED_2020_12("validation", "const", "maxLength", is_string,
+                                size_leq_integer);
+    BIDIRECTIONAL_TYPED_2020_12("validation", "const", "minItems", is_array,
+                                size_geq_integer);
+    BIDIRECTIONAL_TYPED_2020_12("validation", "const", "maxItems", is_array,
+                                size_leq_integer);
+    BIDIRECTIONAL_TYPED_2020_12("validation", "const", "minProperties",
+                                is_object, size_geq_integer);
+    BIDIRECTIONAL_TYPED_2020_12("validation", "const", "maxProperties",
+                                is_object, size_leq_integer);
+    BIDIRECTIONAL_TYPED_2020_12("validation", "const", "dependentRequired",
+                                is_object, dependent_required);
 
-    if (COMPARISON_2020_12("validation", "dependentRequired", "validation",
-                           "minProperties")) {
-      return MAKE_RESULT(Compatible);
-    }
+    // `enum`
 
-    if (COMPARISON_2020_12("validation", "minProperties", "validation",
-                           "const")) {
-      if (!right_value.is_object() ||
-          static_cast<sourcemeta::core::JSON::Integer>(right_value.size()) >=
-              left_value.to_integer()) {
-        return MAKE_RESULT(Compatible);
-      }
+    BIDIRECTIONAL_TYPED_ANY_2020_12("validation", "enum", "minimum", as_array,
+                                    is_number, geq);
+    BIDIRECTIONAL_TYPED_ANY_2020_12("validation", "enum", "maximum", as_array,
+                                    is_number, leq);
+    BIDIRECTIONAL_TYPED_ANY_2020_12("validation", "enum", "pattern", as_array,
+                                    is_string, pattern);
+    BIDIRECTIONAL_TYPED_ANY_2020_12("validation", "enum", "minLength", as_array,
+                                    is_string, size_geq_integer);
+    BIDIRECTIONAL_TYPED_ANY_2020_12("validation", "enum", "maxLength", as_array,
+                                    is_string, size_leq_integer);
+    BIDIRECTIONAL_TYPED_ANY_2020_12("validation", "enum", "minItems", as_array,
+                                    is_array, size_geq_integer);
+    BIDIRECTIONAL_TYPED_ANY_2020_12("validation", "enum", "maxItems", as_array,
+                                    is_array, size_leq_integer);
+    BIDIRECTIONAL_TYPED_ANY_2020_12("validation", "enum", "uniqueItems",
+                                    as_array, is_array, unique_items);
+    BIDIRECTIONAL_TYPED_ANY_2020_12("validation", "enum", "minProperties",
+                                    as_array, is_object, size_geq_integer);
+    BIDIRECTIONAL_TYPED_ANY_2020_12("validation", "enum", "maxProperties",
+                                    as_array, is_object, size_leq_integer);
+    BIDIRECTIONAL_TYPED_ANY_2020_12("validation", "enum", "dependentRequired",
+                                    as_array, is_object, dependent_required);
+    BIDIRECTIONAL_TYPED_ANY_2020_12("validation", "enum", "required", as_array,
+                                    is_object, defines_all_array);
+    BIDIRECTIONAL_TYPED_ANY_2020_12("validation", "enum", "multipleOf",
+                                    as_array, is_number, divisible_by);
+    BIDIRECTIONAL_TYPED_ANY_2020_12("validation", "enum", "exclusiveMinimum",
+                                    as_array, is_number, std::greater{});
+    BIDIRECTIONAL_TYPED_ANY_2020_12("validation", "enum", "exclusiveMaximum",
+                                    as_array, is_number, std::less{});
 
-      return MAKE_RESULT(Incompatible);
-    }
+    // Bounds
 
-    if (COMPARISON_2020_12("validation", "maxProperties", "validation",
-                           "const")) {
-      if (!right_value.is_object() ||
-          static_cast<sourcemeta::core::JSON::Integer>(right_value.size()) <=
-              left_value.to_integer()) {
-        return MAKE_RESULT(Compatible);
-      }
-
-      return MAKE_RESULT(Incompatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "minProperties", "validation",
-                           "required")) {
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "maxProperties", "validation",
-                           "required")) {
-      if (left_value.to_integer() <
-          static_cast<sourcemeta::core::JSON::Integer>(right_value.size())) {
-        return MAKE_RESULT(Incompatible);
-      } else {
-        return MAKE_RESULT(Compatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "multipleOf", "validation", "const")) {
-      if (!right_value.is_number() || right_value.divisible_by(left_value)) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-    if (COMPARISON_2020_12("validation", "multipleOf", "validation", "enum")) {
-      for (const auto &value : right_value.as_array()) {
-        if (!value.is_number()) {
-          continue;
-        } else if (!value.divisible_by(left_value)) {
-          return MAKE_RESULT(Incompatible);
-        }
-      }
-
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "multipleOf", "validation",
-                           "minimum")) {
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "multipleOf", "validation",
-                           "maximum")) {
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "multipleOf", "validation",
-                           "exclusiveMinimum")) {
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "multipleOf", "validation",
-                           "exclusiveMaximum")) {
-      return MAKE_RESULT(Compatible);
-    }
-
-    if (COMPARISON_2020_12("validation", "multipleOf", "validation",
-                           "multipleOf")) {
-      if (right_value.divisible_by(left_value)) {
-        return MAKE_RESULT(Compatible);
-      } else {
-        return MAKE_RESULT(Incompatible);
-      }
-    }
-
-#define COMPARE_2020_12_BOUNDS(expected_vocabulary, expected_keyword_minimum,  \
-                               expected_keyword_maximum)                       \
-  if (COMPARISON_2020_12(expected_vocabulary, expected_keyword_minimum,        \
-                         expected_vocabulary, expected_keyword_minimum)) {     \
-    if (left_value <= right_value) {                                           \
-      return MAKE_RESULT(Compatible);                                          \
-    } else {                                                                   \
-      return MAKE_RESULT(Incompatible);                                        \
-    }                                                                          \
-  } else if (COMPARISON_2020_12(expected_vocabulary, expected_keyword_minimum, \
-                                expected_vocabulary,                           \
-                                expected_keyword_maximum)) {                   \
-    if (left_value <= right_value) {                                           \
-      return MAKE_RESULT(Compatible);                                          \
-    } else {                                                                   \
-      return MAKE_RESULT(Incompatible);                                        \
-    }                                                                          \
-  } else if (COMPARISON_2020_12(expected_vocabulary, expected_keyword_maximum, \
-                                expected_vocabulary,                           \
-                                expected_keyword_minimum)) {                   \
-    if (left_value >= right_value) {                                           \
-      return MAKE_RESULT(Compatible);                                          \
-    } else {                                                                   \
-      return MAKE_RESULT(Incompatible);                                        \
-    }                                                                          \
-  } else if (COMPARISON_2020_12(expected_vocabulary, expected_keyword_maximum, \
-                                expected_vocabulary,                           \
-                                expected_keyword_maximum)) {                   \
-    if (left_value >= right_value) {                                           \
-      return MAKE_RESULT(Compatible);                                          \
-    } else {                                                                   \
-      return MAKE_RESULT(Incompatible);                                        \
-    }                                                                          \
-  }
-
-    COMPARE_2020_12_BOUNDS("validation", "minimum", "maximum");
-    COMPARE_2020_12_BOUNDS("validation", "minLength", "maxLength");
-    COMPARE_2020_12_BOUNDS("validation", "minItems", "maxItems");
-    COMPARE_2020_12_BOUNDS("validation", "minProperties", "maxProperties");
-    COMPARE_2020_12_BOUNDS("validation", "minContains", "maxContains");
-
-#undef COMPARE_2020_12_BOUNDS
+    BIDIRECTIONAL_2020_12("validation", "minimum", "exclusiveMinimum",
+                          left_value <= right_value, left_value < right_value);
+    BIDIRECTIONAL_2020_12("validation", "maximum", "exclusiveMaximum",
+                          left_value >= right_value, left_value > right_value);
+    BIDIRECTIONAL_2020_12("validation", "exclusiveMinimum", "exclusiveMaximum",
+                          left_value<right_value, left_value> right_value);
+    BIDIRECTIONAL_2020_12("validation", "minimum", "maximum",
+                          left_value <= right_value, left_value >= right_value);
+    BIDIRECTIONAL_2020_12("validation", "minimum", "exclusiveMaximum",
+                          left_value<right_value, left_value> right_value);
+    BIDIRECTIONAL_2020_12("validation", "exclusiveMinimum", "maximum",
+                          left_value<right_value, left_value> right_value);
+    BIDIRECTIONAL_2020_12("validation", "minLength", "maxLength",
+                          left_value <= right_value, left_value >= right_value);
+    BIDIRECTIONAL_2020_12("validation", "minItems", "maxItems",
+                          left_value <= right_value, left_value >= right_value);
+    BIDIRECTIONAL_2020_12("validation", "minProperties", "maxProperties",
+                          left_value <= right_value, left_value >= right_value);
+    BIDIRECTIONAL_2020_12("validation", "minContains", "maxContains",
+                          left_value <= right_value, left_value >= right_value);
   }
 
   return MAKE_RESULT(Unknown);
 
-#undef COMPARISON_2020_12
 #undef MAKE_RESULT
+#undef MAKE_IF
+#undef MAKE_IF_ELSE
+#undef MAKE_IF_ANY_ELSE
+#undef COMPARISON_2020_12
+#undef BIDIRECTIONAL_2020_12
+#undef BIDIRECTIONAL_TYPED_2020_12
+#undef BIDIRECTIONAL_TYPED_ANY_2020_12
+
 } // namespace octue::cruzer
 
 } // namespace octue::cruzer
