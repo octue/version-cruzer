@@ -241,7 +241,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_maxlength,
     "const": "foo"
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/maxLength",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/maxLength",
                                       "/const");
 }
 
@@ -255,7 +255,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_maxlength,
     "const": "foo"
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/maxLength",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/maxLength",
                                       "/const");
 }
 
@@ -269,7 +269,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_maxlength,
     "const": "foo"
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/maxLength",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/maxLength",
                                       "/const");
 }
 
@@ -283,7 +283,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_maxlength,
     "const": 1
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/maxLength",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/maxLength",
                                       "/const");
 }
 
@@ -297,7 +297,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_maxlength,
     "enum": [ 1, 2 ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/maxLength",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/maxLength",
                                       "/enum");
 }
 
@@ -311,7 +311,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_maxlength,
     "enum": [ "foo", "x" ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/maxLength",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/maxLength",
                                       "/enum");
 }
 
@@ -325,7 +325,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_maxlength,
     "enum": [ "foo", "bar" ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/maxLength",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/maxLength",
                                       "/enum");
 }
 

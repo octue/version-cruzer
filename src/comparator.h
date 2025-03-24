@@ -337,6 +337,19 @@ static auto compare(
     if (COMPARISON_2020_12("validation", "uniqueItems", "validation", "type")) {
       MAKE_IF_ELSE(Compatible, Incompatible,
                    left_value.is_boolean() && !left_value.to_boolean());
+    } else if (COMPARISON_2020_12("validation", "type", "validation",
+                                  "uniqueItems")) {
+      MAKE_IF(Compatible,
+              right_value.is_boolean() && !right_value.to_boolean());
+    }
+
+    if (COMPARISON_2020_12("validation", "uniqueItems", "validation",
+                           "const")) {
+      MAKE_IF(Compatible, left_value.is_boolean() && !left_value.to_boolean());
+    }
+
+    if (COMPARISON_2020_12("validation", "uniqueItems", "validation", "enum")) {
+      MAKE_IF(Compatible, left_value.is_boolean() && !left_value.to_boolean());
     }
 
     if (COMPARISON_2020_12("validation", "required", "validation",
@@ -368,6 +381,26 @@ static auto compare(
                            dependency.second.size()) +
                                1 >
                            right_value.to_integer());
+    }
+
+    // Adding a type declaration to a type-less schema is by definition
+    // incompatible
+    if (left_vocabulary.has_value() &&
+        left_vocabulary.value() == "https://json-schema.org/draft/2020-12/"
+                                   "vocab/validation" &&
+        left_keyword == "type" && !right_subschema.defines("type") &&
+        !right_subschema.defines("enum") && !right_subschema.defines("const")) {
+      return MAKE_RESULT(Incompatible);
+    }
+
+    if (right_vocabulary.has_value() &&
+        right_vocabulary.value() == "https://json-schema.org/draft/2020-12/"
+                                    "vocab/validation" &&
+        (right_keyword == "const" || right_keyword == "enum")) {
+      if (!left_subschema.defines("type") && !left_subschema.defines("enum") &&
+          !left_subschema.defines("enum")) {
+        return MAKE_RESULT(Unknown);
+      }
     }
 
 #define COMPARE_2020_12_TYPE_VALIDATION(expected_keyword)                      \

@@ -249,8 +249,8 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_maxproperties,
     }
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible,
-                                      "/maxProperties", "/const");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/maxProperties",
+                                      "/const");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_validation_maxproperties,
@@ -267,7 +267,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_maxproperties,
     }
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/maxProperties",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/maxProperties",
                                       "/const");
 }
 
@@ -285,7 +285,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_maxproperties,
     }
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/maxProperties",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/maxProperties",
                                       "/const");
 }
 
@@ -299,7 +299,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_maxproperties,
     "const": 1
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/maxProperties",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/maxProperties",
                                       "/const");
 }
 
@@ -313,7 +313,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_maxproperties,
     "enum": [ 1, 2 ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/maxProperties",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/maxProperties",
                                       "/enum");
 }
 
@@ -327,8 +327,8 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_maxproperties,
     "enum": [ { "foo": 1, "bar": 2, "baz": 3 }, { "foo": 1 } ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible,
-                                      "/maxProperties", "/enum");
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/maxProperties",
+                                      "/enum");
 }
 
 TEST(Cruzer_is_compatible_with_2020_12_validation_maxproperties,
@@ -341,7 +341,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_maxproperties,
     "enum": [ { "foo": 1, "bar": 2, "baz": 3 }, { "foo": 1, "bar": 2 } ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/maxProperties",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/maxProperties",
                                       "/enum");
 }
 
