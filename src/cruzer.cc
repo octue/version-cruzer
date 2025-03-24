@@ -274,36 +274,35 @@ auto version(
   const auto index_to{index(frame_to, to, walker_to, resolver_to)};
 
   // (3) Collect all version compatibility traces
-  std::vector<Trace> from_to_to_incompatibilities;
-  std::vector<Trace> from_to_to_unknowns;
-  std::vector<Trace> to_to_from_incompatibilities;
-  std::vector<Trace> to_to_from_unknowns;
+  std::vector<Trace> unknowns;
+  std::vector<Trace> from_to_incompatibilities;
+  std::vector<Trace> to_from_incompatibilities;
 
-  const auto from_to_to{is_compatible_with(index_from, index_to)};
-  const auto to_to_from{is_compatible_with(index_to, index_from)};
+  const auto from_to{is_compatible_with(index_from, index_to)};
+  const auto to_from{is_compatible_with(index_to, index_from)};
 
-  for (auto &&trace : from_to_to) {
+  for (auto &&trace : from_to) {
     switch (trace.compatibility) {
       case Compatibility::Incompatible:
-        from_to_to_incompatibilities.push_back(std::move(trace));
+        from_to_incompatibilities.push_back(std::move(trace));
         break;
       case Compatibility::Unknown:
-        from_to_to_unknowns.push_back(std::move(trace));
+        unknowns.push_back(std::move(trace));
         break;
       default:
         continue;
     }
   }
 
-  for (auto &&trace : to_to_from) {
+  for (auto &&trace : to_from) {
     switch (trace.compatibility) {
       case Compatibility::Incompatible:
-        to_to_from_incompatibilities.emplace_back(
+        to_from_incompatibilities.emplace_back(
             trace.compatibility, std::move(trace.right), std::move(trace.left));
         break;
       case Compatibility::Unknown:
-        to_to_from_unknowns.emplace_back(
-            trace.compatibility, std::move(trace.right), std::move(trace.left));
+        unknowns.emplace_back(trace.compatibility, std::move(trace.right),
+                              std::move(trace.left));
         break;
       default:
         continue;
@@ -311,18 +310,16 @@ auto version(
   }
 
   // (4) Figure out the result
-  if (!from_to_to_unknowns.empty() || !to_to_from_unknowns.empty()) {
-    std::move(to_to_from_unknowns.begin(), to_to_from_unknowns.end(),
-              std::back_inserter(from_to_to_unknowns));
-    return {std::nullopt, std::move(from_to_to_unknowns)};
-  } else if (!from_to_to_incompatibilities.empty() &&
-             !to_to_from_incompatibilities.empty()) {
-    std::move(to_to_from_incompatibilities.begin(),
-              to_to_from_incompatibilities.end(),
-              std::back_inserter(from_to_to_incompatibilities));
-    return {SemVer::Major, std::move(from_to_to_incompatibilities)};
-  } else if (!from_to_to_incompatibilities.empty()) {
-    return {SemVer::Minor, std::move(from_to_to_incompatibilities)};
+  if (!unknowns.empty()) {
+    return {std::nullopt, std::move(unknowns)};
+  } else if (!from_to_incompatibilities.empty() &&
+             !to_from_incompatibilities.empty()) {
+    std::move(to_from_incompatibilities.begin(),
+              to_from_incompatibilities.end(),
+              std::back_inserter(from_to_incompatibilities));
+    return {SemVer::Major, std::move(from_to_incompatibilities)};
+  } else if (!from_to_incompatibilities.empty()) {
+    return {SemVer::Minor, std::move(from_to_incompatibilities)};
   } else {
     return {SemVer::Patch, {}};
   }
