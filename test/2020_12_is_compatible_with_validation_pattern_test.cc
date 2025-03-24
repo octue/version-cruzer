@@ -235,7 +235,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_pattern,
     "const": "foo"
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/pattern",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/pattern",
                                       "/const");
 }
 
@@ -249,7 +249,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_pattern,
     "const": "bar"
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/pattern",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/pattern",
                                       "/const");
 }
 
@@ -263,7 +263,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_pattern,
     "const": 1
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/pattern",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/pattern",
                                       "/const");
 }
 
@@ -277,7 +277,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_pattern,
     "enum": [ 1, "foo", 2 ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/pattern",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/pattern",
                                       "/enum");
 }
 
@@ -291,7 +291,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_pattern,
     "enum": [ 1, "bar", 2 ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/pattern",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/pattern",
                                       "/enum");
 }
 
@@ -305,7 +305,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_pattern,
     "enum": [ 1, 2, 3 ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/pattern",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/pattern",
                                       "/enum");
 }
 
@@ -319,7 +319,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_pattern,
     "enum": [ "foo", "bar", "baz" ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/pattern",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/pattern",
                                       "/enum");
 }
 

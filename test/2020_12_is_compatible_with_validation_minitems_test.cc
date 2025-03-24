@@ -238,7 +238,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_minitems,
     "const": [ 1, 2, 3 ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/minItems",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/minItems",
                                       "/const");
 }
 
@@ -252,7 +252,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_minitems,
     "const": [ 1, 2, 3 ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/minItems",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/minItems",
                                       "/const");
 }
 
@@ -266,7 +266,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_minitems,
     "const": [ 1, 2, 3 ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/minItems",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/minItems",
                                       "/const");
 }
 
@@ -280,7 +280,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_minitems,
     "const": 1
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/minItems",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/minItems",
                                       "/const");
 }
 
@@ -294,7 +294,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_minitems,
     "enum": [ 1, 2 ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/minItems",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/minItems",
                                       "/enum");
 }
 
@@ -308,7 +308,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_minitems,
     "enum": [ [ 1, 2, 3 ], [ 1 ] ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/minItems",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/minItems",
                                       "/enum");
 }
 
@@ -322,7 +322,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_minitems,
     "enum": [ [ 1, 2, 3 ], [ 1, 2 ] ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/minItems",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/minItems",
                                       "/enum");
 }
 

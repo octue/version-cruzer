@@ -243,7 +243,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_multipleof,
     "const": 4
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/multipleOf",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/multipleOf",
                                       "/const");
 }
 
@@ -257,7 +257,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_multipleof,
     "const": 5
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/multipleOf",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/multipleOf",
                                       "/const");
 }
 
@@ -271,7 +271,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_multipleof,
     "const": "foo"
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/multipleOf",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/multipleOf",
                                       "/const");
 }
 
@@ -285,7 +285,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_multipleof,
     "enum": [ "foo", 4 ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/multipleOf",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/multipleOf",
                                       "/enum");
 }
 
@@ -299,7 +299,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_multipleof,
     "enum": [ "foo", 3 ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/multipleOf",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/multipleOf",
                                       "/enum");
 }
 

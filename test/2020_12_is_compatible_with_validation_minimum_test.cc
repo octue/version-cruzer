@@ -249,7 +249,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_minimum,
     "const": 1
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/minimum",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/minimum",
                                       "/const");
 }
 
@@ -263,7 +263,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_minimum,
     "const": 2
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/minimum",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/minimum",
                                       "/const");
 }
 
@@ -277,7 +277,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_minimum,
     "const": 3
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/minimum",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/minimum",
                                       "/const");
 }
 
@@ -291,7 +291,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_minimum,
     "const": "foo"
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/minimum",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/minimum",
                                       "/const");
 }
 
@@ -305,7 +305,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_minimum,
     "enum": [ "foo", "bar" ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/minimum",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/minimum",
                                       "/enum");
 }
 
@@ -319,7 +319,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_minimum,
     "enum": [ "foo", 1, 2 ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/minimum",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/minimum",
                                       "/enum");
 }
 
@@ -333,7 +333,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_minimum,
     "enum": [ "foo", 2 ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/minimum",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/minimum",
                                       "/enum");
 }
 

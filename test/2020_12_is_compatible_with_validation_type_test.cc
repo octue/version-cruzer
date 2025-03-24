@@ -539,7 +539,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
     "required": [ "foo" ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/required");
 }
 
@@ -553,7 +553,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
     "required": [ "foo" ]
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/required");
 }
 
@@ -595,7 +595,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
     "uniqueItems": true
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/uniqueItems");
 }
 
@@ -623,7 +623,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
     "pattern": "^f"
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/pattern");
 }
 
@@ -637,7 +637,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
     "pattern": "^f"
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/pattern");
 }
 
@@ -665,7 +665,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
     "minimum": 0
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/minimum");
 }
 
@@ -693,7 +693,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
     "maximum": 2
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/maximum");
 }
 
@@ -721,7 +721,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
     "exclusiveMinimum": 2
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/exclusiveMinimum");
 }
 
@@ -749,7 +749,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
     "exclusiveMaximum": 2
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/exclusiveMaximum");
 }
 
@@ -777,7 +777,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
     "minLength": 2
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/minLength");
 }
 
@@ -805,7 +805,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
     "maxLength": 2
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/maxLength");
 }
 
@@ -833,7 +833,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
     "minItems": 2
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/minItems");
 }
 
@@ -861,7 +861,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
     "maxItems": 2
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/maxItems");
 }
 
@@ -889,7 +889,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
     "minProperties": 2
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/minProperties");
 }
 
@@ -917,7 +917,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
     "maxProperties": 2
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/maxProperties");
 }
 
@@ -1001,7 +1001,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
     "multipleOf": 2
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/multipleOf");
 }
 
@@ -1029,7 +1029,7 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_type,
     "dependentRequired": { "foo": [ "bar" ] }
   })JSON")};
 
-  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/type",
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Incompatible, "/type",
                                       "/dependentRequired");
 }
 

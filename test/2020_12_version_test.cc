@@ -1,6 +1,36 @@
 #include <gtest/gtest.h>
 #include <octue/cruzer.h>
 
+#define EXPECT_UNKNOWN(container, expected_from, expected_to, expected_traces) \
+  const auto container{octue::cruzer::version(expected_from, expected_to)};    \
+  EXPECT_FALSE(container.version.has_value());                                 \
+  EXPECT_EQ(container.traces.size(), (expected_traces));
+
+#define EXPECT_VERSION(container, expected_from, expected_to,                  \
+                       expected_version, expected_traces)                      \
+  const auto container{octue::cruzer::version(expected_from, expected_to)};    \
+  EXPECT_TRUE(container.version.has_value());                                  \
+  EXPECT_EQ(container.version.value(),                                         \
+            octue::cruzer::SemVer::expected_version);                          \
+  EXPECT_EQ(container.traces.size(), (expected_traces));
+
+#define EXPECT_OPTIONAL_POINTER(current, expected)                             \
+  if (std::optional<std::string>{expected}.has_value()) {                      \
+    EXPECT_TRUE(current.has_value());                                          \
+    EXPECT_EQ(sourcemeta::core::to_string(current.value()), expected);         \
+  } else {                                                                     \
+    EXPECT_FALSE(current.has_value());                                         \
+  }
+
+#define EXPECT_TRACE(container, expected_index, expected_compatibility,        \
+                     expected_left_pointer, expected_right_pointer)            \
+  EXPECT_EQ(container.traces.at(expected_index).compatibility,                 \
+            octue::cruzer::Compatibility::expected_compatibility);             \
+  EXPECT_OPTIONAL_POINTER(container.traces.at(expected_index).left,            \
+                          expected_left_pointer);                              \
+  EXPECT_OPTIONAL_POINTER(container.traces.at(expected_index).right,           \
+                          expected_right_pointer);
+
 TEST(Cruzer_version_2020_12, add_id) {
   const auto from{sourcemeta::core::parse_json(R"JSON({
     "$schema": "https://json-schema.org/draft/2020-12/schema"
@@ -11,8 +41,85 @@ TEST(Cruzer_version_2020_12, add_id) {
     "$schema": "https://json-schema.org/draft/2020-12/schema"
   })JSON")};
 
-  const auto result{octue::cruzer::version(from, to)};
-  EXPECT_TRUE(result.version.has_value());
-  EXPECT_EQ(result.version.value(), octue::cruzer::SemVer::Patch);
-  EXPECT_EQ(result.traces.size(), 0);
+  EXPECT_VERSION(result, from, to, Patch, 0);
+}
+
+TEST(Cruzer_version_2020_12, const_to_enum_superset) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "const": "foo"
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "enum": [ "foo", "bar" ]
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Minor, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/const", "/enum");
+}
+
+TEST(Cruzer_version_2020_12, schema_to_const_match) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "string",
+    "minimum": 1
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "const": "foo"
+  })JSON")};
+
+  EXPECT_UNKNOWN(result, from, to, 1);
+  EXPECT_TRACE(result, 0, Unknown, "/type", "/const");
+}
+
+TEST(Cruzer_version_2020_12, add_default_minimum) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "number"
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "number",
+    "minimum": 0
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Patch, 0);
+}
+
+TEST(Cruzer_version_2020_12, add_type) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "minimum": 2
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "number",
+    "minimum": 2
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Major, 2);
+
+  // TODO: Turn traces into sets to avoid duplicates
+  EXPECT_TRACE(result, 0, Incompatible, "/minimum", "/type");
+  EXPECT_TRACE(result, 1, Incompatible, "/minimum", "/type");
+}
+
+TEST(Cruzer_version_2020_12, schema_to_const) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "minimum": 2
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "const": 5
+  })JSON")};
+
+  EXPECT_UNKNOWN(result, from, to, 1);
+  EXPECT_TRACE(result, 0, Unknown, "/minimum", "/const");
 }
