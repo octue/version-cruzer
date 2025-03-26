@@ -10,3 +10,11 @@ a working C++ compiler, CMake, ClangFormat, and simply run:
 ```sh
 make
 ```
+
+## WebAssembly Bindings
+
+To generate the WebAssembly package under `bindings/webassembly`, run:
+
+```sh
+make webassembly
+```

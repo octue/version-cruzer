@@ -7,7 +7,7 @@ find_package(Core REQUIRED)
 
 if(PROJECT_IS_TOP_LEVEL)
   sourcemeta_target_clang_format(SOURCES
-    src/*.h src/*.cc test/*.h test/*.cc)
+    src/*.h src/*.cc test/*.h test/*.cc bindings/*.cc)
 endif()
 
 add_subdirectory(src)
