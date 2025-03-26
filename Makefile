@@ -23,6 +23,9 @@ test: .always
 		--output-on-failure --parallel
 
 clean: .always
-	$(CMAKE) -E rm -R -f build
+	$(CMAKE) -E rm -R -f build bindings/webassembly/build bindings/webassembly/dist
+
+webassembly: .always
+	$(MAKE) -C bindings/webassembly
 
 .always:
