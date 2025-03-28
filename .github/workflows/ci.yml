@@ -1,4 +1,4 @@
-name: Cruzer
+name: CI
 
 on:
   push:

@@ -1,5 +1,10 @@
 {
   "name": "@octue/cruzer",
   "private": true,
+  "main": "cruzer.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/octue/version-cruzer.git"
+  },
   "type": "module"
 }

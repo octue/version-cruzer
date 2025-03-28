@@ -1,0 +1,38 @@
+name: CD
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*.*.*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_type }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  npm:
+    runs-on: ubuntu-latest
+    env:
+      EMSDK_VERSION: 4.0.5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://npm.pkg.github.com'
+      - run: |
+          git clone --depth 1 https://github.com/emscripten-core/emsdk.git
+          ./emsdk/emsdk install ${{ env.EMSDK_VERSION }}
+          ./emsdk/emsdk activate ${{ env.EMSDK_VERSION }}
+          rm -rf emsdk/upstream/emscripten/cmake
+          echo "$(pwd)/emsdk/upstream/emscripten" >> $GITHUB_PATH
+        if: matrix.binding.name == 'webassembly'
+      - run: make -C bindings/webassembly compile
+      - run: cd bindings/webassembly && npm version ${{ github.ref_name }} && npm publish
+        if: github.ref_type == 'tag'
