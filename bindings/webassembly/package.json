@@ -1,5 +1,5 @@
 {
-  "name": "@octue/cruzer",
+  "name": "@octue/version-cruzer",
   "main": "cruzer.js",
   "repository": {
     "type": "git",

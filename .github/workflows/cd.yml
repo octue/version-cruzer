@@ -35,3 +35,5 @@ jobs:
       - run: make -C bindings/webassembly compile
       - run: cd bindings/webassembly && npm version ${{ github.ref_name }} && npm publish
         if: github.ref_type == 'tag'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
