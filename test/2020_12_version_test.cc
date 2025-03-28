@@ -102,11 +102,8 @@ TEST(Cruzer_version_2020_12, add_type) {
     "minimum": 2
   })JSON")};
 
-  EXPECT_VERSION(result, from, to, Major, 2);
-
-  // TODO: Turn traces into sets to avoid duplicates
+  EXPECT_VERSION(result, from, to, Major, 1);
   EXPECT_TRACE(result, 0, Incompatible, "/minimum", "/type");
-  EXPECT_TRACE(result, 1, Incompatible, "/minimum", "/type");
 }
 
 TEST(Cruzer_version_2020_12, schema_to_const) {

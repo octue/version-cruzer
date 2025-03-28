@@ -19,8 +19,9 @@ enum class Compatibility { Compatible, Incompatible, Skip, Unknown };
 
 struct Trace {
   const Compatibility compatibility;
-  std::optional<sourcemeta::core::Pointer> left;
-  std::optional<sourcemeta::core::Pointer> right;
+  const std::optional<sourcemeta::core::Pointer> left;
+  const std::optional<sourcemeta::core::Pointer> right;
+  auto operator==(const Trace &other) const noexcept -> bool = default;
 };
 
 struct SchemaLocation {
