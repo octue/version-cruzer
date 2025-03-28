@@ -1,6 +1,5 @@
 {
   "name": "@octue/cruzer",
-  "private": true,
   "main": "cruzer.js",
   "repository": {
     "type": "git",
