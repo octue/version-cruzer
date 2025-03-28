@@ -242,3 +242,58 @@ TEST(Cruzer_version_2020_12, properties_change_type) {
   EXPECT_TRACE(result, 0, Incompatible, "/properties/foo/type",
                "/properties/foo/type");
 }
+
+TEST(Cruzer_version_2020_12, standalone_defs) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$defs": {
+      "foo": {
+        "type": "string"
+      }
+    }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$defs": {
+      "foo": {
+        "type": "integer"
+      }
+    }
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Patch, 0);
+}
+
+TEST(Cruzer_version_2020_12, properties_change_type_through_ref) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+      "foo": {
+        "$ref": "#/$defs/foo"
+      }
+    },
+    "$defs": {
+      "foo": {
+        "type": "string"
+      }
+    }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+      "foo": {
+        "$ref": "#/$defs/foo"
+      }
+    },
+    "$defs": {
+      "foo": {
+        "type": "integer"
+      }
+    }
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/$defs/foo/type", "/$defs/foo/type");
+}
