@@ -372,3 +372,12 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_title,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/title",
                                       "/dependentRequired");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_metadata_title, validation_properties) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "properties": { "foo": { "type": "string" } }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/title",
+                                      "/properties");
+}

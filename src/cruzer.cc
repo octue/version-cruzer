@@ -167,6 +167,9 @@ auto is_compatible_with(const SchemaIndex &left, const SchemaIndex &right)
     const auto match{right.find(instance_location)};
     if (match == right.cend()) {
       for (const auto &entry : entries) {
+        // We silently omit locations that are not on both sides. If
+        // any, it is the responsibility of applicator comparators to
+        // prevent a problematic comparison case
         result.emplace_back(Compatibility::Compatible, entry.pointer,
                             std::nullopt);
       }
@@ -297,7 +300,8 @@ auto version(
   for (auto &&trace : to_from) {
     switch (trace.compatibility) {
       case Compatibility::Incompatible:
-        to_from_incompatibilities.push_back(std::move(trace));
+        to_from_incompatibilities.emplace_back(
+            trace.compatibility, std::move(trace.right), std::move(trace.left));
         break;
       case Compatibility::Unknown:
         unknowns.emplace_back(trace.compatibility, std::move(trace.right),
@@ -314,16 +318,16 @@ auto version(
   } else if (!from_to_incompatibilities.empty() &&
              !to_from_incompatibilities.empty()) {
     for (auto &&trace : to_from_incompatibilities) {
-      Trace new_trace{trace.compatibility, std::move(trace.right),
-                      std::move(trace.left)};
       if (std::find(from_to_incompatibilities.cbegin(),
                     from_to_incompatibilities.cend(),
-                    new_trace) == from_to_incompatibilities.cend()) {
-        from_to_incompatibilities.push_back(std::move(new_trace));
+                    trace) == from_to_incompatibilities.cend()) {
+        from_to_incompatibilities.push_back(std::move(trace));
       }
     }
 
     return {SemVer::Major, std::move(from_to_incompatibilities)};
+  } else if (!to_from_incompatibilities.empty()) {
+    return {SemVer::Major, std::move(to_from_incompatibilities)};
   } else if (!from_to_incompatibilities.empty()) {
     return {SemVer::Minor, std::move(from_to_incompatibilities)};
   } else {

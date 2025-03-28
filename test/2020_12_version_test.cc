@@ -17,7 +17,8 @@
 #define EXPECT_OPTIONAL_POINTER(current, expected)                             \
   if (std::optional<std::string>{expected}.has_value()) {                      \
     EXPECT_TRUE(current.has_value());                                          \
-    EXPECT_EQ(sourcemeta::core::to_string(current.value()), expected);         \
+    EXPECT_EQ(sourcemeta::core::to_string(current.value()),                    \
+              std::optional<std::string>{expected}.value());                   \
   } else {                                                                     \
     EXPECT_FALSE(current.has_value());                                         \
   }
@@ -87,7 +88,8 @@ TEST(Cruzer_version_2020_12, add_default_minimum) {
     "minimum": 0
   })JSON")};
 
-  EXPECT_VERSION(result, from, to, Patch, 0);
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/type", "/minimum");
 }
 
 TEST(Cruzer_version_2020_12, add_type) {
@@ -119,4 +121,124 @@ TEST(Cruzer_version_2020_12, schema_to_const) {
 
   EXPECT_UNKNOWN(result, from, to, 1);
   EXPECT_TRACE(result, 0, Unknown, "/minimum", "/const");
+}
+
+TEST(Cruzer_version_2020_12, properties_to_another_type) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+      "foo": {
+        "type": "string"
+      }
+    }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "string"
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/properties", "/type");
+}
+
+TEST(Cruzer_version_2020_12, properties_add_new_property) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+      "foo": {
+        "type": "string"
+      }
+    }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+      "foo": {
+        "type": "string"
+      },
+      "bar": {
+        "type": "string"
+      }
+    }
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/properties", "/properties");
+}
+
+TEST(Cruzer_version_2020_12, properties_remove_property) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+      "foo": {
+        "type": "string"
+      },
+      "bar": {
+        "type": "string"
+      }
+    }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+      "foo": {
+        "type": "string"
+      }
+    }
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Minor, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/properties", "/properties");
+}
+
+TEST(Cruzer_version_2020_12, properties_remove_relax_assertion) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+      "foo": {
+        "type": "string",
+        "minLength": 3
+      }
+    }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+      "foo": {
+        "type": "string"
+      }
+    }
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Minor, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/properties/foo/minLength",
+               "/properties/foo/type");
+}
+
+TEST(Cruzer_version_2020_12, properties_change_type) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+      "foo": {
+        "type": "string"
+      }
+    }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+      "foo": {
+        "type": "integer"
+      }
+    }
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/properties/foo/type",
+               "/properties/foo/type");
 }

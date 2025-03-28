@@ -387,3 +387,13 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_examples,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/examples",
                                       "/dependentRequired");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_metadata_examples,
+     validation_properties) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "properties": { "foo": { "type": "string" } }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/examples",
+                                      "/properties");
+}

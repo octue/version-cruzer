@@ -371,3 +371,12 @@ TEST(Cruzer_is_compatible_with_2020_12_core_anchor,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$anchor",
                                       "/dependentRequired");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_core_anchor, validation_properties) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "properties": { "foo": { "type": "string" } }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$anchor",
+                                      "/properties");
+}
