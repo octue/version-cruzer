@@ -18,3 +18,12 @@ To generate the WebAssembly package under `bindings/webassembly`, run:
 ```sh
 make webassembly
 ```
+
+## Releasing
+
+To produce a release, including pushing bindings to the corresponding package
+managers, create and push a tag of the form `vX.Y.Z`. For example:
+
+```sh
+git tag --annotate v1.2.3 --message v1.2.3
+```
