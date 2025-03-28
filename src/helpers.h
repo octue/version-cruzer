@@ -202,6 +202,72 @@ static auto defines_any_relevant_type(
   return false;
 }
 
+// TODO: Elevate this to "Core"
+static auto is_applicator(const sourcemeta::core::SchemaKeywordType type)
+    -> bool {
+  switch (type) {
+    case sourcemeta::core::SchemaKeywordType::
+        ApplicatorMembersTraversePropertyStatic:
+      return true;
+      break;
+    case sourcemeta::core::SchemaKeywordType::
+        ApplicatorMembersTraversePropertyRegex:
+      return true;
+      break;
+    case sourcemeta::core::SchemaKeywordType::
+        ApplicatorValueTraverseSomeProperty:
+      return true;
+      break;
+    case sourcemeta::core::SchemaKeywordType::
+        ApplicatorValueTraverseAnyPropertyKey:
+      return true;
+      break;
+    case sourcemeta::core::SchemaKeywordType::ApplicatorValueTraverseAnyItem:
+      return true;
+      break;
+    case sourcemeta::core::SchemaKeywordType::ApplicatorValueTraverseSomeItem:
+      return true;
+      break;
+    case sourcemeta::core::SchemaKeywordType::ApplicatorValueTraverseParent:
+      return true;
+      break;
+    case sourcemeta::core::SchemaKeywordType::ApplicatorElementsTraverseItem:
+      return true;
+      break;
+    case sourcemeta::core::SchemaKeywordType::
+        ApplicatorValueOrElementsTraverseAnyItemOrItem:
+      return true;
+      break;
+    case sourcemeta::core::SchemaKeywordType::ApplicatorValueOrElementsInPlace:
+      return true;
+      break;
+    case sourcemeta::core::SchemaKeywordType::ApplicatorMembersInPlaceSome:
+      return true;
+      break;
+    case sourcemeta::core::SchemaKeywordType::ApplicatorElementsInPlace:
+      return true;
+      break;
+    case sourcemeta::core::SchemaKeywordType::ApplicatorElementsInPlaceSome:
+      return true;
+      break;
+    case sourcemeta::core::SchemaKeywordType::
+        ApplicatorElementsInPlaceSomeNegate:
+      return true;
+      break;
+    case sourcemeta::core::SchemaKeywordType::ApplicatorValueInPlaceMaybe:
+      return true;
+      break;
+    case sourcemeta::core::SchemaKeywordType::ApplicatorValueInPlaceOther:
+      return true;
+      break;
+    case sourcemeta::core::SchemaKeywordType::ApplicatorValueInPlaceNegate:
+      return true;
+      break;
+    default:
+      return false;
+  }
+}
+
 // TODO: Elevate to Core
 static auto defines_all_array(const sourcemeta::core::JSON &object,
                               const sourcemeta::core::JSON &array) -> bool {

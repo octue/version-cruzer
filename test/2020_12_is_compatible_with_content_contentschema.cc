@@ -398,3 +398,13 @@ TEST(Cruzer_is_compatible_with_2020_12_content_contentschema,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/contentSchema",
                                       "/dependentRequired");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_content_contentschema,
+     validation_properties) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "properties": { "foo": { "type": "string" } }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/contentSchema",
+                                      "/properties");
+}

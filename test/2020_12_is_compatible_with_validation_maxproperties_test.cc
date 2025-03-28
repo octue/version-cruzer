@@ -688,3 +688,13 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_maxproperties,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Compatible, "/maxProperties",
                                       "/dependentRequired");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_maxproperties,
+     validation_properties) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "properties": { "foo": { "type": "string" } }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/maxProperties",
+                                      "/properties");
+}

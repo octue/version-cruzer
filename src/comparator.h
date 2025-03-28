@@ -139,7 +139,40 @@ static auto compare(
   const auto &left_value{left_subschema.at(left_keyword)};
   const auto &right_value{right_subschema.at(right_keyword)};
 
-  if (left_type == sourcemeta::core::SchemaKeywordType::Assertion) {
+  if (is_applicator(left_type)) {
+    if (right_type == sourcemeta::core::SchemaKeywordType::Assertion) {
+      // Going from one or multiple constants into a schema is a tricky edge
+      // case. Not that common in practice, and requires full schema evaluation
+      // to confirm. Possible with Blaze, but might not be worth focusing on
+      // right now
+      MAKE_IF(Unknown, right_keyword == "const" || right_keyword == "enum");
+
+      // Adding a type declaration to a type-less schema is by definition
+      // incompatible
+      if (right_vocabulary.has_value() &&
+          right_vocabulary.value() == "https://json-schema.org/draft/2020-12/"
+                                      "vocab/validation" &&
+          right_keyword == "type" && !left_subschema.defines("type") &&
+          !left_subschema.defines("enum") && !left_subschema.defines("const")) {
+        return MAKE_RESULT(Incompatible);
+      }
+
+      // Other than the cases above, comparing applicators to assertions does
+      // not make much sense
+      return MAKE_RESULT(Skip);
+    }
+
+    if (COMPARISON_2020_12("applicator", "properties", "applicator",
+                           "properties")) {
+      for (const auto &property : left_value.as_object()) {
+        if (!right_value.defines(property.first)) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+  } else if (left_type == sourcemeta::core::SchemaKeywordType::Assertion) {
     // Any assertion is less open than the "true" schema, by definition
     MAKE_IF(Incompatible,
             right_subschema.is_boolean() && right_subschema.to_boolean());
@@ -147,6 +180,29 @@ static auto compare(
     MAKE_IF(Compatible,
             right_subschema.is_boolean() && !right_subschema.to_boolean());
     assert(right_subschema.is_object());
+
+    if (is_applicator(right_type)) {
+      // Going from a schema into one or multiple constants is a tricky edge
+      // case. Not that common in practice, and requires full schema evaluation
+      // to confirm. Possible with Blaze, but might not be worth focusing on
+      // right now
+      MAKE_IF(Unknown, left_keyword == "const" || left_keyword == "enum");
+
+      // Adding a type declaration to a type-less schema is by definition
+      // incompatible
+      if (left_vocabulary.has_value() &&
+          left_vocabulary.value() == "https://json-schema.org/draft/2020-12/"
+                                     "vocab/validation" &&
+          left_keyword == "type" && !right_subschema.defines("type") &&
+          !right_subschema.defines("enum") &&
+          !right_subschema.defines("const")) {
+        return MAKE_RESULT(Incompatible);
+      }
+
+      // Other than the case above, comparing assertions to applicators does
+      // not make much sense
+      return MAKE_RESULT(Skip);
+    }
 
     ///////////////////////////////////////////////////////////////////
     // Self-checks

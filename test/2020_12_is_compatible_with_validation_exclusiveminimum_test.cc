@@ -701,3 +701,13 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_exclusiveminimum,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/exclusiveMinimum",
                                       "/dependentRequired");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_exclusiveminimum,
+     validation_properties) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "properties": { "foo": { "type": "string" } }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/exclusiveMinimum",
+                                      "/properties");
+}
