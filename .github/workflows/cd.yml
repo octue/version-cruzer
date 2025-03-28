@@ -32,7 +32,6 @@ jobs:
           ./emsdk/emsdk activate ${{ env.EMSDK_VERSION }}
           rm -rf emsdk/upstream/emscripten/cmake
           echo "$(pwd)/emsdk/upstream/emscripten" >> $GITHUB_PATH
-        if: matrix.binding.name == 'webassembly'
       - run: make -C bindings/webassembly compile
       - run: cd bindings/webassembly && npm version ${{ github.ref_name }} && npm publish
         if: github.ref_type == 'tag'
