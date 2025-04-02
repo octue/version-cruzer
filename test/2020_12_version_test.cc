@@ -297,3 +297,67 @@ TEST(Cruzer_version_2020_12, properties_change_type_through_ref) {
   EXPECT_VERSION(result, from, to, Major, 1);
   EXPECT_TRACE(result, 0, Incompatible, "/$defs/foo/type", "/$defs/foo/type");
 }
+
+TEST(Cruzer_version_2020_12, patternproperties_add_new_regex) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "patternProperties": {
+      "^f": { "type": "string" }
+    }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "patternProperties": {
+      "^f": { "type": "string" },
+      "o$": { "type": "string" }
+    }
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/patternProperties",
+               "/patternProperties");
+}
+
+TEST(Cruzer_version_2020_12, patternproperties_remove_regex) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "patternProperties": {
+      "^f": { "type": "string" },
+      "o$": { "type": "string" }
+    }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "patternProperties": {
+      "^f": { "type": "string" }
+    }
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Minor, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/patternProperties",
+               "/patternProperties");
+}
+
+TEST(Cruzer_version_2020_12, properties_add_matching_patternproperties) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+      "foo": { "type": "string" }
+    }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+      "foo": { "type": "string" }
+    },
+    "patternProperties": {
+      "^f": { "type": "string" }
+    }
+  })JSON")};
+
+  EXPECT_UNKNOWN(result, from, to, 1);
+  EXPECT_TRACE(result, 0, Unknown, "/properties", "/patternProperties");
+}

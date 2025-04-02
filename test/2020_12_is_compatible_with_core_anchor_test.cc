@@ -380,3 +380,13 @@ TEST(Cruzer_is_compatible_with_2020_12_core_anchor, validation_properties) {
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$anchor",
                                       "/properties");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_core_anchor,
+     validation_patternproperties) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "patternProperties": { "^f": { "type": "string" } }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/$anchor",
+                                      "/patternProperties");
+}
