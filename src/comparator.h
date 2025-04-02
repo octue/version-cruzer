@@ -172,6 +172,23 @@ static auto compare(
 
       return MAKE_RESULT(Compatible);
     }
+
+    if (COMPARISON_2020_12("applicator", "patternProperties", "applicator",
+                           "patternProperties")) {
+      for (const auto &property : left_value.as_object()) {
+        if (!right_value.defines(property.first)) {
+          return MAKE_RESULT(Incompatible);
+        }
+      }
+
+      return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("applicator", "patternProperties", "applicator",
+                           "properties")) {
+      return MAKE_RESULT(Unknown);
+    }
+
   } else if (left_type == sourcemeta::core::SchemaKeywordType::Assertion) {
     // Any assertion is less open than the "true" schema, by definition
     MAKE_IF(Incompatible,

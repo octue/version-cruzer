@@ -1245,3 +1245,13 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_const,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(left, right, Unknown, "/const",
                                       "/properties");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_const,
+     validation_patternproperties) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "patternProperties": { "^f": { "type": "string" } }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Unknown, "/const",
+                                      "/patternProperties");
+}

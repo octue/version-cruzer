@@ -43,7 +43,12 @@ auto read_file(const std::filesystem::path &path)
         std::make_error_code(std::errc::is_a_directory));
   }
 
-  std::ifstream stream{std::filesystem::canonical(path)};
+  std::ifstream stream{
+      // On Linux, FIFO files (like /dev/fd/XX due to process substitution)
+      // cannot be
+      // made canonical
+      // See https://github.com/sourcemeta/jsonschema/issues/252
+      std::filesystem::is_fifo(path) ? path : std::filesystem::canonical(path)};
   stream.exceptions(std::ifstream::failbit | std::ifstream::badbit);
   assert(!stream.fail());
   assert(stream.is_open());
@@ -55,6 +60,9 @@ auto read_json(const std::filesystem::path &path,
   auto stream{read_file(path)};
   try {
     return parse_json(stream, callback);
+  } catch (const JSONParseIntegerLimitError &error) {
+    // For producing better error messages
+    throw JSONFileParseError(path, error);
   } catch (const JSONParseError &error) {
     // For producing better error messages
     throw JSONFileParseError(path, error);

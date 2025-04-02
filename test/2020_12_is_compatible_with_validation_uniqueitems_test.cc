@@ -735,3 +735,13 @@ TEST(Cruzer_is_compatible_with_2020_12_validation_uniqueitems,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/uniqueItems",
                                       "/properties");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_validation_uniqueitems,
+     validation_patternproperties) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "patternProperties": { "^f": { "type": "string" } }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/uniqueItems",
+                                      "/patternProperties");
+}

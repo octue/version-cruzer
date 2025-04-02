@@ -241,10 +241,29 @@ auto index(const sourcemeta::core::SchemaFrame &frame,
       std::ostringstream key;
       sourcemeta::core::stringify(instance_location, key);
       result[key.str()].emplace_back(
-          location.second.pointer,
+          instance_location, location.second.pointer,
           sourcemeta::core::get(schema, location.second.pointer),
           location.second.dialect, location.second.base_dialect, walker,
           resolver);
+
+      for (auto &entry : result) {
+        assert(!entry.second.empty());
+        if (entry.first == key.str() ||
+            !entry.second.front().instance_location.matches(
+                instance_location)) {
+          continue;
+        }
+
+        if (std::find_if(entry.second.cbegin(), entry.second.cend(),
+                         [&location](const auto &sublocation) {
+                           return sublocation.pointer ==
+                                  location.second.pointer;
+                         }) != entry.second.cend()) {
+          continue;
+        }
+
+        entry.second.emplace_back(result[key.str()].back());
+      }
     }
   }
 
@@ -277,7 +296,8 @@ auto version(
   const auto index_to{index(frame_to, to, walker_to, resolver_to)};
 
   // (3) Collect all version compatibility traces
-  std::vector<Trace> unknowns;
+  std::vector<Trace> from_to_unknowns;
+  std::vector<Trace> to_from_unknowns;
   std::vector<Trace> from_to_incompatibilities;
   std::vector<Trace> to_from_incompatibilities;
 
@@ -290,7 +310,7 @@ auto version(
         from_to_incompatibilities.push_back(std::move(trace));
         break;
       case Compatibility::Unknown:
-        unknowns.push_back(std::move(trace));
+        from_to_unknowns.push_back(std::move(trace));
         break;
       default:
         continue;
@@ -304,8 +324,8 @@ auto version(
             trace.compatibility, std::move(trace.right), std::move(trace.left));
         break;
       case Compatibility::Unknown:
-        unknowns.emplace_back(trace.compatibility, std::move(trace.right),
-                              std::move(trace.left));
+        to_from_unknowns.emplace_back(
+            trace.compatibility, std::move(trace.right), std::move(trace.left));
         break;
       default:
         continue;
@@ -313,8 +333,15 @@ auto version(
   }
 
   // (4) Figure out the result
-  if (!unknowns.empty()) {
-    return {std::nullopt, std::move(unknowns)};
+  if (!from_to_unknowns.empty() || !to_from_unknowns.empty()) {
+    for (auto &&trace : to_from_unknowns) {
+      if (std::find(from_to_unknowns.cbegin(), from_to_unknowns.cend(),
+                    trace) == from_to_unknowns.cend()) {
+        from_to_unknowns.push_back(std::move(trace));
+      }
+    }
+
+    return {std::nullopt, std::move(from_to_unknowns)};
   } else if (!from_to_incompatibilities.empty() &&
              !to_from_incompatibilities.empty()) {
     for (auto &&trace : to_from_incompatibilities) {

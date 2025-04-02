@@ -382,3 +382,13 @@ TEST(Cruzer_is_compatible_with_2020_12_metadata_default,
   EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/default",
                                       "/properties");
 }
+
+TEST(Cruzer_is_compatible_with_2020_12_metadata_default,
+     validation_patternproperties) {
+  const auto right{sourcemeta::core::parse_json(R"JSON({
+    "patternProperties": { "^f": { "type": "string" } }
+  })JSON")};
+
+  EXPECT_COMPATIBILITY_SINGLE_2020_12(schema, right, Skip, "/default",
+                                      "/patternProperties");
+}
