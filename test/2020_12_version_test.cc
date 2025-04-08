@@ -496,3 +496,39 @@ TEST(Cruzer_version_2020_12, properties_to_additionalproperties) {
   EXPECT_UNKNOWN(result, from, to, 1);
   EXPECT_TRACE(result, 0, Unknown, std::nullopt, "/additionalProperties");
 }
+
+TEST(Cruzer_version_2020_12, propertynames_incompatible) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "propertyNames": {
+      "type": "number"
+    }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "propertyNames": {
+      "type": "integer"
+    }
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/propertyNames/type",
+               "/propertyNames/type");
+}
+
+TEST(Cruzer_version_2020_12, propertynames_add) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema"
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "propertyNames": {
+      "type": "integer"
+    }
+  })JSON")};
+
+  EXPECT_UNKNOWN(result, from, to, 1);
+  EXPECT_TRACE(result, 0, Unknown, std::nullopt, "/propertyNames");
+}
