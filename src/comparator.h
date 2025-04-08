@@ -185,31 +185,6 @@ static auto compare(
       return MAKE_RESULT(Compatible);
     }
 
-    if (COMPARISON_2020_12("applicator", "propertyNames", "applicator",
-                           "propertyNames")) {
-      return MAKE_RESULT(Skip);
-    }
-
-    if (COMPARISON_2020_12("applicator", "additionalProperties", "applicator",
-                           "additionalProperties")) {
-      return MAKE_RESULT(Skip);
-    }
-
-    if (COMPARISON_2020_12("applicator", "properties", "applicator",
-                           "additionalProperties")) {
-      return MAKE_RESULT(Skip);
-    }
-
-    if (COMPARISON_2020_12("applicator", "additionalProperties", "applicator",
-                           "properties")) {
-      return MAKE_RESULT(Skip);
-    }
-
-    if (COMPARISON_2020_12("applicator", "contains", "applicator",
-                           "contains")) {
-      return MAKE_RESULT(Skip);
-    }
-
     if (COMPARISON_2020_12("applicator", "patternProperties", "applicator",
                            "patternProperties")) {
       for (const auto &property : left_value.as_object()) {
@@ -225,6 +200,8 @@ static auto compare(
                            "properties")) {
       return MAKE_RESULT(Unknown);
     }
+
+    return MAKE_RESULT(Skip);
 
   } else if (left_type == sourcemeta::core::SchemaKeywordType::Assertion) {
     // Any assertion is less open than the "true" schema, by definition
