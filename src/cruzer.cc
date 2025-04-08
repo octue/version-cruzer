@@ -131,7 +131,11 @@ static auto keyword_name(const sourcemeta::core::Pointer &pointer,
                          const std::optional<sourcemeta::core::Pointer> &parent)
     -> const std::string & {
   if (!parent.value().empty()) {
-    return parent.value().back().to_property();
+    if (parent.value().back().is_property()) {
+      return parent.value().back().to_property();
+    }
+
+    return parent.value().at(parent.value().size() - 2).to_property();
   }
 
   if (pointer.back().is_property()) {

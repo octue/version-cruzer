@@ -840,3 +840,75 @@ TEST(Cruzer_version_2020_12, oneof_incompatible) {
   EXPECT_VERSION(result, from, to, Major, 1);
   EXPECT_TRACE(result, 0, Incompatible, "/oneOf/1/type", "/oneOf/1/type");
 }
+
+TEST(Cruzer_version_2020_12, unevaluatedproperties_incompatible) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "allOf": [
+      {
+        "properties": {
+          "foo": {
+            "type": "string"
+          }
+        }
+      }
+    ],
+    "unevaluatedProperties": {
+      "type": "number"
+    }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "allOf": [
+      {
+        "properties": {
+          "foo": {
+            "type": "string"
+          }
+        }
+      }
+    ],
+    "unevaluatedProperties": {
+      "type": "integer"
+    }
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/unevaluatedProperties/type",
+               "/unevaluatedProperties/type");
+}
+
+TEST(Cruzer_version_2020_12, unevaluateditems_incompatible) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "allOf": [
+      {
+        "prefixItems": [
+          { "type": "string" }
+        ]
+      }
+    ],
+    "unevaluatedItems": {
+      "type": "number"
+    }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "allOf": [
+      {
+        "prefixItems": [
+          { "type": "string" }
+        ]
+      }
+    ],
+    "unevaluatedItems": {
+      "type": "integer"
+    }
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/unevaluatedItems/type",
+               "/unevaluatedItems/type");
+}
