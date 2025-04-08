@@ -532,3 +532,38 @@ TEST(Cruzer_version_2020_12, propertynames_add) {
   EXPECT_UNKNOWN(result, from, to, 1);
   EXPECT_TRACE(result, 0, Unknown, std::nullopt, "/propertyNames");
 }
+
+TEST(Cruzer_version_2020_12, contains_add) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema"
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "contains": {
+      "type": "integer"
+    }
+  })JSON")};
+
+  EXPECT_UNKNOWN(result, from, to, 1);
+  EXPECT_TRACE(result, 0, Unknown, std::nullopt, "/contains");
+}
+
+TEST(Cruzer_version_2020_12, contains_incompatible) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "contains": {
+      "type": "number"
+    }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "contains": {
+      "type": "integer"
+    }
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/contains/type", "/contains/type");
+}
