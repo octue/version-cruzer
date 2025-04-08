@@ -185,6 +185,11 @@ static auto compare(
       return MAKE_RESULT(Compatible);
     }
 
+    if (COMPARISON_2020_12("applicator", "propertyNames", "applicator",
+                           "propertyNames")) {
+      return MAKE_RESULT(Skip);
+    }
+
     if (COMPARISON_2020_12("applicator", "additionalProperties", "applicator",
                            "additionalProperties")) {
       return MAKE_RESULT(Skip);
