@@ -418,10 +418,8 @@ TEST(Cruzer_version_2020_12, additionalproperties_with_patternproperties) {
     "additionalProperties": false
   })JSON")};
 
-  EXPECT_UNKNOWN(result, from, to, 2);
-  EXPECT_TRACE(result, 0, Unknown, "/patternProperties",
-               "/additionalProperties");
-  EXPECT_TRACE(result, 1, Unknown, std::nullopt, "/additionalProperties");
+  EXPECT_UNKNOWN(result, from, to, 1);
+  EXPECT_TRACE(result, 0, Unknown, std::nullopt, "/additionalProperties");
 }
 
 TEST(Cruzer_version_2020_12, additionalproperties_open_to_close_standalone) {
@@ -566,4 +564,56 @@ TEST(Cruzer_version_2020_12, contains_incompatible) {
 
   EXPECT_VERSION(result, from, to, Major, 1);
   EXPECT_TRACE(result, 0, Incompatible, "/contains/type", "/contains/type");
+}
+
+TEST(Cruzer_version_2020_12, if_then_add_else) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "if": { "type": "string" },
+    "then": { "minLength": 3 }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "if": { "type": "string" },
+    "then": { "minLength": 3 },
+    "else": { "type": "number" }
+  })JSON")};
+
+  EXPECT_UNKNOWN(result, from, to, 1);
+  EXPECT_TRACE(result, 0, Unknown, std::nullopt, "/else");
+}
+
+TEST(Cruzer_version_2020_12, if_then_else_incompatible) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "if": { "type": "string" },
+    "then": { "minLength": 3 },
+    "else": { "type": "number" }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "if": { "type": "string" },
+    "then": { "minLength": 3 },
+    "else": { "type": "integer" }
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/else/type", "/else/type");
+}
+
+TEST(Cruzer_version_2020_12, if_standalone) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "if": { "type": "string" }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "if": { "type": "string", "minLength": 3 }
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/if/type", "/if/minLength");
 }
