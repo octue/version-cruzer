@@ -632,3 +632,47 @@ TEST(Cruzer_version_2020_12, not_incompatible) {
   EXPECT_VERSION(result, from, to, Major, 1);
   EXPECT_TRACE(result, 0, Incompatible, "/not/type", "/not/type");
 }
+
+TEST(Cruzer_version_2020_12, prefixitems_add) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "prefixItems": [
+      { "type": "string" },
+      { "type": "string" }
+    ]
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "prefixItems": [
+      { "type": "string" },
+      { "type": "string" },
+      { "type": "string" }
+    ]
+  })JSON")};
+
+  EXPECT_UNKNOWN(result, from, to, 1);
+  EXPECT_TRACE(result, 0, Unknown, std::nullopt, "/prefixItems/2");
+}
+
+TEST(Cruzer_version_2020_12, prefixitems_remove) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "prefixItems": [
+      { "type": "string" },
+      { "type": "string" },
+      { "type": "string" }
+    ]
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "prefixItems": [
+      { "type": "string" },
+      { "type": "string" }
+    ]
+  })JSON")};
+
+  EXPECT_UNKNOWN(result, from, to, 1);
+  EXPECT_TRACE(result, 0, Unknown, "/prefixItems/2", std::nullopt);
+}

@@ -127,6 +127,26 @@ static auto compare_subschemas(const octue::cruzer::SchemaLocation &left,
 #pragma GCC diagnostic pop
 #endif
 
+static auto keyword_name(const sourcemeta::core::Pointer &pointer,
+                         const std::optional<sourcemeta::core::Pointer> &parent)
+    -> const std::string & {
+  if (!parent.value().empty()) {
+    return parent.value().back().to_property();
+  }
+
+  if (pointer.back().is_property()) {
+    return pointer.back().to_property();
+  }
+
+  return pointer.at(pointer.size() - 2).to_property();
+}
+
+static auto
+keyword_name(const sourcemeta::core::SchemaFrame::Location &location)
+    -> const std::string & {
+  return keyword_name(location.pointer, location.parent);
+}
+
 static auto
 is_annotation_subschema(const sourcemeta::core::SchemaFrame &frame,
                         const sourcemeta::core::SchemaFrame::Location &location,
@@ -137,9 +157,7 @@ is_annotation_subschema(const sourcemeta::core::SchemaFrame &frame,
     return false;
   }
 
-  const auto &keyword{location.parent.value().empty()
-                          ? location.pointer.back().to_property()
-                          : location.parent.value().back().to_property()};
+  const auto &keyword{keyword_name(location)};
   const auto walker_result{
       walker(keyword, frame.vocabularies(location, resolver))};
   if (walker_result.type ==
@@ -178,12 +196,11 @@ auto is_compatible_with(const SchemaIndex &left, const SchemaIndex &right)
     if (match == right.cend()) {
       for (const auto &entry : entries) {
         // Halt on applicators that are not on both places
-        if (!entry.pointer.empty() && !entry.instance_location.trivial() &&
-            entry.pointer.back().is_property()) {
+        if (!entry.pointer.empty()) {
           const auto entry_vocabularies{sourcemeta::core::vocabularies(
               entry.resolver, entry.base_dialect, entry.dialect)};
-          const auto walker_result{entry.walker(
-              entry.pointer.back().to_property(), entry_vocabularies)};
+          const auto &keyword{keyword_name(entry.pointer, entry.parent)};
+          const auto walker_result{entry.walker(keyword, entry_vocabularies)};
           if (is_applicator(walker_result.type)) {
             result.emplace_back(Compatibility::Unknown, entry.pointer,
                                 std::nullopt);
@@ -191,9 +208,6 @@ auto is_compatible_with(const SchemaIndex &left, const SchemaIndex &right)
           }
         }
 
-        // We silently omit locations that are not on both sides. If
-        // any, it is the responsibility of applicator comparators to
-        // prevent a problematic comparison case
         result.emplace_back(Compatibility::Compatible, entry.pointer,
                             std::nullopt);
       }
@@ -265,7 +279,7 @@ auto index(const sourcemeta::core::SchemaFrame &frame,
       std::ostringstream key;
       sourcemeta::core::stringify(instance_location, key);
       result[key.str()].emplace_back(
-          instance_location, location.second.pointer,
+          instance_location, location.second.parent, location.second.pointer,
           sourcemeta::core::get(schema, location.second.pointer),
           location.second.dialect, location.second.base_dialect, walker,
           resolver);
