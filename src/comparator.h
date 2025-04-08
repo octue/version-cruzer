@@ -18,6 +18,8 @@ static auto compare(
     const sourcemeta::core::SchemaKeywordType &left_type,
     // Left schema location
     const sourcemeta::core::Pointer &left_schema_location,
+    // Left instance location
+    const sourcemeta::core::PointerTemplate &,
 
     // Right current subschema
     const sourcemeta::core::JSON &right_subschema,
@@ -28,7 +30,9 @@ static auto compare(
     // Right keyword type
     const sourcemeta::core::SchemaKeywordType &right_type,
     // Right schema location
-    const sourcemeta::core::Pointer &right_schema_location) -> Trace {
+    const sourcemeta::core::Pointer &right_schema_location,
+    // Right instance location
+    const sourcemeta::core::PointerTemplate &) -> Trace {
 
 #define MAKE_RESULT(expected_compatibility)                                    \
   Trace{Compatibility::expected_compatibility, left_schema_location,           \
