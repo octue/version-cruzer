@@ -245,24 +245,40 @@ auto index(const sourcemeta::core::SchemaFrame &frame,
           sourcemeta::core::get(schema, location.second.pointer),
           location.second.dialect, location.second.base_dialect, walker,
           resolver);
+    }
 
-      for (auto &entry : result) {
-        assert(!entry.second.empty());
-        if (entry.first == key.str() ||
-            !entry.second.front().instance_location.matches(
-                instance_location)) {
+    for (auto &entry : result) {
+      for (auto &subentry : result) {
+        if (entry.first == subentry.first) {
           continue;
         }
 
-        if (std::find_if(entry.second.cbegin(), entry.second.cend(),
-                         [&location](const auto &sublocation) {
-                           return sublocation.pointer ==
-                                  location.second.pointer;
-                         }) != entry.second.cend()) {
+        if (!entry.second.front().instance_location.matches(
+                subentry.second.front().instance_location)) {
           continue;
         }
 
-        entry.second.emplace_back(result[key.str()].back());
+        for (const auto &sublocation : entry.second) {
+          if (std::find_if(subentry.second.cbegin(), subentry.second.cend(),
+                           [&sublocation](const auto &current) {
+                             return current.pointer == sublocation.pointer;
+                           }) != subentry.second.cend()) {
+            continue;
+          }
+
+          subentry.second.push_back(sublocation);
+        }
+
+        for (const auto &sublocation : subentry.second) {
+          if (std::find_if(entry.second.cbegin(), entry.second.cend(),
+                           [&sublocation](const auto &current) {
+                             return current.pointer == sublocation.pointer;
+                           }) != entry.second.cend()) {
+            continue;
+          }
+
+          entry.second.push_back(sublocation);
+        }
       }
     }
   }
