@@ -140,8 +140,12 @@ static auto compare(
                          !expected_operator(value, left_value));               \
   }
 
-  const auto &left_value{left_subschema.at(left_keyword)};
-  const auto &right_value{right_subschema.at(right_keyword)};
+  const auto &left_value{left_subschema.is_object()
+                             ? left_subschema.at(left_keyword)
+                             : left_subschema};
+  const auto &right_value{right_subschema.is_object()
+                              ? right_subschema.at(right_keyword)
+                              : right_subschema};
 
   if (is_applicator(left_type)) {
     if (right_type == sourcemeta::core::SchemaKeywordType::Assertion) {
@@ -158,6 +162,10 @@ static auto compare(
                                       "vocab/validation" &&
           right_keyword == "type" && !left_subschema.defines("type") &&
           !left_subschema.defines("enum") && !left_subschema.defines("const")) {
+        if (left_subschema.is_boolean() && left_subschema.to_boolean()) {
+          return MAKE_RESULT(Compatible);
+        }
+
         return MAKE_RESULT(Incompatible);
       }
 
@@ -175,6 +183,21 @@ static auto compare(
       }
 
       return MAKE_RESULT(Compatible);
+    }
+
+    if (COMPARISON_2020_12("applicator", "additionalProperties", "applicator",
+                           "additionalProperties")) {
+      return MAKE_RESULT(Skip);
+    }
+
+    if (COMPARISON_2020_12("applicator", "properties", "applicator",
+                           "additionalProperties")) {
+      return MAKE_RESULT(Skip);
+    }
+
+    if (COMPARISON_2020_12("applicator", "additionalProperties", "applicator",
+                           "properties")) {
+      return MAKE_RESULT(Skip);
     }
 
     if (COMPARISON_2020_12("applicator", "patternProperties", "applicator",
