@@ -361,3 +361,138 @@ TEST(Cruzer_version_2020_12, properties_add_matching_patternproperties) {
   EXPECT_UNKNOWN(result, from, to, 1);
   EXPECT_TRACE(result, 0, Unknown, "/properties", "/patternProperties");
 }
+
+TEST(Cruzer_version_2020_12, additionalproperties_open_to_close) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+      "foo": { "type": "string" }
+    }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+      "foo": { "type": "string" }
+    },
+    "additionalProperties": false
+  })JSON")};
+
+  EXPECT_UNKNOWN(result, from, to, 1);
+  EXPECT_TRACE(result, 0, Unknown, std::nullopt, "/additionalProperties");
+}
+
+TEST(Cruzer_version_2020_12, additionalproperties_open_to_explicit_open) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+      "foo": { "type": "string" }
+    }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+      "foo": { "type": "string" }
+    },
+    "additionalProperties": true
+  })JSON")};
+
+  EXPECT_UNKNOWN(result, from, to, 1);
+  EXPECT_TRACE(result, 0, Unknown, std::nullopt, "/additionalProperties");
+}
+
+TEST(Cruzer_version_2020_12, additionalproperties_with_patternproperties) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "patternProperties": {
+      "foo": { "type": "string" }
+    }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "patternProperties": {
+      "foo": { "type": "string" }
+    },
+    "additionalProperties": false
+  })JSON")};
+
+  EXPECT_UNKNOWN(result, from, to, 2);
+  EXPECT_TRACE(result, 0, Unknown, "/patternProperties",
+               "/additionalProperties");
+  EXPECT_TRACE(result, 1, Unknown, std::nullopt, "/additionalProperties");
+}
+
+TEST(Cruzer_version_2020_12, additionalproperties_open_to_close_standalone) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": true
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": false
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/additionalProperties",
+               "/additionalProperties");
+}
+
+TEST(Cruzer_version_2020_12, additionalproperties_open_to_schema) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": true
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": {
+      "type": "string"
+    }
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/additionalProperties",
+               "/additionalProperties/type");
+}
+
+TEST(Cruzer_version_2020_12, additionalproperties_schema_to_schema) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": {
+      "type": "integer"
+    }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": {
+      "type": "number"
+    }
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Minor, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/additionalProperties/type",
+               "/additionalProperties/type");
+}
+
+TEST(Cruzer_version_2020_12, properties_to_additionalproperties) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+      "foo": { "type": "integer" }
+    }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "additionalProperties": {
+      "type": "integer"
+    }
+  })JSON")};
+
+  EXPECT_UNKNOWN(result, from, to, 1);
+  EXPECT_TRACE(result, 0, Unknown, std::nullopt, "/additionalProperties");
+}

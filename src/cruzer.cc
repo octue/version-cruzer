@@ -6,6 +6,7 @@
 #include <sstream>   // std::ostringstream
 
 #include "comparator.h"
+#include "helpers.h"
 
 static auto
 effective_subschema(const octue::cruzer::SchemaLocation &location) noexcept
@@ -173,28 +174,36 @@ auto is_compatible_with(const SchemaIndex &left, const SchemaIndex &right)
   std::vector<Trace> result;
 
   for (const auto &[instance_location, entries] : left) {
-    for (const auto &match : right) {
-      if (!match.second.front().instance_location.matches(
-              entries.front().instance_location)) {
-        continue;
-      }
-
+    const auto match{right.find(instance_location)};
+    if (match == right.cend()) {
       for (const auto &entry : entries) {
-        for (const auto &other : match.second) {
-          for (auto &&outcome : compare_subschemas(entry, other)) {
-            result.push_back(std::move(outcome));
+        // Halt on applicators that are not on both places
+        if (!entry.pointer.empty() && !entry.instance_location.trivial() &&
+            entry.pointer.back().is_property()) {
+          const auto entry_vocabularies{sourcemeta::core::vocabularies(
+              entry.resolver, entry.base_dialect, entry.dialect)};
+          const auto walker_result{entry.walker(
+              entry.pointer.back().to_property(), entry_vocabularies)};
+          if (is_applicator(walker_result.type)) {
+            result.emplace_back(Compatibility::Unknown, entry.pointer,
+                                std::nullopt);
+            continue;
           }
         }
-      }
-    }
 
-    if (result.empty()) {
-      for (const auto &entry : entries) {
         // We silently omit locations that are not on both sides. If
         // any, it is the responsibility of applicator comparators to
         // prevent a problematic comparison case
         result.emplace_back(Compatibility::Compatible, entry.pointer,
                             std::nullopt);
+      }
+    } else {
+      for (const auto &entry : entries) {
+        for (const auto &other : match->second) {
+          for (auto &&outcome : compare_subschemas(entry, other)) {
+            result.push_back(std::move(outcome));
+          }
+        }
       }
     }
   }
