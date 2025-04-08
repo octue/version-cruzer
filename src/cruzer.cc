@@ -173,22 +173,28 @@ auto is_compatible_with(const SchemaIndex &left, const SchemaIndex &right)
   std::vector<Trace> result;
 
   for (const auto &[instance_location, entries] : left) {
-    const auto match{right.find(instance_location)};
-    if (match == right.cend()) {
+    for (const auto &match : right) {
+      if (!match.second.front().instance_location.matches(
+              entries.front().instance_location)) {
+        continue;
+      }
+
+      for (const auto &entry : entries) {
+        for (const auto &other : match.second) {
+          for (auto &&outcome : compare_subschemas(entry, other)) {
+            result.push_back(std::move(outcome));
+          }
+        }
+      }
+    }
+
+    if (result.empty()) {
       for (const auto &entry : entries) {
         // We silently omit locations that are not on both sides. If
         // any, it is the responsibility of applicator comparators to
         // prevent a problematic comparison case
         result.emplace_back(Compatibility::Compatible, entry.pointer,
                             std::nullopt);
-      }
-    } else {
-      for (const auto &entry : entries) {
-        for (const auto &other : match->second) {
-          for (auto &&outcome : compare_subschemas(entry, other)) {
-            result.push_back(std::move(outcome));
-          }
-        }
       }
     }
   }
@@ -254,41 +260,6 @@ auto index(const sourcemeta::core::SchemaFrame &frame,
           sourcemeta::core::get(schema, location.second.pointer),
           location.second.dialect, location.second.base_dialect, walker,
           resolver);
-    }
-
-    for (auto &entry : result) {
-      for (auto &subentry : result) {
-        if (entry.first == subentry.first) {
-          continue;
-        }
-
-        if (!entry.second.front().instance_location.matches(
-                subentry.second.front().instance_location)) {
-          continue;
-        }
-
-        for (const auto &sublocation : entry.second) {
-          if (std::find_if(subentry.second.cbegin(), subentry.second.cend(),
-                           [&sublocation](const auto &current) {
-                             return current.pointer == sublocation.pointer;
-                           }) != subentry.second.cend()) {
-            continue;
-          }
-
-          subentry.second.push_back(sublocation);
-        }
-
-        for (const auto &sublocation : subentry.second) {
-          if (std::find_if(entry.second.cbegin(), entry.second.cend(),
-                           [&sublocation](const auto &current) {
-                             return current.pointer == sublocation.pointer;
-                           }) != entry.second.cend()) {
-            continue;
-          }
-
-          entry.second.push_back(sublocation);
-        }
-      }
     }
   }
 
