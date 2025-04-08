@@ -741,3 +741,60 @@ TEST(Cruzer_version_2020_12, dependentschemas_incompatible) {
   EXPECT_TRACE(result, 0, Incompatible, "/dependentSchemas/bar/type",
                "/dependentSchemas/bar/type");
 }
+
+TEST(Cruzer_version_2020_12, allof_wrap) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "string"
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "allOf": [
+      { "type": "string" }
+    ]
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Patch, 0);
+}
+
+TEST(Cruzer_version_2020_12, allof_add) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "allOf": [
+      { "type": "string" }
+    ]
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "allOf": [
+      { "type": "string" },
+      { "minLength": 5 }
+    ]
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/allOf/0/type", "/allOf/1/minLength");
+}
+
+TEST(Cruzer_version_2020_12, allof_remove) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "allOf": [
+      { "type": "string" },
+      { "minLength": 5 }
+    ]
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "allOf": [
+      { "type": "string" }
+    ]
+  })JSON")};
+
+  // TODO: This should be Minor
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/allOf/1/minLength", "/allOf/0/type");
+}

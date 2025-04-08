@@ -161,7 +161,8 @@ static auto compare(
           right_vocabulary.value() == "https://json-schema.org/draft/2020-12/"
                                       "vocab/validation" &&
           right_keyword == "type" && !left_subschema.defines("type") &&
-          !left_subschema.defines("enum") && !left_subschema.defines("const")) {
+          !left_subschema.defines("allOf") && !left_subschema.defines("enum") &&
+          !left_subschema.defines("const")) {
         if (left_subschema.is_boolean() && left_subschema.to_boolean()) {
           return MAKE_RESULT(Compatible);
         }
@@ -225,6 +226,7 @@ static auto compare(
           left_vocabulary.value() == "https://json-schema.org/draft/2020-12/"
                                      "vocab/validation" &&
           left_keyword == "type" && !right_subschema.defines("type") &&
+          !right_subschema.defines("allOf") &&
           !right_subschema.defines("enum") &&
           !right_subschema.defines("const")) {
         return MAKE_RESULT(Incompatible);
