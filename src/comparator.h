@@ -205,6 +205,11 @@ static auto compare(
       return MAKE_RESULT(Skip);
     }
 
+    if (COMPARISON_2020_12("applicator", "contains", "applicator",
+                           "contains")) {
+      return MAKE_RESULT(Skip);
+    }
+
     if (COMPARISON_2020_12("applicator", "patternProperties", "applicator",
                            "patternProperties")) {
       for (const auto &property : left_value.as_object()) {
