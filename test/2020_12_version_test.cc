@@ -617,3 +617,18 @@ TEST(Cruzer_version_2020_12, if_standalone) {
   EXPECT_VERSION(result, from, to, Major, 1);
   EXPECT_TRACE(result, 0, Incompatible, "/if/type", "/if/minLength");
 }
+
+TEST(Cruzer_version_2020_12, not_incompatible) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "not": { "type": "number" }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "not": { "type": "integer" }
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, "/not/type", "/not/type");
+}
