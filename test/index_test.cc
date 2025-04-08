@@ -30,7 +30,7 @@ TEST(Cruzer_index, example_2020_12_1) {
 
   EXPECT_TRUE(index.contains(""));
   EXPECT_TRUE(index.contains("/foo"));
-  EXPECT_TRUE(index.contains("/foo/~?~/~P~"));
+  EXPECT_TRUE(index.contains("/foo/~?additionalProperties~/~P~"));
   EXPECT_TRUE(index.contains("/bar"));
 
   EXPECT_EQ(index.at("").size(), 1);
@@ -51,14 +51,15 @@ TEST(Cruzer_index, example_2020_12_1) {
   EXPECT_EQ(index.at("/foo").at(0).base_dialect,
             "https://json-schema.org/draft/2020-12/schema");
 
-  EXPECT_EQ(index.at("/foo/~?~/~P~").size(), 1);
-  EXPECT_EQ(sourcemeta::core::to_string(index.at("/foo/~?~/~P~").at(0).pointer),
+  EXPECT_EQ(index.at("/foo/~?additionalProperties~/~P~").size(), 1);
+  EXPECT_EQ(sourcemeta::core::to_string(
+                index.at("/foo/~?additionalProperties~/~P~").at(0).pointer),
             "/properties/foo/additionalProperties");
-  EXPECT_EQ(index.at("/foo/~?~/~P~").at(0).subschema.get(),
+  EXPECT_EQ(index.at("/foo/~?additionalProperties~/~P~").at(0).subschema.get(),
             schema.at("properties").at("foo").at("additionalProperties"));
-  EXPECT_EQ(index.at("/foo/~?~/~P~").at(0).dialect,
+  EXPECT_EQ(index.at("/foo/~?additionalProperties~/~P~").at(0).dialect,
             "https://json-schema.org/draft/2020-12/schema");
-  EXPECT_EQ(index.at("/foo/~?~/~P~").at(0).base_dialect,
+  EXPECT_EQ(index.at("/foo/~?additionalProperties~/~P~").at(0).base_dialect,
             "https://json-schema.org/draft/2020-12/schema");
 
   EXPECT_EQ(index.at("/bar").size(), 2);
