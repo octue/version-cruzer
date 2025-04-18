@@ -29,6 +29,7 @@ struct SchemaLocation {
   const std::optional<sourcemeta::core::Pointer> parent;
   const sourcemeta::core::Pointer pointer;
   const std::reference_wrapper<const sourcemeta::core::JSON> subschema;
+  const std::reference_wrapper<const sourcemeta::core::JSON> root;
   const sourcemeta::core::JSON::String dialect;
   const sourcemeta::core::JSON::String base_dialect;
   const std::reference_wrapper<const sourcemeta::core::SchemaWalker> walker;

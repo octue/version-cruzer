@@ -242,6 +242,15 @@ auto is_compatible_with(const SchemaIndex &left, const SchemaIndex &right)
           const auto &keyword{keyword_name(entry.pointer, entry.parent)};
           const auto walker_result{entry.walker(keyword, entry_vocabularies)};
           if (is_applicator(walker_result.type)) {
+            // then/else without if is meaningless
+            if ((keyword == "then" || keyword == "else") &&
+                !sourcemeta::core::get(entry.root, entry.pointer.initial())
+                     .defines("if")) {
+              result.emplace_back(Compatibility::Compatible, entry.pointer,
+                                  std::nullopt);
+              continue;
+            }
+
             const auto maybe_asserts{makes_any_assertion(entry)};
             if (!maybe_asserts.has_value()) {
               result.emplace_back(Compatibility::Unknown, entry.pointer,
@@ -333,7 +342,7 @@ auto index(const sourcemeta::core::SchemaFrame &frame,
       sourcemeta::core::stringify(instance_location, key);
       result[key.str()].emplace_back(
           instance_location, location.second.parent, location.second.pointer,
-          sourcemeta::core::get(schema, location.second.pointer),
+          sourcemeta::core::get(schema, location.second.pointer), schema,
           location.second.dialect, location.second.base_dialect, walker,
           resolver);
     }
