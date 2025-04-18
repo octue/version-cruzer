@@ -189,6 +189,42 @@ is_annotation_subschema(const sourcemeta::core::SchemaFrame &frame,
   return false;
 }
 
+static auto makes_any_assertion(const octue::cruzer::SchemaLocation &location)
+    -> std::optional<bool> {
+  const auto &schema{location.subschema.get()};
+  if (schema.is_boolean()) {
+    if (schema.to_boolean()) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  const auto &walker{location.walker.get()};
+  for (const auto &entry : sourcemeta::core::SchemaIterator{
+           schema, walker, location.resolver.get(), location.dialect}) {
+    const auto &subschema{sourcemeta::core::get(schema, entry.pointer)};
+    if (!subschema.is_object()) {
+      continue;
+    }
+
+    for (const auto &subentry : subschema.as_object()) {
+      const auto vocabularies{sourcemeta::core::vocabularies(
+          location.resolver.get(), location.base_dialect, location.dialect)};
+      const auto type{walker(subentry.first, vocabularies).type};
+      if (type == sourcemeta::core::SchemaKeywordType::Assertion) {
+        return true;
+
+        // TODO: Look at framing and recurse to continue
+      } else if (type == sourcemeta::core::SchemaKeywordType::Reference) {
+        return std::nullopt;
+      }
+    }
+  }
+
+  return false;
+}
+
 namespace octue::cruzer {
 
 auto is_compatible_with(const SchemaIndex &left, const SchemaIndex &right)
@@ -206,7 +242,20 @@ auto is_compatible_with(const SchemaIndex &left, const SchemaIndex &right)
           const auto &keyword{keyword_name(entry.pointer, entry.parent)};
           const auto walker_result{entry.walker(keyword, entry_vocabularies)};
           if (is_applicator(walker_result.type)) {
-            result.emplace_back(Compatibility::Unknown, entry.pointer,
+            const auto maybe_asserts{makes_any_assertion(entry)};
+            if (!maybe_asserts.has_value()) {
+              result.emplace_back(Compatibility::Unknown, entry.pointer,
+                                  std::nullopt);
+              continue;
+            }
+
+            if (maybe_asserts.value()) {
+              result.emplace_back(Compatibility::Incompatible, entry.pointer,
+                                  std::nullopt);
+              continue;
+            }
+
+            result.emplace_back(Compatibility::Compatible, entry.pointer,
                                 std::nullopt);
             continue;
           }
