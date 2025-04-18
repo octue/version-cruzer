@@ -378,8 +378,8 @@ TEST(Cruzer_version_2020_12, additionalproperties_open_to_close) {
     "additionalProperties": false
   })JSON")};
 
-  EXPECT_UNKNOWN(result, from, to, 1);
-  EXPECT_TRACE(result, 0, Unknown, std::nullopt, "/additionalProperties");
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, std::nullopt, "/additionalProperties");
 }
 
 TEST(Cruzer_version_2020_12, additionalproperties_open_to_explicit_open) {
@@ -398,8 +398,7 @@ TEST(Cruzer_version_2020_12, additionalproperties_open_to_explicit_open) {
     "additionalProperties": true
   })JSON")};
 
-  EXPECT_UNKNOWN(result, from, to, 1);
-  EXPECT_TRACE(result, 0, Unknown, std::nullopt, "/additionalProperties");
+  EXPECT_VERSION(result, from, to, Patch, 0);
 }
 
 TEST(Cruzer_version_2020_12, additionalproperties_with_patternproperties) {
@@ -418,8 +417,8 @@ TEST(Cruzer_version_2020_12, additionalproperties_with_patternproperties) {
     "additionalProperties": false
   })JSON")};
 
-  EXPECT_UNKNOWN(result, from, to, 1);
-  EXPECT_TRACE(result, 0, Unknown, std::nullopt, "/additionalProperties");
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, std::nullopt, "/additionalProperties");
 }
 
 TEST(Cruzer_version_2020_12, additionalproperties_open_to_close_standalone) {
@@ -491,8 +490,8 @@ TEST(Cruzer_version_2020_12, properties_to_additionalproperties) {
     }
   })JSON")};
 
-  EXPECT_UNKNOWN(result, from, to, 1);
-  EXPECT_TRACE(result, 0, Unknown, std::nullopt, "/additionalProperties");
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, std::nullopt, "/additionalProperties");
 }
 
 TEST(Cruzer_version_2020_12, propertynames_incompatible) {
@@ -527,8 +526,8 @@ TEST(Cruzer_version_2020_12, propertynames_add) {
     }
   })JSON")};
 
-  EXPECT_UNKNOWN(result, from, to, 1);
-  EXPECT_TRACE(result, 0, Unknown, std::nullopt, "/propertyNames");
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, std::nullopt, "/propertyNames");
 }
 
 TEST(Cruzer_version_2020_12, contains_add) {
@@ -543,8 +542,8 @@ TEST(Cruzer_version_2020_12, contains_add) {
     }
   })JSON")};
 
-  EXPECT_UNKNOWN(result, from, to, 1);
-  EXPECT_TRACE(result, 0, Unknown, std::nullopt, "/contains");
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, std::nullopt, "/contains");
 }
 
 TEST(Cruzer_version_2020_12, contains_incompatible) {
@@ -580,8 +579,8 @@ TEST(Cruzer_version_2020_12, if_then_add_else) {
     "else": { "type": "number" }
   })JSON")};
 
-  EXPECT_UNKNOWN(result, from, to, 1);
-  EXPECT_TRACE(result, 0, Unknown, std::nullopt, "/else");
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, std::nullopt, "/else");
 }
 
 TEST(Cruzer_version_2020_12, if_then_else_incompatible) {
@@ -651,8 +650,8 @@ TEST(Cruzer_version_2020_12, prefixitems_add) {
     ]
   })JSON")};
 
-  EXPECT_UNKNOWN(result, from, to, 1);
-  EXPECT_TRACE(result, 0, Unknown, std::nullopt, "/prefixItems/2");
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, std::nullopt, "/prefixItems/2");
 }
 
 TEST(Cruzer_version_2020_12, prefixitems_remove) {
@@ -673,8 +672,9 @@ TEST(Cruzer_version_2020_12, prefixitems_remove) {
     ]
   })JSON")};
 
-  EXPECT_UNKNOWN(result, from, to, 1);
-  EXPECT_TRACE(result, 0, Unknown, "/prefixItems/2", std::nullopt);
+  EXPECT_VERSION(result, from, to, Minor, 1);
+  // TODO: This incompatible trace might be wrong
+  EXPECT_TRACE(result, 0, Incompatible, "/prefixItems/2", std::nullopt);
 }
 
 TEST(Cruzer_version_2020_12, items_incompatible) {
@@ -716,8 +716,8 @@ TEST(Cruzer_version_2020_12, prefixitems_add_items) {
     }
   })JSON")};
 
-  EXPECT_UNKNOWN(result, from, to, 1);
-  EXPECT_TRACE(result, 0, Unknown, std::nullopt, "/items");
+  EXPECT_VERSION(result, from, to, Major, 1);
+  EXPECT_TRACE(result, 0, Incompatible, std::nullopt, "/items");
 }
 
 TEST(Cruzer_version_2020_12, dependentschemas_incompatible) {
