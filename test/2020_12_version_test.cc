@@ -602,6 +602,19 @@ TEST(Cruzer_version_2020_12, if_then_else_incompatible) {
   EXPECT_TRACE(result, 0, Incompatible, "/else/type", "/else/type");
 }
 
+TEST(Cruzer_version_2020_12, add_standalone_then) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema"
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "then": { "minLength": 3 }
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Patch, 0);
+}
+
 TEST(Cruzer_version_2020_12, if_standalone) {
   const auto from{sourcemeta::core::parse_json(R"JSON({
     "$schema": "https://json-schema.org/draft/2020-12/schema",
