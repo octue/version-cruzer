@@ -29,4 +29,12 @@ declare module "@octue/version-cruzer" {
     from: string | object,
     to: string | object
   ): Promise<VersionResult>;
+
+  /**
+   * Get the base dialect of a schema.
+   *
+   * @param schema - The schema object or JSON string.
+   * @returns A promise that resolves to the base dialect URI, if any.
+   */
+  export function getBaseDialect(schema: string | object): string | null;
 }
