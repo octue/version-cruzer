@@ -66,4 +66,18 @@ static auto version(const std::string &from, const std::string &to)
   return result_json;
 }
 
-EMSCRIPTEN_BINDINGS(cruzer) { emscripten::function("version", &version); }
+static auto get_base_dialect(const std::string &schema) -> emscripten::val {
+  const auto schema_json{sourcemeta::core::parse_json(schema)};
+  const auto base_dialect{sourcemeta::core::base_dialect(
+      schema_json, sourcemeta::core::schema_official_resolver)};
+  if (base_dialect.has_value()) {
+    return emscripten::val(base_dialect.value());
+  } else {
+    return emscripten::val::null();
+  }
+}
+
+EMSCRIPTEN_BINDINGS(cruzer) {
+  emscripten::function("version", &version);
+  emscripten::function("getBaseDialect", &get_base_dialect);
+}

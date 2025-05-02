@@ -1,6 +1,6 @@
 import test from 'node:test';
 import { strict as assert } from 'node:assert';
-import { version } from './cruzer.js';
+import { version, getBaseDialect } from './cruzer.js';
 
 test('const to enum', async (t) => {
   const from = {
@@ -23,4 +23,32 @@ test('const to enum', async (t) => {
       }
     ]
   });
+});
+
+test('base dialect: 2020-12', async (t) => {
+  const schema = {
+    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    const: 'foo'
+  };
+
+  assert.deepStrictEqual(await getBaseDialect(schema),
+    'https://json-schema.org/draft/2020-12/schema');
+});
+
+test('base dialect: draft7', async (t) => {
+  const schema = {
+    $schema: 'http://json-schema.org/draft-07/schema#',
+    const: 'foo'
+  };
+
+  assert.deepStrictEqual(await getBaseDialect(schema),
+    'http://json-schema.org/draft-07/schema#');
+});
+
+test('base dialect: unknown', async (t) => {
+  const schema = {
+    const: 'foo'
+  };
+
+  assert.deepStrictEqual(await getBaseDialect(schema), null);
 });
