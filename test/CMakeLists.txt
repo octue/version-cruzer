@@ -44,6 +44,7 @@ sourcemeta_googletest(PROJECT octue NAME cruzer FOLDER "Octue"
     2020_12_is_compatible_with_validation_type_test.cc
     2020_12_is_compatible_with_validation_uniqueitems_test.cc
     2020_12_is_compatible_with_test.cc
-    2020_12_version_test.cc)
+    2020_12_version_test.cc
+    draft7_version_test.cc)
 
 target_link_libraries(octue_cruzer_unit PRIVATE octue::cruzer)
