@@ -1,0 +1,16 @@
+docs
+tests
+.appveyor.yml
+.clang-format
+.clang-tidy
+.cmake-format.yaml
+.codespell-ignore-lines
+.pre-commit-config.yaml
+.readthedocs.yml
+MANIFEST.in
+noxfile.py
+pyproject.toml
+README.rst
+SECURITY.md
+setup.cfg
+setup.py
