@@ -32,6 +32,7 @@ jobs:
           cmake -S . -B ./build
           -DCMAKE_BUILD_TYPE:STRING=Release
           -DCRUZER_TESTS:BOOL=ON
+          -DCRUZER_PYTHON:BOOL=OFF
           -DBUILD_SHARED_LIBS:BOOL=OFF
           -DCMAKE_COMPILE_WARNING_AS_ERROR:BOOL=ON
       - run: cmake --build ./build --config Release --target clang_format_test
@@ -44,9 +45,19 @@ jobs:
       matrix:
         binding:
           - name: webassembly
+            os: ubuntu-latest
+            cc: gcc
+            cxx: g++
+          - name: python
+            os: ubuntu-latest
+            cc: clang
+            cxx: clang++
     env:
       EMSDK_VERSION: 4.0.5
-    runs-on: ubuntu-latest
+      CC: ${{ matrix.binding.cc }}
+      CXX: ${{ matrix.binding.cxx }}
+
+    runs-on: ${{ matrix.binding.os }}
     steps:
       - uses: actions/checkout@v4
       - run: |

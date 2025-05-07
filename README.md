@@ -19,6 +19,14 @@ To generate the WebAssembly package under `bindings/webassembly`, run:
 make webassembly
 ```
 
+## Python Bindings
+
+To generate the Python modules under `bindings/python`, run:
+
+```sh
+make python
+```
+
 ## Releasing
 
 To produce a release, including pushing bindings to the corresponding package
