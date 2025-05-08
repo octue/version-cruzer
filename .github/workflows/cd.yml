@@ -43,6 +43,9 @@ jobs:
     strategy:
       matrix:
         runner: [ ubuntu-24.04 ]
+    env:
+      CC: clang
+      CXX: clang++
     steps:
       - uses: actions/checkout@v4
       - run: make -C bindings/python compile
