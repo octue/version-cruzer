@@ -39,19 +39,27 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   python:
-    runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
-        runner: [ ubuntu-24.04 ]
+        platform:
+          - os: ubuntu-24.04
+            version: 3.11
+          - os: ubuntu-24.04
+            version: 3.12
+
+    runs-on: ${{ matrix.platform.os }}
     env:
       CC: clang
       CXX: clang++
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.platform.version }}
       - run: make -C bindings/python compile
       - uses: actions/upload-artifact@v4
         with:
-          name: python-bindings-${{ matrix.runner }}
+          name: python-bindings-${{ matrix.platform.os }}-${{ matrix.platform.version }}
           path: bindings/python/dist/*
 
   github:
