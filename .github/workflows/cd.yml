@@ -59,9 +59,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref_type == 'tag'
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
-          path: dist
+          path: bindings/python/dist
           merge-multiple: true
       - run: tree dist
       - run: gh config set prompt disabled
@@ -69,7 +70,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
       - run: |
           gh release create ${{ github.ref_name }} --draft=false --title ${{ github.ref_name }} --target "$GITHUB_SHA" --generate-notes
-          gh release upload --clobber ${{ github.ref_name }} dist/lib/*
+          gh release upload --clobber ${{ github.ref_name }} bindings/python/dist/lib/*
         if: github.ref_type == 'tag'
         env:
           GH_TOKEN: ${{ github.token }}
