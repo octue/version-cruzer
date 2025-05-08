@@ -64,7 +64,7 @@ jobs:
         with:
           path: bindings/python/dist
           merge-multiple: true
-      - run: tree dist
+      - run: tree bindings/python/dist
       - run: gh config set prompt disabled
         env:
           GH_TOKEN: ${{ github.token }}
