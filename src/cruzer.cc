@@ -362,6 +362,10 @@ auto version(
     const std::optional<sourcemeta::core::JSON::String> &default_id_from,
     const std::optional<sourcemeta::core::JSON::String> &default_id_to)
     -> Result {
+  if (from == to) {
+    return {SemVer::Equal, {}};
+  }
+
   // (1) Frame both schemas for unresolved instance locations
   sourcemeta::core::SchemaFrame frame_from{
       sourcemeta::core::SchemaFrame::Mode::Instances};

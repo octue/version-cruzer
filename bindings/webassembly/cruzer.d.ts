@@ -1,5 +1,5 @@
 declare module "@octue/version-cruzer" {
-  export type VersionChangeType = "major" | "minor" | "patch" | null;
+  export type VersionChangeType = "major" | "minor" | "patch" | "equal" | null;
 
   export type CompatibilityType =
     | "compatible"

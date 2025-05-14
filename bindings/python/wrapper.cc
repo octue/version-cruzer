@@ -27,6 +27,9 @@ static auto version(pybind11::object from, pybind11::object to)
       case octue::cruzer::SemVer::Patch:
         result_dict["version"] = "patch";
         break;
+      case octue::cruzer::SemVer::Equal:
+        result_dict["version"] = "equal";
+        break;
     }
   } else {
     result_dict["version"] = pybind11::none();

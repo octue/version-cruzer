@@ -23,6 +23,25 @@ class TestPycruzer(unittest.TestCase):
         result = pycruzer.version(from_schema, to_schema)
         self.assertDictEqual(result, expected)
 
+    def test_equal(self):
+        from_schema = {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "const": "foo"
+        };
+
+        to_schema = {
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "const": "foo"
+        };
+
+        expected = {
+          "version": "equal",
+          "traces": []
+        }
+
+        result = pycruzer.version(from_schema, to_schema)
+        self.assertDictEqual(result, expected)
+
     def test_base_dialect_2020_12(self):
         schema = {
           "$schema": "https://json-schema.org/draft/2020-12/schema",

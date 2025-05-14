@@ -896,3 +896,17 @@ TEST(Cruzer_version_2020_12, unevaluateditems_incompatible) {
   EXPECT_TRACE(result, 0, Incompatible, "/unevaluatedItems/type",
                "/unevaluatedItems/type");
 }
+
+TEST(Cruzer_version_2020_12, equal) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "string"
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "string"
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Equal, 0);
+}
