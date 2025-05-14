@@ -25,6 +25,23 @@ test('const to enum', async (t) => {
   });
 });
 
+test('equal', async (t) => {
+  const from = {
+    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    const: 'foo'
+  };
+
+  const to = {
+    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    const: 'foo'
+  };
+
+  assert.deepStrictEqual(await version(from, to), {
+    version: "equal",
+    traces: []
+  });
+});
+
 test('base dialect: 2020-12', async (t) => {
   const schema = {
     $schema: 'https://json-schema.org/draft/2020-12/schema',

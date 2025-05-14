@@ -39,7 +39,7 @@ struct SchemaLocation {
 using SchemaIndex = std::unordered_map<sourcemeta::core::JSON::String,
                                        std::vector<SchemaLocation>>;
 
-enum class SemVer { Major, Minor, Patch };
+enum class SemVer { Major, Minor, Patch, Equal };
 
 struct Result {
   const std::optional<SemVer> version;

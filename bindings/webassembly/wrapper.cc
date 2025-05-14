@@ -23,6 +23,9 @@ static auto version(const std::string &from, const std::string &to)
       case octue::cruzer::SemVer::Patch:
         result_json.set("version", "patch");
         break;
+      case octue::cruzer::SemVer::Equal:
+        result_json.set("version", "equal");
+        break;
     }
   } else {
     result_json.set("version", emscripten::val::null());
