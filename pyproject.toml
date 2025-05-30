@@ -1,0 +1,14 @@
+[project]
+name = "version_cruzer"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Juan Cruz Viotti", email = "jv@jviotti.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[build-system]
+requires = ["scikit-build-core"]
+build-backend = "scikit_build_core.build"
