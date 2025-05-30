@@ -53,14 +53,23 @@ jobs:
       CXX: clang++
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.platform.version }}
-      - run: make -C bindings/python compile
-      - uses: actions/upload-artifact@v4
-        with:
-          name: python-bindings-${{ matrix.platform.os }}-${{ matrix.platform.version }}
-          path: bindings/python/dist/*
+
+#      - uses: actions/setup-python@v5
+#        with:
+#          python-version: ${{ matrix.platform.version }}
+#
+#      - run: make -C bindings/python compile
+#
+#      - uses: actions/upload-artifact@v4
+#        with:
+#          name: python-bindings-${{ matrix.platform.os }}-${{ matrix.platform.version }}
+#          path: bindings/python/dist/*
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1.3.4
+
+      - name: Build a binary wheel and a source tarball
+        run: poetry build
 
   github:
     needs: python
