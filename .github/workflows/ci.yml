@@ -49,7 +49,11 @@ jobs:
             cc: gcc
             cxx: g++
           - name: python
-            os: ubuntu-latest
+            os: ubuntu-24.04
+            cc: clang
+            cxx: clang++
+          - name: python
+            os: ubuntu-24.04-arm
             cc: clang
             cxx: clang++
     env:
