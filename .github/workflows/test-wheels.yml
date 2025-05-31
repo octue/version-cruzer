@@ -44,6 +44,9 @@ jobs:
       - name: Test installing wheel
         run: pip install dist/pycruzer-0.1.0-cp312-cp312-linux_x86_64.whl
 
+      - name: Test module
+        run: python -c "import pycruzer; print(dir(pycruzer))"
+
       - uses: actions/upload-artifact@v4
         with:
           name: python-bindings
