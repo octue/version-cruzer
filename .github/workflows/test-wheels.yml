@@ -41,6 +41,9 @@ jobs:
       - name: Build a binary wheel and a source tarball
         run: poetry build
 
+      - name: Test installing wheel
+        run: pip install dist/pycruzer-0.1.0-cp312-cp312-linux_x86_64.whl
+
       - uses: actions/upload-artifact@v4
         with:
           name: python-bindings
