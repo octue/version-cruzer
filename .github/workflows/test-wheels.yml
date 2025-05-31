@@ -22,10 +22,10 @@ jobs:
 #            version: 3.12
 #
 #    runs-on: ${{ matrix.platform.os }}
-    runs-on: macos-latest
-    env:
-      CC: clang
-      CXX: clang++
+    runs-on: ubuntu-latest
+#    env:
+#      CC: clang
+#      CXX: clang++
     steps:
       - uses: actions/checkout@v4
 
