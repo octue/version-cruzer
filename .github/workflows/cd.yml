@@ -33,6 +33,7 @@ jobs:
           rm -rf emsdk/upstream/emscripten/cmake
           echo "$(pwd)/emsdk/upstream/emscripten" >> $GITHUB_PATH
       - run: make -C bindings/webassembly compile
+      - run: make -C bindings/webassembly test
       - run: cd bindings/webassembly && npm version ${{ github.ref_name }} && npm publish
         if: github.ref_type == 'tag'
         env:
@@ -52,11 +53,13 @@ jobs:
       CC: clang
       CXX: clang++
     steps:
+      - uses: snok/install-poetry@v1.3.4
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.platform.version }}
       - run: make -C bindings/python compile
+      - run: make -C bindings/python test
       - uses: actions/upload-artifact@v4
         with:
           name: python-bindings-${{ matrix.platform.os }}-${{ matrix.platform.version }}
@@ -78,7 +81,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
       - run: |
           gh release create ${{ github.ref_name }} --draft=false --title ${{ github.ref_name }} --target "$GITHUB_SHA" --generate-notes
-          gh release upload --clobber ${{ github.ref_name }} bindings/python/dist/lib/*
+          gh release upload --clobber ${{ github.ref_name }} bindings/python/dist/*
         if: github.ref_type == 'tag'
         env:
           GH_TOKEN: ${{ github.token }}
