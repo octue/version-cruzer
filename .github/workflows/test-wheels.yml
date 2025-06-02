@@ -40,7 +40,7 @@ jobs:
         uses: snok/install-poetry@v1.3.4
 
       - name: Build a binary wheel and a source tarball
-        run: poetry build
+        run: poetry build -v
 
 #      - name: Setup tmate session
 #        uses: mxschmitt/action-tmate@v3
