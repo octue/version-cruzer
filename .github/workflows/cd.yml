@@ -62,6 +62,7 @@ jobs:
           VERSION="${{ github.ref_name }}"
           VERSION="${VERSION#v}"
           poetry version "$VERSION"
+        if: github.ref_type == 'tag'
       - run: make -C bindings/python compile
       - run: make -C bindings/python test
       - uses: actions/upload-artifact@v4
