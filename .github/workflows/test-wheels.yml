@@ -29,10 +29,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-#      - uses: actions/setup-python@v5
-#        with:
+      - uses: actions/setup-python@v5
+        with:
 #          python-version: ${{ matrix.platform.version }}
-#
+          python-version: 3.11
+
 #      - run: make -C bindings/python compile
 
       - name: Install Poetry
@@ -45,7 +46,7 @@ jobs:
 #        uses: mxschmitt/action-tmate@v3
 
       - name: Test installing wheel
-        run: pip install dist/pycruzer-0.1.0-cp312-cp312-linux_x86_64.whl
+        run: pip install dist/pycruzer-0.1.0-cp312-cp311-linux_x86_64.whl
 
       - name: Test module
         run: python -c "import pycruzer; print(dir(pycruzer))"
