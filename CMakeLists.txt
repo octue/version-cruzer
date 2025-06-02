@@ -25,6 +25,6 @@ if(CRUZER_PYTHON)
   target_link_libraries(pycruzer PRIVATE octue_cruzer)
   include(GNUInstallDirs)
   install(TARGETS pycruzer
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION .
     COMPONENT pycruzer)
 endif()

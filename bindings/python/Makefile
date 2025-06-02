@@ -1,6 +1,8 @@
 # Programs
 PYTHON = python3
 CMAKE = cmake
+POETRY = poetry
+PIP = pip3
 
 MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
@@ -8,15 +10,9 @@ MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 all: compile test
 .PHONY: compile
 compile: wrapper.cc
-	$(CMAKE) -S ../.. -B ./build \
-		-DCMAKE_BUILD_TYPE:STRING=Release \
-		-DCRUZER_TESTS:BOOL=OFF \
-		-DCRUZER_PYTHON:BOOL=ON \
-		-DBUILD_SHARED_LIBS:BOOL=OFF
-	$(CMAKE) --build ./build --config Release --parallel 4
-	$(CMAKE) --install ./build --prefix ./dist --config Release \
-		--verbose --component pycruzer
+	$(POETRY) build --format=wheel -vvv --verbose --output=$(MAKEFILE_DIR)/dist
 
 .PHONY: test
 test: test.py
-	PYTHONPATH=$(MAKEFILE_DIR)/dist/lib:$$PYTHONPATH $(PYTHON) $<
+	$(PIP) install --target=$(MAKEFILE_DIR)/build dist/pycruzer-*.whl
+	PYTHONPATH=$(MAKEFILE_DIR)/build:$$PYTHONPATH $(PYTHON) $<

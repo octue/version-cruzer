@@ -67,5 +67,7 @@ jobs:
           rm -rf emsdk/upstream/emscripten/cmake
           echo "$(pwd)/emsdk/upstream/emscripten" >> $GITHUB_PATH
         if: matrix.binding.name == 'webassembly'
+      - uses: snok/install-poetry@v1.3.4
+        if: matrix.binding.name == 'python'
       - run: make -C bindings/${{ matrix.binding.name }} compile
       - run: make -C bindings/${{ matrix.binding.name }} test
