@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 project(cruzer LANGUAGES CXX)
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 option(CRUZER_TESTS "Build the Cruzer tests" OFF)
-option(CRUZER_PYTHON "Build the Cruzer Python bindings" OFF)
+option(CRUZER_PYTHON "Build the Cruzer Python bindings" ON)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 find_package(Core REQUIRED)
