@@ -10,7 +10,7 @@ MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 all: compile test
 .PHONY: compile
 compile: wrapper.cc
-	$(POETRY) build --format=wheel -vvv --verbose --output=$(MAKEFILE_DIR)/dist
+	$(POETRY) build --format=wheel -vvv --output=$(MAKEFILE_DIR)/dist
 
 .PHONY: test
 test: test.py
