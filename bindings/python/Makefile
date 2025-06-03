@@ -14,5 +14,5 @@ compile: wrapper.cc
 
 .PHONY: test
 test: test.py
-	$(PIP) install --target=$(MAKEFILE_DIR)/build dist/pycruzer-*.whl
+	$(PIP) install dist/pycruzer-*.whl
 	$(PYTHON) $<
