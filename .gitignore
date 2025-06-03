@@ -36,3 +36,5 @@
 /bindings/webassembly/dist
 /bindings/python/build
 /bindings/python/dist
+
+.idea

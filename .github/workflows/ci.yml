@@ -2,12 +2,10 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
 
 jobs:
   test:
+    if: "!contains(github.event.head_commit.message, 'skipci')"
     strategy:
       fail-fast: false
       matrix:
@@ -40,6 +38,7 @@ jobs:
       - run: cd ./build && ctest --build-config Release --output-on-failure --parallel
 
   bindings:
+    if: "!contains(github.event.head_commit.message, 'skipci')"
     strategy:
       fail-fast: false
       matrix:

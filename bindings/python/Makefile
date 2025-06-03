@@ -10,9 +10,9 @@ MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 all: compile test
 .PHONY: compile
 compile: wrapper.cc
-	$(POETRY) build --format=wheel -vvv --verbose --output=$(MAKEFILE_DIR)/dist
+	$(POETRY) build --format=wheel -vvv --output=$(MAKEFILE_DIR)/dist
 
 .PHONY: test
 test: test.py
-	$(PIP) install --target=$(MAKEFILE_DIR)/build dist/pycruzer-*.whl
-	PYTHONPATH=$(MAKEFILE_DIR)/build:$$PYTHONPATH $(PYTHON) $<
+	$(PIP) install dist/pycruzer-*.whl
+	$(PYTHON) $<
