@@ -62,11 +62,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.platform.version }}
-      - run: |
+
+      - name: Set package version
+        if: github.ref_type == 'tag'
+        run: |
           VERSION="${{ github.ref_name }}"
           VERSION="${VERSION#v}"
           poetry version "$VERSION"
-        if: github.ref_type == 'tag'
+
       - run: make -C bindings/python compile
       - run: make -C bindings/python test
       - uses: actions/upload-artifact@v4
