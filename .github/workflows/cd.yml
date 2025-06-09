@@ -43,13 +43,13 @@ jobs:
     strategy:
       matrix:
         platform:
-          - os: ubuntu-24.04
+          - os: ubuntu-22.04
             version: 3.11
-          - os: ubuntu-24.04
+          - os: ubuntu-22.04
             version: 3.12
-          - os: ubuntu-24.04-arm
+          - os: ubuntu-22.04-arm
             version: 3.11
-          - os: ubuntu-24.04-arm
+          - os: ubuntu-22.04-arm
             version: 3.12
           - os: macos-15
             version: 3.11
