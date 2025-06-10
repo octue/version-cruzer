@@ -1,0 +1,5 @@
+/build
+/bindings/python/build
+/bindings/python/dist
+/bindings/webassembly/build
+/bindings/webassembly/dist
