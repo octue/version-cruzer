@@ -5,7 +5,7 @@ Building semantic versioning into Strands
 ## Running Locally
 
 To build the project in development mode and run the tests, make sure you have
-a working C++ compiler (either GCC or Clang should work), CMake >=3.16,
+a working C++20 compiler (either GCC or Clang will work), CMake >=3.16,
 ClangFormat (only for developing the C++ components), and simply run:
 
 ```sh
