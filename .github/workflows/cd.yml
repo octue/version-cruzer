@@ -58,8 +58,6 @@ jobs:
       CXX: clang++
     steps:
       - uses: snok/install-poetry@v1.3.4
-        if: matrix.binding.name == 'python'
-
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
