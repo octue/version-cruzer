@@ -57,7 +57,9 @@ jobs:
       CC: clang
       CXX: clang++
     steps:
-      - uses: snok/install-poetry@v1.3.4
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
+
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
@@ -68,7 +70,7 @@ jobs:
         run: |
           VERSION="${{ github.ref_name }}"
           VERSION="${VERSION#v}"
-          poetry version "$VERSION"
+          uv version "$VERSION"
 
       - run: make -C bindings/python compile
       - run: make -C bindings/python test
@@ -80,14 +82,16 @@ jobs:
   python-docker:
     runs-on: ubuntu-latest
     steps:
-      - uses: snok/install-poetry@v1.3.4
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
+
       - uses: actions/checkout@v4
       - name: Set package version
         if: github.ref_type == 'tag'
         run: |
           VERSION="${{ github.ref_name }}"
           VERSION="${VERSION#v}"
-          poetry version "$VERSION"
+          uv version "$VERSION"
 
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3

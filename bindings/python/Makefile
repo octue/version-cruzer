@@ -1,7 +1,7 @@
 # Programs
 PYTHON = python3
 CMAKE = cmake
-POETRY = poetry
+UV = uv
 PIP = pip3
 
 MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
@@ -10,7 +10,7 @@ MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 all: compile test
 .PHONY: compile
 compile: wrapper.cc
-	$(POETRY) build --format=wheel -vvv --output=$(MAKEFILE_DIR)/dist
+	$(UV) build --wheel -v --out-dir=$(MAKEFILE_DIR)/dist
 
 .PHONY: test
 test: test.py
