@@ -9,7 +9,7 @@ RUN wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh 19 && rm 
 RUN pipx ensurepath
 ENV PATH="/root/.local/bin:${PATH}"
 RUN pipx install uv
-RUN uv install python cpython-3.11.13-linux-x86_64-gnu
+RUN uv python install cpython-3.11.13-linux-x86_64-gnu && uv python pin cpython-3.11.13-linux-x86_64-gnu
 
 COPY . /source
 
