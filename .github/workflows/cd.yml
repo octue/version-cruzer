@@ -57,8 +57,8 @@ jobs:
       CC: clang
       CXX: clang++
     steps:
-      - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v6
+      - uses: snok/install-poetry@v1.3.4
+        if: matrix.binding.name == 'python'
 
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -70,7 +70,7 @@ jobs:
         run: |
           VERSION="${{ github.ref_name }}"
           VERSION="${VERSION#v}"
-          uv version --no-sync "$VERSION"
+          poetry version "$VERSION"
 
       - run: make -C bindings/python compile
       - run: make -C bindings/python test
