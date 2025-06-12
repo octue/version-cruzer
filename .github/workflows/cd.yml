@@ -70,7 +70,7 @@ jobs:
         run: |
           VERSION="${{ github.ref_name }}"
           VERSION="${VERSION#v}"
-          uv version "$VERSION"
+          uv version --no-sync "$VERSION"
 
       - run: make -C bindings/python compile
       - run: make -C bindings/python test
@@ -91,7 +91,7 @@ jobs:
         run: |
           VERSION="${{ github.ref_name }}"
           VERSION="${VERSION#v}"
-          uv version "$VERSION"
+          uv version --no-sync "$VERSION"
 
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
