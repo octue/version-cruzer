@@ -73,3 +73,9 @@ jobs:
 
       - run: make -C bindings/${{ matrix.binding.name }} compile
       - run: make -C bindings/${{ matrix.binding.name }} test
+
+  python-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build --tag pycruzer . --file bindings/python/Dockerfile --progress plain
