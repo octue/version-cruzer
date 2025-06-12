@@ -10,7 +10,7 @@ MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 all: compile test
 .PHONY: compile
 compile: wrapper.cc
-	$(UV) build --wheel -v --out-dir=$(MAKEFILE_DIR)/dist
+	$(UV) build --wheel -v --directory=../.. --out-dir=$(MAKEFILE_DIR)/dist
 
 .PHONY: test
 test: test.py
