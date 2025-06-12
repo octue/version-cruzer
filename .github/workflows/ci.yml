@@ -66,7 +66,10 @@ jobs:
           rm -rf emsdk/upstream/emscripten/cmake
           echo "$(pwd)/emsdk/upstream/emscripten" >> $GITHUB_PATH
         if: matrix.binding.name == 'webassembly'
-      - uses: snok/install-poetry@v1.3.4
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
         if: matrix.binding.name == 'python'
+
       - run: make -C bindings/${{ matrix.binding.name }} compile
       - run: make -C bindings/${{ matrix.binding.name }} test
