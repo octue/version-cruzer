@@ -1,16 +1,18 @@
-FROM debian:11
+FROM windpioneers/gdal-python:modest-heron-gdal-2.4.1-python-3.11-slim
 
-RUN echo "deb http://deb.debian.org/debian bullseye-backports main contrib non-free" \
-  | tee -a /etc/apt/sources.list
 RUN apt-get --yes update && apt-get install --yes --no-install-recommends \
-  make python3 python3-dev python3-pip pybind11-dev pipx lsb-release wget software-properties-common gnupg
-RUN apt-get --yes update && apt-get install --yes --no-install-recommends cmake -t bullseye-backports
+  cmake make python3-venv pybind11-dev pipx \
+  lsb-release wget software-properties-common gnupg
 RUN wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh 19 && rm llvm.sh
+RUN apt-get install --yes --no-install-recommends \
+  clang-tools-19 libc++-19-dev libc++abi-19-dev
+
 RUN pipx ensurepath
 ENV PATH="/root/.local/bin:${PATH}"
-RUN pipx install poetry
+RUN pipx install poetry==2.1.3 --python python3
 
 COPY . /source
 
-RUN make -C /source/bindings/python compile CC=clang-19 CXX=clang++-19
+RUN make -C /source/bindings/python compile \
+  CC=clang-19 CXX=clang++-19 CRUZER_LIBCXX=ON
 RUN make -C /source/bindings/python test
