@@ -8,7 +8,8 @@ RUN apt-get --yes update && apt-get install --yes --no-install-recommends cmake 
 RUN wget https://apt.llvm.org/llvm.sh && chmod +x llvm.sh && ./llvm.sh 19 && rm llvm.sh
 RUN pipx ensurepath
 ENV PATH="/root/.local/bin:${PATH}"
-RUN pipx install poetry
+RUN pipx install uv
+RUN uv install python cpython-3.11.13-linux-x86_64-gnu
 
 COPY . /source
 
