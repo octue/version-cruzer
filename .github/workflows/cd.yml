@@ -96,13 +96,18 @@ jobs:
 
       - run: docker build --tag pycruzer-arm64 . --file bindings/python/Dockerfile --progress plain --platform linux/arm64
       - run: docker build --tag pycruzer-amd64 . --file bindings/python/Dockerfile --progress plain --platform linux/amd64
+      - run: sleep 5
       - run: docker create --name pycruzer-builder-arm64 pycruzer-arm64
       - run: docker create --name pycruzer-builder-amd64 pycruzer-amd64
+      - run: sleep 5
       - run: mkdir -p bindings/python/dist/docker
       - run: docker cp pycruzer-builder-arm64:/source/bindings/python/dist bindings/python/dist/docker
       - run: docker cp pycruzer-builder-amd64:/source/bindings/python/dist bindings/python/dist/docker
+      - run: sleep 5
       - run: mv bindings/python/dist/docker/dist/*.whl bindings/python/dist
       - run: rm -rf bindings/python/dist/docker
+      - run: sha256sum bindings/python/dist/*.whl
+      - run: unzip -t bindings/python/dist/*.whl
 
       - uses: actions/upload-artifact@v4
         with:
