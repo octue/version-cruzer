@@ -7,3 +7,8 @@ COPY . /source
 
 RUN make -C /source/bindings/python compile CC=clang CXX=clang++
 RUN make -C /source/bindings/python test
+
+RUN sleep 5
+RUN sync
+RUN sha256sum /source/bindings/python/dist/*.whl
+RUN unzip -t /source/bindings/python/dist/*.whl
