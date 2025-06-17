@@ -246,32 +246,32 @@ auto is_compatible_with(const SchemaIndex &left, const SchemaIndex &right)
             if ((keyword == "then" || keyword == "else") &&
                 !sourcemeta::core::get(entry.root, entry.pointer.initial())
                      .defines("if")) {
-              result.emplace_back(Compatibility::Compatible, entry.pointer,
-                                  std::nullopt);
+              result.push_back(
+                  {Compatibility::Compatible, entry.pointer, std::nullopt});
               continue;
             }
 
             const auto maybe_asserts{makes_any_assertion(entry)};
             if (!maybe_asserts.has_value()) {
-              result.emplace_back(Compatibility::Unknown, entry.pointer,
-                                  std::nullopt);
+              result.push_back(
+                  {Compatibility::Unknown, entry.pointer, std::nullopt});
               continue;
             }
 
             if (maybe_asserts.value()) {
-              result.emplace_back(Compatibility::Incompatible, entry.pointer,
-                                  std::nullopt);
+              result.push_back(
+                  {Compatibility::Incompatible, entry.pointer, std::nullopt});
               continue;
             }
 
-            result.emplace_back(Compatibility::Compatible, entry.pointer,
-                                std::nullopt);
+            result.push_back(
+                {Compatibility::Compatible, entry.pointer, std::nullopt});
             continue;
           }
         }
 
-        result.emplace_back(Compatibility::Compatible, entry.pointer,
-                            std::nullopt);
+        result.push_back(
+            {Compatibility::Compatible, entry.pointer, std::nullopt});
       }
     } else {
       for (const auto &entry : entries) {
@@ -340,11 +340,11 @@ auto index(const sourcemeta::core::SchemaFrame &frame,
       // for this use case, so we can stringify to simplify the map
       std::ostringstream key;
       sourcemeta::core::stringify(instance_location, key);
-      result[key.str()].emplace_back(
-          instance_location, location.second.parent, location.second.pointer,
-          sourcemeta::core::get(schema, location.second.pointer), schema,
-          location.second.dialect, location.second.base_dialect, walker,
-          resolver);
+      result[key.str()].push_back(
+          {instance_location, location.second.parent, location.second.pointer,
+           sourcemeta::core::get(schema, location.second.pointer), schema,
+           location.second.dialect, location.second.base_dialect, walker,
+           resolver});
     }
   }
 
@@ -405,12 +405,13 @@ auto version(
   for (auto &&trace : to_from) {
     switch (trace.compatibility) {
       case Compatibility::Incompatible:
-        to_from_incompatibilities.emplace_back(
-            trace.compatibility, std::move(trace.right), std::move(trace.left));
+        to_from_incompatibilities.push_back({trace.compatibility,
+                                             std::move(trace.right),
+                                             std::move(trace.left)});
         break;
       case Compatibility::Unknown:
-        to_from_unknowns.emplace_back(
-            trace.compatibility, std::move(trace.right), std::move(trace.left));
+        to_from_unknowns.push_back({trace.compatibility, std::move(trace.right),
+                                    std::move(trace.left)});
         break;
       default:
         continue;
