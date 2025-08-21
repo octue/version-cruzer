@@ -502,7 +502,9 @@ static auto compare(
       !defines_any_relevant_type(type_to_set(right_value),                     \
                                  "https://json-schema.org/draft/2020-12/"      \
                                  "vocab/validation",                           \
-                                 expected_keyword));
+                                 expected_keyword) ||                          \
+          (right_subschema.defines(left_keyword) &&                            \
+           right_subschema.at(left_keyword) == left_value));
 
     COMPARE_2020_12_TYPE_VALIDATION("required");
     COMPARE_2020_12_TYPE_VALIDATION("uniqueItems");

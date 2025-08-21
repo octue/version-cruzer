@@ -910,3 +910,73 @@ TEST(Cruzer_version_2020_12, equal) {
 
   EXPECT_VERSION(result, from, to, Equal, 0);
 }
+
+TEST(Cruzer_version_2020_12, number_add_description) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "number",
+    "minimum": -91
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "number",
+    "minimum": -91,
+    "description": "hello"
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Patch, 0);
+}
+
+TEST(Cruzer_version_2020_12, number_property_add_description) {
+  const auto from{sourcemeta::core::parse_json(R"JSON({
+    "$id": "https://example.com/geographical-location.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Longitude and Latitude Values",
+    "description": "A geographical coordinate.",
+    "required": [
+      "latitude",
+      "longitude"
+    ],
+    "type": "object",
+    "properties": {
+      "latitude": {
+        "type": "number",
+        "minimum": -91,
+        "maximum": 90
+      },
+      "longitude": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180
+      }
+    }
+  })JSON")};
+
+  const auto to{sourcemeta::core::parse_json(R"JSON({
+    "$id": "https://example.com/geographical-location.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Longitude and Latitude Values",
+    "description": "A geographical coordinate.",
+    "required": [
+      "latitude",
+      "longitude"
+    ],
+    "type": "object",
+    "properties": {
+      "latitude": {
+        "type": "number",
+        "minimum": -91,
+        "maximum": 90,
+        "description": "hello"
+      },
+      "longitude": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180
+      }
+    }
+  })JSON")};
+
+  EXPECT_VERSION(result, from, to, Patch, 0);
+}
