@@ -36,3 +36,8 @@ managers, create and push a tag of the form `vX.Y.Z`. For example:
 ```sh
 git tag --annotate v1.2.3 --message v1.2.3
 ```
+
+## License
+
+Copyright (c) Octue Ltd. Licensed under the [GNU Affero General Public License v3](LICENSE). Third-party dependency attributions are listed in the [NOTICE](NOTICE) file.
+
