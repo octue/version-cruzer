@@ -37,4 +37,8 @@
 /bindings/python/build
 /bindings/python/dist
 
+# IDEs
 .idea
+
+# Agents
+.claude
