@@ -72,9 +72,10 @@ static auto version(const std::string &from, const std::string &to)
 static auto get_base_dialect(const std::string &schema) -> emscripten::val {
   const auto schema_json{sourcemeta::core::parse_json(schema)};
   const auto base_dialect{sourcemeta::core::base_dialect(
-      schema_json, sourcemeta::core::schema_official_resolver)};
+      schema_json, sourcemeta::core::schema_resolver)};
   if (base_dialect.has_value()) {
-    return emscripten::val(base_dialect.value());
+    return emscripten::val(
+        std::string{sourcemeta::core::to_string(base_dialect.value())});
   } else {
     return emscripten::val::null();
   }
