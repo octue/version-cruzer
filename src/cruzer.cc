@@ -344,7 +344,7 @@ auto index(const sourcemeta::core::SchemaFrame &frame,
       // We don't really need to manipulate the pointer templates
       // for this use case, so we can stringify to simplify the map
       std::ostringstream key;
-      sourcemeta::core::stringify(instance_location, key);
+      octue::cruzer::stringify(instance_location, key);
       result[key.str()].push_back(
           {instance_location, location.second.parent, location.second.pointer,
            sourcemeta::core::get(schema, location.second.pointer), schema,

@@ -19,7 +19,7 @@ static auto compare(
     // Left schema location
     const sourcemeta::core::Pointer &left_schema_location,
     // Left instance location
-    const sourcemeta::core::PointerTemplate &,
+    const octue::cruzer::PointerTemplate &,
 
     // Right current subschema
     const sourcemeta::core::JSON &right_subschema,
@@ -32,7 +32,7 @@ static auto compare(
     // Right schema location
     const sourcemeta::core::Pointer &right_schema_location,
     // Right instance location
-    const sourcemeta::core::PointerTemplate &) -> Trace {
+    const octue::cruzer::PointerTemplate &) -> Trace {
 
 #define MAKE_RESULT(expected_compatibility)                                    \
   Trace{Compatibility::expected_compatibility, left_schema_location,           \

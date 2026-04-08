@@ -5,6 +5,8 @@
 #include <sourcemeta/core/jsonpointer.h>
 #include <sourcemeta/core/jsonschema.h>
 
+#include <octue/cruzer_pointer_template.h>
+
 #ifndef OCTUE_CRUZER_EXPORT
 #include <octue/cruzer_export.h>
 #endif
@@ -26,7 +28,7 @@ struct Trace {
 };
 
 struct SchemaLocation {
-  const sourcemeta::core::PointerTemplate instance_location;
+  const octue::cruzer::PointerTemplate instance_location;
   const std::optional<sourcemeta::core::Pointer> parent;
   const sourcemeta::core::Pointer pointer;
   const std::reference_wrapper<const sourcemeta::core::JSON> subschema;
@@ -102,7 +104,7 @@ auto instance_locations(const sourcemeta::core::SchemaFrame &frame,
                         const std::optional<sourcemeta::core::JSON::String>
                             &default_dialect = std::nullopt)
     -> std::map<sourcemeta::core::Pointer,
-                std::vector<sourcemeta::core::PointerTemplate>>;
+                std::vector<octue::cruzer::PointerTemplate>>;
 
 OCTUE_CRUZER_EXPORT
 auto index(const sourcemeta::core::SchemaFrame &frame,

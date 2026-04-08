@@ -17,16 +17,16 @@ namespace {
 struct IteratorEntry {
   std::optional<sourcemeta::core::Pointer> parent;
   sourcemeta::core::Pointer pointer;
-  sourcemeta::core::PointerTemplate instance_location;
-  sourcemeta::core::PointerTemplate relative_instance_location;
+  octue::cruzer::PointerTemplate instance_location;
+  octue::cruzer::PointerTemplate relative_instance_location;
   bool orphan;
 };
 
 static auto
 walk(const std::optional<sourcemeta::core::Pointer> &parent,
      const sourcemeta::core::Pointer &pointer,
-     const sourcemeta::core::PointerTemplate &instance_location,
-     const sourcemeta::core::PointerTemplate &relative_instance_location,
+     const octue::cruzer::PointerTemplate &instance_location,
+     const octue::cruzer::PointerTemplate &relative_instance_location,
      std::vector<IteratorEntry> &entries,
      const sourcemeta::core::JSON &subschema,
      const sourcemeta::core::SchemaWalker &walker,
@@ -66,12 +66,12 @@ walk(const std::optional<sourcemeta::core::Pointer> &parent,
         new_pointer.emplace_back(pair.first);
         auto new_instance_location{instance_location};
         new_instance_location.emplace_back(
-            sourcemeta::core::PointerTemplate::Condition{pair.first});
+            octue::cruzer::PointerTemplate::Condition{pair.first});
         new_instance_location.emplace_back(
-            sourcemeta::core::PointerTemplate::Wildcard::Property);
+            octue::cruzer::PointerTemplate::Wildcard::Property);
         walk(pointer, new_pointer, new_instance_location,
-             {sourcemeta::core::PointerTemplate::Condition{pair.first},
-              sourcemeta::core::PointerTemplate::Wildcard::Property},
+             {octue::cruzer::PointerTemplate::Condition{pair.first},
+              octue::cruzer::PointerTemplate::Wildcard::Property},
              entries, pair.second, walker, resolver, new_dialect, orphan);
       } break;
 
@@ -81,9 +81,9 @@ walk(const std::optional<sourcemeta::core::Pointer> &parent,
         new_pointer.emplace_back(pair.first);
         auto new_instance_location{instance_location};
         new_instance_location.emplace_back(
-            sourcemeta::core::PointerTemplate::Wildcard::Key);
+            octue::cruzer::PointerTemplate::Wildcard::Key);
         walk(pointer, new_pointer, new_instance_location,
-             {sourcemeta::core::PointerTemplate::Wildcard::Key}, entries,
+             {octue::cruzer::PointerTemplate::Wildcard::Key}, entries,
              pair.second, walker, resolver, new_dialect, orphan);
       } break;
 
@@ -93,9 +93,9 @@ walk(const std::optional<sourcemeta::core::Pointer> &parent,
         new_pointer.emplace_back(pair.first);
         auto new_instance_location{instance_location};
         new_instance_location.emplace_back(
-            sourcemeta::core::PointerTemplate::Wildcard::Item);
+            octue::cruzer::PointerTemplate::Wildcard::Item);
         walk(pointer, new_pointer, new_instance_location,
-             {sourcemeta::core::PointerTemplate::Wildcard::Item}, entries,
+             {octue::cruzer::PointerTemplate::Wildcard::Item}, entries,
              pair.second, walker, resolver, new_dialect, orphan);
       } break;
 
@@ -105,12 +105,12 @@ walk(const std::optional<sourcemeta::core::Pointer> &parent,
         new_pointer.emplace_back(pair.first);
         auto new_instance_location{instance_location};
         new_instance_location.emplace_back(
-            sourcemeta::core::PointerTemplate::Condition{pair.first});
+            octue::cruzer::PointerTemplate::Condition{pair.first});
         new_instance_location.emplace_back(
-            sourcemeta::core::PointerTemplate::Wildcard::Item);
+            octue::cruzer::PointerTemplate::Wildcard::Item);
         walk(pointer, new_pointer, new_instance_location,
-             {sourcemeta::core::PointerTemplate::Condition{pair.first},
-              sourcemeta::core::PointerTemplate::Wildcard::Item},
+             {octue::cruzer::PointerTemplate::Condition{pair.first},
+              octue::cruzer::PointerTemplate::Wildcard::Item},
              entries, pair.second, walker, resolver, new_dialect, orphan);
       } break;
 
@@ -135,10 +135,10 @@ walk(const std::optional<sourcemeta::core::Pointer> &parent,
         new_pointer.emplace_back(pair.first);
         auto new_instance_location{instance_location};
         new_instance_location.emplace_back(
-            sourcemeta::core::PointerTemplate::Negation{});
+            octue::cruzer::PointerTemplate::Negation{});
         walk(pointer, new_pointer, new_instance_location,
-             {sourcemeta::core::PointerTemplate::Negation{}}, entries,
-             pair.second, walker, resolver, new_dialect, orphan);
+             {octue::cruzer::PointerTemplate::Negation{}}, entries, pair.second,
+             walker, resolver, new_dialect, orphan);
       } break;
 
       case sourcemeta::core::SchemaKeywordType::ApplicatorValueInPlaceMaybe: {
@@ -146,10 +146,10 @@ walk(const std::optional<sourcemeta::core::Pointer> &parent,
         new_pointer.emplace_back(pair.first);
         auto new_instance_location{instance_location};
         new_instance_location.emplace_back(
-            sourcemeta::core::PointerTemplate::Condition{pair.first});
+            octue::cruzer::PointerTemplate::Condition{pair.first});
         walk(pointer, new_pointer, new_instance_location,
-             {sourcemeta::core::PointerTemplate::Condition{pair.first}},
-             entries, pair.second, walker, resolver, new_dialect, orphan);
+             {octue::cruzer::PointerTemplate::Condition{pair.first}}, entries,
+             pair.second, walker, resolver, new_dialect, orphan);
       } break;
 
       case sourcemeta::core::SchemaKeywordType::ApplicatorElementsTraverseItem:
@@ -189,13 +189,13 @@ walk(const std::optional<sourcemeta::core::Pointer> &parent,
             new_pointer.emplace_back(index);
             auto new_instance_location{instance_location};
             new_instance_location.emplace_back(
-                sourcemeta::core::PointerTemplate::Condition{pair.first});
+                octue::cruzer::PointerTemplate::Condition{pair.first});
             new_instance_location.emplace_back(
-                sourcemeta::core::PointerTemplate::Condition{
+                octue::cruzer::PointerTemplate::Condition{
                     std::to_string(index)});
             walk(pointer, new_pointer, new_instance_location,
-                 {sourcemeta::core::PointerTemplate::Condition{pair.first},
-                  sourcemeta::core::PointerTemplate::Condition{
+                 {octue::cruzer::PointerTemplate::Condition{pair.first},
+                  octue::cruzer::PointerTemplate::Condition{
                       std::to_string(index)}},
                  entries, pair.second.at(index), walker, resolver, new_dialect,
                  orphan);
@@ -213,17 +213,17 @@ walk(const std::optional<sourcemeta::core::Pointer> &parent,
             new_pointer.emplace_back(index);
             auto new_instance_location{instance_location};
             new_instance_location.emplace_back(
-                sourcemeta::core::PointerTemplate::Condition{pair.first});
+                octue::cruzer::PointerTemplate::Condition{pair.first});
             new_instance_location.emplace_back(
-                sourcemeta::core::PointerTemplate::Condition{
+                octue::cruzer::PointerTemplate::Condition{
                     std::to_string(index)});
             new_instance_location.emplace_back(
-                sourcemeta::core::PointerTemplate::Negation{});
+                octue::cruzer::PointerTemplate::Negation{});
             walk(pointer, new_pointer, new_instance_location,
-                 {sourcemeta::core::PointerTemplate::Condition{pair.first},
-                  sourcemeta::core::PointerTemplate::Condition{
+                 {octue::cruzer::PointerTemplate::Condition{pair.first},
+                  octue::cruzer::PointerTemplate::Condition{
                       std::to_string(index)},
-                  sourcemeta::core::PointerTemplate::Negation{}},
+                  octue::cruzer::PointerTemplate::Negation{}},
                  entries, pair.second.at(index), walker, resolver, new_dialect,
                  orphan);
           }
@@ -273,12 +273,12 @@ walk(const std::optional<sourcemeta::core::Pointer> &parent,
             new_pointer.emplace_back(subpair.first);
             auto new_instance_location{instance_location};
             new_instance_location.emplace_back(
-                sourcemeta::core::PointerTemplate::Condition{pair.first});
+                octue::cruzer::PointerTemplate::Condition{pair.first});
             new_instance_location.emplace_back(
-                sourcemeta::core::PointerTemplate::Condition{subpair.first});
+                octue::cruzer::PointerTemplate::Condition{subpair.first});
             walk(pointer, new_pointer, new_instance_location,
-                 {sourcemeta::core::PointerTemplate::Condition{pair.first},
-                  sourcemeta::core::PointerTemplate::Condition{subpair.first}},
+                 {octue::cruzer::PointerTemplate::Condition{pair.first},
+                  octue::cruzer::PointerTemplate::Condition{subpair.first}},
                  entries, subpair.second, walker, resolver, new_dialect,
                  orphan);
           }
@@ -317,9 +317,9 @@ walk(const std::optional<sourcemeta::core::Pointer> &parent,
           new_pointer.emplace_back(pair.first);
           auto new_instance_location{instance_location};
           new_instance_location.emplace_back(
-              sourcemeta::core::PointerTemplate::Wildcard::Item);
+              octue::cruzer::PointerTemplate::Wildcard::Item);
           walk(pointer, new_pointer, new_instance_location,
-               {sourcemeta::core::PointerTemplate::Wildcard::Item}, entries,
+               {octue::cruzer::PointerTemplate::Wildcard::Item}, entries,
                pair.second, walker, resolver, new_dialect, orphan);
         }
 
@@ -370,7 +370,7 @@ iterate(const sourcemeta::core::JSON &schema,
       sourcemeta::core::dialect(schema, default_dialect)};
 
   const sourcemeta::core::Pointer pointer;
-  const sourcemeta::core::PointerTemplate instance_location;
+  const octue::cruzer::PointerTemplate instance_location;
   // If the given schema declares no dialect and the user didn't
   // pass a default, then there is nothing we can do. We know
   // the current schema is a subschema, but cannot walk any further.
@@ -386,8 +386,8 @@ iterate(const sourcemeta::core::JSON &schema,
 }
 
 struct CacheSubschema {
-  const sourcemeta::core::PointerTemplate instance_location;
-  const sourcemeta::core::PointerTemplate relative_instance_location;
+  const octue::cruzer::PointerTemplate instance_location;
+  const octue::cruzer::PointerTemplate relative_instance_location;
   const bool orphan;
   const std::optional<sourcemeta::core::Pointer> parent;
 };
@@ -395,10 +395,10 @@ struct CacheSubschema {
 static auto traverse_origin_instance_locations(
     const sourcemeta::core::SchemaFrame &frame,
     const std::map<sourcemeta::core::Pointer,
-                   std::vector<sourcemeta::core::PointerTemplate>> &instances,
+                   std::vector<octue::cruzer::PointerTemplate>> &instances,
     const sourcemeta::core::Pointer &current,
-    const std::optional<sourcemeta::core::PointerTemplate> &accumulator,
-    std::vector<sourcemeta::core::PointerTemplate> &destination) -> void {
+    const std::optional<octue::cruzer::PointerTemplate> &accumulator,
+    std::vector<octue::cruzer::PointerTemplate> &destination) -> void {
   if (accumulator.has_value() &&
       std::find(destination.cbegin(), destination.cend(),
                 accumulator.value()) == destination.cend()) {
@@ -425,12 +425,11 @@ static auto traverse_origin_instance_locations(
 static auto repopulate_instance_locations(
     const sourcemeta::core::SchemaFrame &frame,
     const std::map<sourcemeta::core::Pointer,
-                   std::vector<sourcemeta::core::PointerTemplate>> &instances,
+                   std::vector<octue::cruzer::PointerTemplate>> &instances,
     const std::map<sourcemeta::core::Pointer, CacheSubschema> &cache,
     const CacheSubschema &cache_entry,
-    std::vector<sourcemeta::core::PointerTemplate> &destination,
-    const std::optional<sourcemeta::core::PointerTemplate> &accumulator)
-    -> void {
+    std::vector<octue::cruzer::PointerTemplate> &destination,
+    const std::optional<octue::cruzer::PointerTemplate> &accumulator) -> void {
   if (cache_entry.orphan && cache_entry.instance_location.empty()) {
     return;
   } else if (cache_entry.parent.has_value() &&
@@ -484,9 +483,9 @@ auto instance_locations(
     const sourcemeta::core::SchemaResolver &resolver,
     const std::optional<sourcemeta::core::JSON::String> &default_dialect)
     -> std::map<sourcemeta::core::Pointer,
-                std::vector<sourcemeta::core::PointerTemplate>> {
+                std::vector<octue::cruzer::PointerTemplate>> {
   std::map<sourcemeta::core::Pointer,
-           std::vector<sourcemeta::core::PointerTemplate>>
+           std::vector<octue::cruzer::PointerTemplate>>
       result;
   std::map<sourcemeta::core::Pointer, CacheSubschema> subschemas;
 
