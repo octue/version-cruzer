@@ -299,11 +299,11 @@ auto is_compatible_with(
     const std::optional<sourcemeta::core::JSON::String> &default_id_right)
     -> std::vector<Trace> {
   sourcemeta::core::SchemaFrame frame_left{
-      sourcemeta::core::SchemaFrame::Mode::Instances};
+      sourcemeta::core::SchemaFrame::Mode::References};
   frame_left.analyse(left, walker_left, resolver_left, default_dialect_left,
                      default_id_left);
   sourcemeta::core::SchemaFrame frame_right{
-      sourcemeta::core::SchemaFrame::Mode::Instances};
+      sourcemeta::core::SchemaFrame::Mode::References};
   frame_right.analyse(right, walker_right, resolver_right,
                       default_dialect_right, default_id_right);
 
@@ -319,6 +319,7 @@ auto index(const sourcemeta::core::SchemaFrame &frame,
            const sourcemeta::core::SchemaWalker &walker,
            const sourcemeta::core::SchemaResolver &resolver) -> SchemaIndex {
   SchemaIndex result;
+  const auto instances{instance_locations(frame, schema, walker, resolver)};
 
   for (const auto &location : frame.locations()) {
     // We only care about anonymous subschemas and named subschemas (a.k.a.
@@ -334,8 +335,12 @@ auto index(const sourcemeta::core::SchemaFrame &frame,
       continue;
     }
 
-    for (const auto &instance_location :
-         frame.instance_locations(location.second)) {
+    const auto match{instances.find(location.second.pointer)};
+    if (match == instances.cend()) {
+      continue;
+    }
+
+    for (const auto &instance_location : match->second) {
       // We don't really need to manipulate the pointer templates
       // for this use case, so we can stringify to simplify the map
       std::ostringstream key;
@@ -368,11 +373,11 @@ auto version(
 
   // (1) Frame both schemas for unresolved instance locations
   sourcemeta::core::SchemaFrame frame_from{
-      sourcemeta::core::SchemaFrame::Mode::Instances};
+      sourcemeta::core::SchemaFrame::Mode::References};
   frame_from.analyse(from, walker_from, resolver_from, default_dialect_from,
                      default_id_from);
   sourcemeta::core::SchemaFrame frame_to{
-      sourcemeta::core::SchemaFrame::Mode::Instances};
+      sourcemeta::core::SchemaFrame::Mode::References};
   frame_to.analyse(to, walker_to, resolver_to, default_dialect_to,
                    default_id_to);
 

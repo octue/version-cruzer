@@ -10,6 +10,7 @@
 #endif
 
 #include <functional>    // std::reference_wrapper
+#include <map>           // std::map
 #include <optional>      // std::optional, std::nullopt
 #include <unordered_map> // std::unordered_map
 #include <vector>        // std::vector
@@ -90,6 +91,18 @@ auto is_compatible_with(
 OCTUE_CRUZER_EXPORT
 auto is_compatible_with(const SchemaIndex &left, const SchemaIndex &right)
     -> std::vector<Trace>;
+
+OCTUE_CRUZER_EXPORT
+auto instance_locations(const sourcemeta::core::SchemaFrame &frame,
+                        const sourcemeta::core::JSON &schema,
+                        const sourcemeta::core::SchemaWalker &walker =
+                            sourcemeta::core::schema_official_walker,
+                        const sourcemeta::core::SchemaResolver &resolver =
+                            sourcemeta::core::schema_official_resolver,
+                        const std::optional<sourcemeta::core::JSON::String>
+                            &default_dialect = std::nullopt)
+    -> std::map<sourcemeta::core::Pointer,
+                std::vector<sourcemeta::core::PointerTemplate>>;
 
 OCTUE_CRUZER_EXPORT
 auto index(const sourcemeta::core::SchemaFrame &frame,
