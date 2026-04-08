@@ -9,18 +9,23 @@
 #include <sourcemeta/core/json_hash.h>
 #include <sourcemeta/core/json_object.h>
 
+#include <sourcemeta/core/numeric.h>
+#include <sourcemeta/core/preprocessor.h>
+
 #include <algorithm>        // std::any_of
+#include <bitset>           // std::bitset
 #include <cassert>          // assert
+#include <cmath>            // std::modf, std::trunc, std::isinf, std::isnan
+#include <cstddef>          // std::size_t
 #include <cstdint>          // std::int64_t, std::uint8_t
 #include <functional>       // std::less, std::reference_wrapper, std::function
 #include <initializer_list> // std::initializer_list
 #include <memory>           // std::allocator
-#include <optional>         // std::optional
 #include <set>              // std::set
 #include <sstream>          // std::basic_istringstream
 #include <string>           // std::basic_string, std::char_traits
 #include <string_view>      // std::basic_string_view
-#include <type_traits>      // std::enable_if_t, std::is_same_v
+#include <type_traits>      // std::is_same_v
 #include <utility>          // std::pair
 
 namespace sourcemeta::core {
@@ -40,12 +45,15 @@ public:
   template <typename T> using Allocator = std::allocator<T>;
   /// The string type used by the JSON document.
   using String = std::basic_string<Char, CharTraits, Allocator<Char>>;
+  /// The string view type used by the JSON document.
+  using StringView = std::basic_string_view<Char, CharTraits>;
   /// The array type used by the JSON document.
   using Array = JSONArray<JSON>;
   /// The object type used by the JSON document.
   using Object = JSONObject<String, JSON, PropertyHashJSON<JSON::String>>;
   /// The parsing phase of a JSON document.
-  enum class ParsePhase { Pre, Post };
+  enum class ParsePhase : std::uint8_t { Pre, Post };
+
   // The enumeration indexes must stay in sync with the internal variant
   /// The different types of a JSON instance.
   enum class Type : std::uint8_t {
@@ -55,16 +63,23 @@ public:
     Real = 3,
     String = 4,
     Array = 5,
-    Object = 6
+    Object = 6,
+    Decimal = 7
   };
 
+  /// A set of types
+  using TypeSet = std::bitset<8>;
+
+  /// The context type for parse callbacks
+  enum class ParseContext : std::uint8_t { Root, Property, Index };
+
   /// An optional callback that can be passed to parsing functions to obtain
-  /// metadata during the parsing process. Each subdocument will emit 2 events:
-  /// a "pre" and a "post". When parsing object and arrays, during the "pre"
-  /// event, the value corresponds to the property name or index, respectively.
+  /// metadata during the parsing process
   using ParseCallback = std::function<void(
       const ParsePhase phase, const Type type, const std::uint64_t line,
-      const std::uint64_t column, const JSON &value)>;
+      const std::uint64_t column, const ParseContext context,
+      const std::size_t index, const String &property)>;
+
   /// A comparison function between object property keys.
   /// See https://en.cppreference.com/w/cpp/named_req/Compare
   using KeyComparison = std::function<bool(const String &, const String &)>;
@@ -104,9 +119,10 @@ public:
   explicit JSON(const int value);
 
   // On some systems, `std::int64_t` might be equal to `long`
-  template <typename T = std::int64_t,
-            typename = std::enable_if_t<!std::is_same_v<T, std::int64_t>>>
-  explicit JSON(const long value) : current_type{Type::Integer} {
+  template <typename T = std::int64_t>
+  explicit JSON(const long value)
+    requires(!std::is_same_v<T, std::int64_t>)
+      : current_type{Type::Integer} {
     this->data_integer = value;
   }
 
@@ -208,17 +224,22 @@ public:
   ///
   /// assert(my_object.is_object());
   /// ```
-  explicit JSON(
-      std::initializer_list<typename Object::Container::value_type> values);
+  explicit JSON(std::initializer_list<typename Object::pair_value_type> values);
 
   /// A copy constructor for the object type.
   explicit JSON(const Object &value);
 
+  /// A copy constructor for the decimal type.
+  explicit JSON(const Decimal &value);
+
+  /// A move constructor for the decimal type.
+  explicit JSON(Decimal &&value);
+
   /// Misc constructors
   JSON(const JSON &);
-  JSON(JSON &&);
+  JSON(JSON &&) noexcept;
   auto operator=(const JSON &) -> JSON &;
-  auto operator=(JSON &&) -> JSON &;
+  auto operator=(JSON &&) noexcept -> JSON &;
 
   /// Destructor
   ~JSON();
@@ -353,7 +374,10 @@ public:
   /// const sourcemeta::core::JSON document{true};
   /// assert(document.is_boolean());
   /// ```
-  [[nodiscard]] auto is_boolean() const noexcept -> bool;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto is_boolean() const noexcept
+      -> bool {
+    return this->current_type == Type::Boolean;
+  }
 
   /// Check if the input JSON document is null. For example:
   ///
@@ -364,7 +388,10 @@ public:
   /// const sourcemeta::core::JSON document{nullptr};
   /// assert(document.is_null());
   /// ```
-  [[nodiscard]] auto is_null() const noexcept -> bool;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto is_null() const noexcept
+      -> bool {
+    return this->current_type == Type::Null;
+  }
 
   /// Check if the input JSON document is an integer. For example:
   ///
@@ -375,7 +402,10 @@ public:
   /// const sourcemeta::core::JSON document{5};
   /// assert(document.is_integer());
   /// ```
-  [[nodiscard]] auto is_integer() const noexcept -> bool;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto is_integer() const noexcept
+      -> bool {
+    return this->current_type == Type::Integer;
+  }
 
   /// Check if the input JSON document is a real type. For example:
   ///
@@ -386,19 +416,36 @@ public:
   /// const sourcemeta::core::JSON document{3.14};
   /// assert(document.is_real());
   /// ```
-  [[nodiscard]] auto is_real() const noexcept -> bool;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto is_real() const noexcept
+      -> bool {
+    return this->current_type == Type::Real;
+  }
 
-  /// Check if the input JSON document is a real number that represents an
-  /// integer. For example:
+  /// Check if the input JSON document is an integer, a real number that
+  /// represents an integer, or an integer decimal. For example:
   ///
   /// ```cpp
   /// #include <sourcemeta/core/json.h>
   /// #include <cassert>
   ///
   /// const sourcemeta::core::JSON document{5.0};
-  /// assert(document.is_integer_real());
+  /// assert(document.is_integral());
   /// ```
-  [[nodiscard]] auto is_integer_real() const noexcept -> bool;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto is_integral() const noexcept
+      -> bool {
+    switch (this->type()) {
+      case Type::Integer:
+        return true;
+      case Type::Real: {
+        Real integral_part = 0.0;
+        return std::modf(this->to_real(), &integral_part) == 0.0;
+      }
+      case Type::Decimal:
+        return this->to_decimal().is_integral();
+      default:
+        return false;
+    }
+  }
 
   /// Check if the input JSON document is either an integer or a real type. For
   /// example:
@@ -412,7 +459,10 @@ public:
   /// assert(real.is_number());
   /// assert(integer.is_number());
   /// ```
-  [[nodiscard]] auto is_number() const noexcept -> bool;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto is_number() const noexcept
+      -> bool {
+    return this->is_integer() || this->is_real() || this->is_decimal();
+  }
 
   /// Check if the input JSON document is either a positive integer or a
   /// positive real number. Zero is considered to be positive. For example:
@@ -437,7 +487,10 @@ public:
   /// const sourcemeta::core::JSON document{"foo"};
   /// assert(document.is_string());
   /// ```
-  [[nodiscard]] auto is_string() const noexcept -> bool;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto is_string() const noexcept
+      -> bool {
+    return this->current_type == Type::String;
+  }
 
   /// Check if the input JSON document is an array. For example:
   ///
@@ -449,7 +502,10 @@ public:
   /// document=sourcemeta::core::parse_json("[ 1, 2, 3 ]");
   /// assert(document.is_array());
   /// ```
-  [[nodiscard]] auto is_array() const noexcept -> bool;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto is_array() const noexcept
+      -> bool {
+    return this->current_type == Type::Array;
+  }
 
   /// Check if the input JSON document is an object. For example:
   ///
@@ -461,7 +517,26 @@ public:
   /// document=sourcemeta::core::parse_json("{ \"foo\": 1 }");
   /// assert(document.is_object());
   /// ```
-  [[nodiscard]] auto is_object() const noexcept -> bool;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto is_object() const noexcept
+      -> bool {
+    return this->current_type == Type::Object;
+  }
+
+  /// Check if the input JSON document is an arbitrary precision decimal value.
+  /// For example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/json.h>
+  /// #include <cassert>
+  ///
+  /// const sourcemeta::core::Decimal value{1234567890};
+  /// const sourcemeta::core::JSON document{value};
+  /// assert(document.is_decimal());
+  /// ```
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto is_decimal() const noexcept
+      -> bool {
+    return this->current_type == Type::Decimal;
+  }
 
   /// Get the type of the JSON document. For example:
   ///
@@ -472,7 +547,10 @@ public:
   /// const sourcemeta::core::JSON document{true};
   /// assert(document.type() == sourcemeta::core::JSON::Type::Boolean);
   /// ```
-  [[nodiscard]] auto type() const noexcept -> Type;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto type() const noexcept
+      -> Type {
+    return this->current_type;
+  }
 
   /*
    * Type conversion
@@ -489,7 +567,11 @@ public:
   /// assert(document.is_boolean());
   /// assert(document.to_boolean());
   /// ```
-  [[nodiscard]] auto to_boolean() const noexcept -> bool;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto to_boolean() const noexcept
+      -> bool {
+    assert(this->is_boolean());
+    return this->data_boolean;
+  }
 
   /// Convert a JSON instance into a signed integer value. The result of this
   /// method is undefined unless the JSON instance holds an integer value. For
@@ -503,7 +585,11 @@ public:
   /// assert(document.is_integer());
   /// assert(document.to_integer() == 5);
   /// ```
-  [[nodiscard]] auto to_integer() const noexcept -> Integer;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto to_integer() const noexcept
+      -> Integer {
+    assert(this->is_integer());
+    return this->data_integer;
+  }
 
   /// Convert a JSON instance into an IEEE 64-bit floating-point value. The
   /// result of this method is undefined unless the JSON instance holds a real
@@ -517,7 +603,33 @@ public:
   /// assert(document.is_real());
   /// assert(document.to_real() == 3.14);
   /// ```
-  [[nodiscard]] auto to_real() const noexcept -> Real;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto to_real() const noexcept
+      -> Real {
+    assert(this->is_real());
+    assert(!std::isinf(this->data_real));
+    assert(!std::isnan(this->data_real));
+    return this->data_real;
+  }
+
+  /// Convert a JSON instance into a decimal value. The result of this method
+  /// is undefined unless the JSON instance holds a decimal value. For example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/json.h>
+  /// #include <cassert>
+  ///
+  /// const sourcemeta::core::Decimal value{1234567890};
+  /// const sourcemeta::core::JSON document{value};
+  /// assert(document.is_decimal());
+  /// assert(document.to_decimal().to_int64() == 1234567890);
+  /// ```
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto to_decimal() const noexcept
+      -> const Decimal & {
+    assert(this->is_decimal());
+    assert(this->data_decimal->is_finite());
+    assert(!this->data_decimal->is_nan());
+    return *this->data_decimal;
+  }
 
   /// Convert a JSON instance into a standard string value. The result of this
   /// method is undefined unless the JSON instance holds a string value. For
@@ -531,7 +643,11 @@ public:
   /// assert(document.is_string());
   /// assert(document.to_string() == "foo");
   /// ```
-  [[nodiscard]] auto to_string() const noexcept -> const String &;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto to_string() const noexcept
+      -> const String & {
+    assert(this->is_string());
+    return this->data_string;
+  }
 
   /// Get a standard input string stream from a JSON string. The result of this
   /// method is undefined unless the JSON instance holds a string value. For
@@ -567,7 +683,14 @@ public:
   ///                           << "\n";
   ///               });
   /// ```
-  [[nodiscard]] auto as_array() const noexcept -> const Array &;
+  // TODO: Merge const/non-const overloads of as_array, as_object, at, front,
+  // back using deducing this once Apple Clang supports it
+  // (__cpp_explicit_this_parameter)
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto as_array() const noexcept
+      -> const Array & {
+    assert(this->is_array());
+    return this->data_array;
+  }
 
   /// Get the JSON document as an array instance. This is convenient
   /// for using mutable iterators on the array. For example:
@@ -581,7 +704,11 @@ public:
   ///   sourcemeta::core::parse_json("[ 1, 2, 3 ]");
   /// std::sort(document.as_array().begin(), document.as_array().end());
   /// ```
-  [[nodiscard]] auto as_array() noexcept -> Array &;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto as_array() noexcept
+      -> Array & {
+    assert(this->is_array());
+    return this->data_array;
+  }
 
   /// Get the JSON document as an object instance. This is convenient
   /// for using constant iterators on the object. For example:
@@ -605,7 +732,11 @@ public:
   ///                           << "\n";
   ///               });
   /// ```
-  [[nodiscard]] auto as_object() noexcept -> Object &;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto as_object() noexcept
+      -> Object & {
+    assert(this->is_object());
+    return this->data_object;
+  }
 
   /// Get the JSON document as an object instance. This is convenient
   /// for using mutable iterators on the object. For example:
@@ -625,7 +756,11 @@ public:
   ///   value += sourcemeta::core::JSON{1};
   /// }
   /// ```
-  [[nodiscard]] auto as_object() const noexcept -> const Object &;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto as_object() const noexcept
+      -> const Object & {
+    assert(this->is_object());
+    return this->data_object;
+  }
 
   /// Get the JSON numeric document as a real number if it is not one already.
   /// For example:
@@ -637,7 +772,12 @@ public:
   /// const sourcemeta::core::JSON document{5};
   /// assert(document.as_real() == 5.0);
   /// ```
-  [[nodiscard]] auto as_real() const noexcept -> Real;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto as_real() const noexcept
+      -> Real {
+    assert(this->is_number());
+    return this->is_real() ? this->to_real()
+                           : static_cast<Real>(this->to_integer());
+  }
 
   /// Get the JSON numeric document as an integer number if it is not one
   /// already. If the number is a real number, truncation will take place. For
@@ -650,7 +790,15 @@ public:
   /// const sourcemeta::core::JSON document{5.3};
   /// assert(document.as_integer() == 5);
   /// ```
-  [[nodiscard]] auto as_integer() const noexcept -> Integer;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto as_integer() const noexcept
+      -> Integer {
+    assert(this->is_number());
+    if (this->is_integer()) {
+      return this->to_integer();
+    } else {
+      return static_cast<Integer>(std::trunc(this->to_real()));
+    }
+  }
 
   /*
    * Getters
@@ -674,8 +822,12 @@ public:
   ///   sourcemeta::core::parse_json("{ \"1\": "foo" }");
   /// assert(my_array.at(1).to_string() == "foo");
   /// ```
-  [[nodiscard]] auto at(const typename Array::size_type index) const
-      -> const JSON &;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto
+  at(const typename Array::size_type index) const -> const JSON & {
+    assert(this->is_array());
+    assert(index < this->size());
+    return this->data_array.data.at(index);
+  }
 
   /// This method retrieves a element by its index. If the input JSON instance
   /// is an object, a property that corresponds to the stringified integer will
@@ -695,7 +847,12 @@ public:
   ///   sourcemeta::core::parse_json("{ \"1\": "foo" }");
   /// assert(my_array.at(1).to_string() == "foo");
   /// ```
-  [[nodiscard]] auto at(const typename Array::size_type index) -> JSON &;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto
+  at(const typename Array::size_type index) -> JSON & {
+    assert(this->is_array());
+    assert(index < this->size());
+    return this->data_array.data.at(index);
+  }
 
   /// This method retrieves an object element.
   ///
@@ -709,7 +866,13 @@ public:
   ///   sourcemeta::core::parse_json("{ \"foo\": 1, \"bar\": 2 }");
   /// assert(my_object.at("bar").to_integer() == 2);
   /// ```
-  [[nodiscard]] auto at(const String &key) const -> const JSON &;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto at(const String &key) const
+      -> const JSON & {
+    assert(this->is_object());
+    assert(this->defines(key));
+    const auto &object{this->data_object};
+    return object.at(key, object.hash(key));
+  }
 
   /// This method retrieves an object element given a pre-calculated property
   /// hash.
@@ -725,9 +888,13 @@ public:
   /// assert(my_object.at("bar",
   ///  my_object.as_object().hash("bar")).to_integer() == 2);
   /// ```
-  [[nodiscard]] auto at(const String &key,
-                        const typename Object::Container::hash_type hash) const
-      -> const JSON &;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto
+  at(const String &key, const typename Object::hash_type hash) const
+      -> const JSON & {
+    assert(this->is_object());
+    assert(this->defines(key));
+    return this->data_object.at(key, hash);
+  }
 
   /// This method retrieves an object element.
   ///
@@ -741,7 +908,13 @@ public:
   ///   sourcemeta::core::parse_json("{ \"foo\": 1, \"bar\": 2 }");
   /// assert(my_object.at("bar").to_integer() == 2);
   /// ```
-  [[nodiscard]] auto at(const String &key) -> JSON &;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto at(const String &key)
+      -> JSON & {
+    assert(this->is_object());
+    assert(this->defines(key));
+    auto &object{this->data_object};
+    return object.at(key, object.hash(key));
+  }
 
   /// This method retrieves an object element given a pre-calculated property
   /// hash.
@@ -757,9 +930,60 @@ public:
   /// assert(my_object.at("bar",
   ///   my_object.as_object().hash("bar")).to_integer() == 2);
   /// ```
-  [[nodiscard]] auto at(const String &key,
-                        const typename Object::Container::hash_type hash)
-      -> JSON &;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto
+  at(const String &key, const typename Object::hash_type hash) -> JSON & {
+    assert(this->is_object());
+    assert(this->defines(key));
+    return this->data_object.at(key, hash);
+  }
+
+  /// This method retrieves an object property or a user provided value if such
+  /// property is not defined.
+  ///
+  /// For example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/json.h>
+  /// #include <cassert>
+  ///
+  /// sourcemeta::core::JSON my_object =
+  ///   sourcemeta::core::parse_json("{ \"foo\": 1, \"bar\": 2 }");
+  /// const sourcemeta::core::JSON default_value{3};
+  /// assert(my_object.at_or("baz", default_value).to_integer() == 3);
+  /// ```
+  [[nodiscard]] auto at_or(const String &key, const JSON &otherwise) const
+      -> const JSON &;
+
+  /// This method retrieves an object property given a pre-calculated property
+  /// hash, or a user provided value if such property is not defined.
+  ///
+  /// For example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/json.h>
+  /// #include <cassert>
+  ///
+  /// sourcemeta::core::JSON my_object =
+  ///   sourcemeta::core::parse_json("{ \"foo\": 1, \"bar\": 2 }");
+  /// const sourcemeta::core::JSON default_value{3};
+  /// assert(my_object.at_or("foo",
+  ///   my_object.as_object().hash("foo"),
+  ///   default_value).to_integer() == 1);
+  /// ```
+  [[nodiscard]] auto at_or(const String &key,
+                           const typename Object::hash_type hash,
+                           const JSON &otherwise) const -> const JSON &;
+
+  // Constant reference parameters can accept xvalues which will be destructed
+  // after the call. When the function returns such a parameter also as constant
+  // reference, then the returned reference can be used after the object it
+  // refers to has been destroyed.
+  // https://clang.llvm.org/extra/clang-tidy/checks/bugprone/return-const-ref-from-parameter.html
+  // This overload avoids mis-uses of retuning const reference parameter as
+  // constant reference.
+  [[nodiscard]] auto at_or(const String &key,
+                           const typename Object::hash_type hash,
+                           JSON &&otherwise) const -> const JSON & = delete;
 
   /// This method retrieves a reference to the first element of a JSON array.
   /// This method is undefined if the input JSON instance is an empty array. For
@@ -773,7 +997,11 @@ public:
   ///   sourcemeta::core::parse_json("[ 1, 2, 3 ]");
   /// assert(document.front().to_integer() == 1);
   /// ```
-  [[nodiscard]] auto front() -> JSON &;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto front() -> JSON & {
+    assert(this->is_array());
+    assert(!this->empty());
+    return this->data_array.data.front();
+  }
 
   /// This method retrieves a reference to the first element of a JSON array.
   /// This method is undefined if the input JSON instance is an empty array. For
@@ -787,7 +1015,12 @@ public:
   ///   sourcemeta::core::parse_json("[ 1, 2, 3 ]");
   /// assert(document.front().to_integer() == 1);
   /// ```
-  [[nodiscard]] auto front() const -> const JSON &;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto front() const
+      -> const JSON & {
+    assert(this->is_array());
+    assert(!this->empty());
+    return this->data_array.data.front();
+  }
 
   /// This method retrieves a reference to the last element of a JSON array.
   /// This method is undefined if the input JSON instance is an empty array. For
@@ -801,7 +1034,11 @@ public:
   ///   sourcemeta::core::parse_json("[ 1, 2, 3 ]");
   /// assert(document.back().to_integer() == 3);
   /// ```
-  [[nodiscard]] auto back() -> JSON &;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto back() -> JSON & {
+    assert(this->is_array());
+    assert(!this->empty());
+    return this->data_array.data.back();
+  }
 
   /// This method retrieves a reference to the last element of a JSON array.
   /// This method is undefined if the input JSON instance is an empty array. For
@@ -815,7 +1052,12 @@ public:
   ///   sourcemeta::core::parse_json("[ 1, 2, 3 ]");
   /// assert(document.back().to_integer() == 3);
   /// ```
-  [[nodiscard]] auto back() const -> const JSON &;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto back() const
+      -> const JSON & {
+    assert(this->is_array());
+    assert(!this->empty());
+    return this->data_array.data.back();
+  }
 
   /*
    * Read operations
@@ -841,7 +1083,15 @@ public:
   /// assert(my_array.size() == 2);
   /// assert(my_string.size() == 3);
   /// ```
-  [[nodiscard]] auto size() const -> std::size_t;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto size() const -> std::size_t {
+    if (this->is_object()) {
+      return this->object_size();
+    } else if (this->is_array()) {
+      return this->array_size();
+    } else {
+      return this->string_size();
+    }
+  }
 
   /// If the input JSON instance is a string, return its logical length.
   ///
@@ -854,7 +1104,11 @@ public:
   /// const sourcemeta::core::JSON my_string{"foo"};
   /// assert(my_string.string_size() == 3);
   /// ```
-  [[nodiscard]] auto string_size() const -> std::size_t;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto string_size() const
+      -> std::size_t {
+    assert(this->is_string());
+    return JSON::size(this->data_string);
+  }
 
   /// If the input JSON instance is an array, return its number of elements.
   ///
@@ -868,7 +1122,11 @@ public:
   ///   sourcemeta::core::parse_json("[ 1, 2 ]");
   /// assert(my_array.array_size() == 2);
   /// ```
-  [[nodiscard]] auto array_size() const -> std::size_t;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto array_size() const
+      -> std::size_t {
+    assert(this->is_array());
+    return this->data_array.data.size();
+  }
 
   /// If the input JSON instance is an object, return its number of pairs.
   ///
@@ -882,7 +1140,11 @@ public:
   ///   sourcemeta::core::parse_json("{ \"foo\": 1 }");
   /// assert(my_object.object_size() == 1);
   /// ```
-  [[nodiscard]] auto object_size() const -> std::size_t;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto object_size() const
+      -> std::size_t {
+    assert(this->is_object());
+    return this->data_object.size();
+  }
 
   /// If the input JSON instance is string, input JSON instance is a string,
   /// return its number of bytes. For example:
@@ -895,7 +1157,11 @@ public:
   ///   sourcemeta::core::parse_json("\"\\uD83D\\uDCA9\"")};
   /// assert(my_string.size() == 2);
   /// ```
-  [[nodiscard]] auto byte_size() const -> std::size_t;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto byte_size() const
+      -> std::size_t {
+    assert(this->is_string());
+    return this->data_string.size();
+  }
 
   /// Estimate the byte size occupied by the given parsed JSON instance (not its
   /// stringified representation). Keep in mind that as the method name implies,
@@ -963,7 +1229,15 @@ public:
   /// assert(my_array.empty());
   /// assert(my_string.empty());
   /// ```
-  [[nodiscard]] auto empty() const -> bool;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto empty() const -> bool {
+    if (this->is_object()) {
+      return this->data_object.empty();
+    } else if (this->is_array()) {
+      return this->data_array.data.empty();
+    } else {
+      return this->data_string.empty();
+    }
+  }
 
   /// This method checks whether an input JSON object defines a specific key
   /// and returns the value if it does. For example:
@@ -978,7 +1252,12 @@ public:
   /// const auto result = document.try_at("foo");
   /// EXPECT_TRUE(result);
   /// EXPECT_EQ(result->to_integer(), 1);
-  [[nodiscard]] auto try_at(const String &key) const -> const JSON *;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto
+  try_at(const String &key) const -> const JSON * {
+    assert(this->is_object());
+    const auto &object{this->data_object};
+    return object.try_at(key, object.hash(key));
+  }
 
   /// This method checks, given a pre-calculated hash, whether an input JSON
   /// object defines a specific key and returns the value if it does. For
@@ -995,10 +1274,13 @@ public:
   ///   document.as_object().hash("foo"));
   /// EXPECT_TRUE(result);
   /// EXPECT_EQ(result->to_integer(), 1);
-  [[nodiscard]] auto
-  try_at(const String &key,
-         const typename Object::Container::hash_type hash) const
-      -> const JSON *;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto
+  try_at(const String &key, const typename Object::hash_type hash) const
+      -> const JSON * {
+    assert(this->is_object());
+    const auto &object{this->data_object};
+    return object.try_at(key, hash);
+  }
 
   /// This method checks whether an input JSON object defines a specific key.
   /// For example:
@@ -1012,7 +1294,12 @@ public:
   /// assert(document.defines("foo"));
   /// assert(!document.defines("bar"));
   /// ```
-  [[nodiscard]] auto defines(const String &key) const -> bool;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto
+  defines(const String &key) const -> bool {
+    assert(this->is_object());
+    const auto &object{this->data_object};
+    return object.defines(key, object.hash(key));
+  }
 
   /// This method checks whether an input JSON object defines a specific key
   /// given a pre-calculated property hash. For example:
@@ -1028,9 +1315,12 @@ public:
   /// assert(document.defines("bar",
   ///   document.as_object().hash("bar")));
   /// ```
-  [[nodiscard]] auto
-  defines(const String &key,
-          const typename Object::Container::hash_type hash) const -> bool;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto
+  defines(const String &key, const typename Object::hash_type hash) const
+      -> bool {
+    assert(this->is_object());
+    return this->data_object.defines(key, hash);
+  }
 
   /// This method checks whether an input JSON object defines a specific integer
   /// key. For example:
@@ -1044,8 +1334,10 @@ public:
   /// assert(document.defines(0));
   /// assert(!document.defines(1));
   /// ```
-  [[nodiscard]] auto defines(const typename Array::size_type index) const
-      -> bool;
+  [[nodiscard]] SOURCEMETA_FORCEINLINE inline auto
+  defines(const typename Array::size_type index) const -> bool {
+    return this->defines(std::to_string(index));
+  }
 
   /// This method checks whether an input JSON object defines at least one given
   /// key.
@@ -1084,7 +1376,7 @@ public:
   [[nodiscard]] auto defines_any(std::initializer_list<String> keys) const
       -> bool;
 
-  /// This method checks if an JSON array contains a given JSON instance. For
+  /// This method checks if a JSON array contains a given JSON instance. For
   /// example:
   ///
   /// ```cpp
@@ -1098,7 +1390,21 @@ public:
   /// ```
   [[nodiscard]] auto contains(const JSON &element) const -> bool;
 
-  /// This method checks if an JSON string contains a given string. For
+  /// This method checks if a JSON array contains a given string. For
+  /// example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/json.h>
+  /// #include <cassert>
+  ///
+  /// const sourcemeta::core::JSON document =
+  ///   sourcemeta::core::parse_json(R"JSON([ "foo", "bar", "baz" ])JSON");
+  /// assert(document.contains("bar"));
+  /// assert(!document.contains("qux"));
+  /// ```
+  [[nodiscard]] auto contains(const StringView element) const -> bool;
+
+  /// This method checks if a JSON string includes a given substring. For
   /// example:
   ///
   /// ```cpp
@@ -1106,12 +1412,12 @@ public:
   /// #include <cassert>
   ///
   /// const sourcemeta::core::JSON document{"foo bar baz"};
-  /// assert(document.contains("bar"));
-  /// assert(!document.contains("baz"));
+  /// assert(document.includes("bar"));
+  /// assert(!document.includes("qux"));
   /// ```
-  [[nodiscard]] auto contains(const String &input) const -> bool;
+  [[nodiscard]] auto includes(const String &input) const -> bool;
 
-  /// This method checks if an JSON string contains a given character. For
+  /// This method checks if a JSON string includes a given character. For
   /// example:
   ///
   /// ```cpp
@@ -1119,10 +1425,10 @@ public:
   /// #include <cassert>
   ///
   /// const sourcemeta::core::JSON document{"foo"};
-  /// assert(document.contains('f'));
-  /// assert(!document.contains('b'));
+  /// assert(document.includes('f'));
+  /// assert(!document.includes('b'));
   /// ```
-  [[nodiscard]] auto contains(const String::value_type input) const -> bool;
+  [[nodiscard]] auto includes(const String::value_type input) const -> bool;
 
   /// This method checks if an JSON array does not contain duplicated items. For
   /// example:
@@ -1242,6 +1548,22 @@ public:
   /// ```
   auto assign(const String &key, JSON &&value) -> void;
 
+  /// This method sets or updates an object key. However, it will try to insert
+  /// the key _before_ the given one if possible.
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/json.h>
+  /// #include <cassert>
+  ///
+  /// sourcemeta::core::JSON document =
+  ///   sourcemeta::core::parse_json("{ \"foo\": true }");
+  /// const sourcemeta::core::JSON value{false};
+  /// document.try_assign_before("bar", value, "foo");
+  /// assert(document.as_object().cbegin()->first == "bar");
+  /// ```
+  auto try_assign_before(const String &key, const JSON &value,
+                         const String &other) -> void;
+
   /// This method sets an object key if it is not already defined. For example:
   ///
   /// ```cpp
@@ -1283,6 +1605,43 @@ public:
   /// ```
   auto assign_if_missing(const String &key, JSON &&value) -> void;
 
+  /// This method sets an object key, assuming the key does not already exist.
+  /// If the key already exists, behavior is undefined. This variant is faster
+  /// than `assign` when building objects with keys known to be unique. For
+  /// example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/json.h>
+  /// #include <cassert>
+  ///
+  /// sourcemeta::core::JSON document = sourcemeta::core::JSON::make_object();
+  /// document.assign_assume_new("foo", sourcemeta::core::JSON{1});
+  /// assert(document.defines("foo"));
+  /// assert(document.at("foo").to_integer() == 1);
+  /// ```
+  auto assign_assume_new(const String &key, JSON &&value) -> void;
+
+  /// This method sets an object key, assuming the key does not already exist.
+  /// If the key already exists, behavior is undefined. This variant is faster
+  /// than `assign` when building objects with keys known to be unique, and
+  /// allows moving the key. For example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/json.h>
+  /// #include <cassert>
+  ///
+  /// sourcemeta::core::JSON document = sourcemeta::core::JSON::make_object();
+  /// std::string key{"foo"};
+  /// document.assign_assume_new(std::move(key), sourcemeta::core::JSON{1});
+  /// assert(document.defines("foo"));
+  /// assert(document.at("foo").to_integer() == 1);
+  /// ```
+  auto assign_assume_new(String &&key, JSON &&value) -> void;
+
+  /// This method sets an object key with a pre-computed hash
+  auto assign_assume_new(String &&key, JSON &&value, Object::hash_type hash)
+      -> void;
+
   /// This method deletes an object key. For example:
   ///
   /// ```cpp
@@ -1321,7 +1680,7 @@ public:
   auto erase_keys(Iterator first, Iterator last) -> void {
     assert(this->is_object());
     for (auto iterator = first; iterator != last; ++iterator) {
-      this->data_object.data.erase(*iterator);
+      this->data_object.erase(*iterator);
     }
   }
 
@@ -1378,6 +1737,23 @@ public:
   auto erase(typename Array::const_iterator first,
              typename Array::const_iterator last) -> typename Array::iterator;
 
+  /// This method deletes a set of array elements given a predicate. For
+  /// example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/json.h>
+  /// #include <cassert>
+  ///
+  /// sourcemeta::core::JSON array =
+  ///   sourcemeta::core::parse_json("[ 1, 2, 3 ]");
+  /// array.erase_if(array,
+  ///   [](const auto &item) { return item.to_integer() % 2 == 0; });
+  /// assert(array.size(), 2);
+  /// assert(array.at(0), 1);
+  /// assert(array.at(1), 3);
+  /// ```
+  auto erase_if(const std::function<bool(const JSON &)> &predicate) -> void;
+
   /// This method deletes all members of an object or all elements of an array,
   /// leaving them empty. For example:
   ///
@@ -1421,12 +1797,12 @@ public:
   template <typename Iterator>
   auto clear_except(Iterator first, Iterator last) -> void {
     assert(this->is_object());
-    std::set<String, std::less<String>, Allocator<String>> whitelist;
+    std::set<String, std::less<>, Allocator<String>> whitelist;
     for (auto iterator = first; iterator != last; ++iterator) {
       whitelist.insert(*iterator);
     }
 
-    std::set<String, std::less<String>, Allocator<String>> blacklist;
+    std::set<String, std::less<>, Allocator<String>> blacklist;
     for (const auto &pair : this->as_object()) {
       if (!whitelist.contains(pair.first)) {
         blacklist.insert(pair.first);
@@ -1456,6 +1832,97 @@ public:
   /// assert(!document.defines("baz"));
   /// ```
   auto clear_except(std::initializer_list<String> keys) -> void;
+
+  /// This method assigns every property of another object into the current
+  /// object. Overriding existing properties if they are already defined. For
+  /// example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/json.h>
+  /// #include <cassert>
+  ///
+  /// sourcemeta::core::JSON document =
+  ///   sourcemeta::core::JSON::make_object();
+  /// document.assign("foo", sourcemeta::core::JSON{1});
+  /// document.assign("bar", sourcemeta::core::JSON{2});
+  ///
+  /// sourcemeta::core::JSON other =
+  ///   sourcemeta::core::JSON::make_object();
+  /// other.assign("bar", sourcemeta::core::JSON{1});
+  /// other.assign("baz", sourcemeta::core::JSON{2});
+  ///
+  /// document.merge(other.as_object());
+  ///
+  /// assert(document.size() == 3);
+  ///
+  /// assert(document.at("foo").to_integer() == 1);
+  /// assert(document.at("bar").to_integer() == 1);
+  /// assert(document.at("baz").to_integer() == 2);
+  /// ```
+  auto merge(const JSON::Object &other) -> void;
+
+  /// Return a trimmed version of the string. For example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/json.h>
+  /// #include <cassert>
+  ///
+  /// const sourcemeta::core::JSON document{" \r\t  Hello World\n\v   \f"};
+  /// assert(document.trim() == "Hello World");
+  /// ```
+  [[nodiscard]] auto trim() const -> JSON::String;
+
+  /// Trim the string in-place. For example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/json.h>
+  /// #include <cassert>
+  ///
+  /// sourcemeta::core::JSON document{" \r\t  Hello World\n\v   \f"};
+  /// document.trim();
+  /// assert(document.to_string() == "Hello World");
+  /// ```
+  auto trim() -> const JSON::String &;
+
+  /// Check if the string has no leading or trailing whitespace. For example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/json.h>
+  /// #include <cassert>
+  ///
+  /// const sourcemeta::core::JSON trimmed{"Hello World"};
+  /// assert(trimmed.is_trimmed());
+  ///
+  /// const sourcemeta::core::JSON untrimmed{" Hello World "};
+  /// assert(!untrimmed.is_trimmed());
+  /// ```
+  [[nodiscard]] auto is_trimmed() const noexcept -> bool;
+
+  /// Reorder the properties of an object by sorting keys according to a
+  /// comparator function. The object is modified in-place. For example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/json.h>
+  /// #include <cassert>
+  ///
+  /// sourcemeta::core::JSON document =
+  ///   sourcemeta::core::JSON::make_object();
+  /// document.assign("zebra", sourcemeta::core::JSON{1});
+  /// document.assign("apple", sourcemeta::core::JSON{2});
+  /// document.assign("banana", sourcemeta::core::JSON{3});
+  ///
+  /// document.reorder([](const auto &left, const auto &right) {
+  ///   return left < right;
+  /// });
+  ///
+  /// auto iterator = document.as_object().cbegin();
+  /// assert(iterator->first == "apple");
+  /// ++iterator;
+  /// assert(iterator->first == "banana");
+  /// ++iterator;
+  /// assert(iterator->first == "zebra");
+  /// ```
+  auto reorder(const KeyComparison &compare) -> void;
 
   /*
    * Transform operations
@@ -1557,6 +2024,10 @@ private:
     String data_string;
     Array data_array;
     Object data_object;
+    // Move Decimal to the heap to reduce the size of the JSON class.
+    // Dealing with arbitrary precision numbers is not common, so we pay the
+    // indirection cost only when needed.
+    Decimal *data_decimal;
   };
 #if defined(_MSC_VER)
 #pragma warning(default : 4251)

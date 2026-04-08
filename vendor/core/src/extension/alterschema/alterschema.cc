@@ -1,347 +1,260 @@
 #include <sourcemeta/core/alterschema.h>
-
-#include <cassert> // assert
+#include <sourcemeta/core/regex.h>
 
 // For built-in rules
-#include <algorithm>
-#include <cmath>
-#include <iterator>
+#include <algorithm>     // std::sort, std::unique
+#include <cmath>         // std::floor
+#include <iterator>      // std::back_inserter
+#include <memory>        // std::unique_ptr, std::make_unique
+#include <unordered_map> // std::unordered_map
+#include <unordered_set> // std::unordered_set
+#include <utility>       // std::move, std::to_underlying
 namespace sourcemeta::core {
-template <typename T>
-auto contains_any(const T &container, const T &values) -> bool {
-  return std::any_of(
-      std::cbegin(container), std::cend(container),
-      [&values](const auto &element) { return values.contains(element); });
+
+template <typename... Args>
+auto APPLIES_TO_KEYWORDS(Args &&...args) -> SchemaTransformRule::Result {
+  std::vector<Pointer> result;
+  result.reserve(sizeof...(args));
+  (result.push_back(Pointer{std::forward<Args>(args)}), ...);
+  return result;
 }
 
-template <typename T> auto every_item_is_null(const T &container) -> bool {
-  return std::all_of(std::cbegin(container), std::cend(container),
-                     [](const auto &element) { return element.is_null(); });
+inline auto APPLIES_TO_POINTERS(std::vector<Pointer> &&keywords)
+    -> SchemaTransformRule::Result {
+  return {std::move(keywords)};
 }
 
-template <typename T> auto every_item_is_boolean(const T &container) -> bool {
-  return std::all_of(std::cbegin(container), std::cend(container),
-                     [](const auto &element) { return element.is_boolean(); });
-}
+#define ONLY_CONTINUE_IF(condition)                                            \
+  if (!(condition)) {                                                          \
+    return false;                                                              \
+  }
 
-// AntiPattern
-#include "antipattern/const_with_type.h"
-#include "antipattern/duplicate_enum_values.h"
-#include "antipattern/duplicate_required_values.h"
-#include "antipattern/enum_with_type.h"
-#include "antipattern/exclusive_maximum_number_and_maximum.h"
-#include "antipattern/exclusive_minimum_number_and_minimum.h"
-// Simplify
-#include "simplify/dependencies_property_tautology.h"
-#include "simplify/dependent_required_tautology.h"
-#include "simplify/equal_numeric_bounds_to_enum.h"
-#include "simplify/maximum_real_for_integer.h"
-#include "simplify/minimum_real_for_integer.h"
-#include "simplify/single_type_array.h"
-// Syntax sugar
-#include "syntax_sugar/enum_to_const.h"
-// Desugar
-#include "desugar/boolean_true.h"
-#include "desugar/const_as_enum.h"
-#include "desugar/exclusive_maximum_integer_to_maximum.h"
-#include "desugar/exclusive_minimum_integer_to_minimum.h"
-#include "desugar/type_array_to_any_of_2020_12.h"
-#include "desugar/type_boolean_as_enum.h"
-#include "desugar/type_null_as_enum.h"
+// Canonicalizer
+#include "canonicalizer/const_as_enum.h"
+#include "canonicalizer/exclusive_maximum_integer_to_maximum.h"
+#include "canonicalizer/exclusive_minimum_integer_to_minimum.h"
+#include "canonicalizer/items_implicit.h"
+#include "canonicalizer/max_contains_covered_by_max_items.h"
+#include "canonicalizer/min_items_given_min_contains.h"
+#include "canonicalizer/min_items_implicit.h"
+#include "canonicalizer/min_length_implicit.h"
+#include "canonicalizer/min_properties_covered_by_required.h"
+#include "canonicalizer/min_properties_implicit.h"
+#include "canonicalizer/multiple_of_implicit.h"
+#include "canonicalizer/no_metadata.h"
+#include "canonicalizer/properties_implicit.h"
+#include "canonicalizer/type_array_to_any_of.h"
+#include "canonicalizer/type_boolean_as_enum.h"
+#include "canonicalizer/type_null_as_enum.h"
+#include "canonicalizer/type_union_implicit.h"
 
-// Redundant
-#include "redundant/additional_properties_default.h"
-#include "redundant/content_schema_default.h"
-#include "redundant/dependencies_default.h"
-#include "redundant/dependent_required_default.h"
-#include "redundant/items_array_default.h"
-#include "redundant/items_schema_default.h"
-#include "redundant/pattern_properties_default.h"
-#include "redundant/properties_default.h"
-#include "redundant/unevaluated_items_default.h"
-#include "redundant/unevaluated_properties_default.h"
-#include "redundant/unsatisfiable_max_contains.h"
-#include "redundant/unsatisfiable_min_properties.h"
-// Implicit
-#include "implicit/max_contains_covered_by_max_items.h"
-#include "implicit/min_items_given_min_contains.h"
-#include "implicit/min_items_implicit.h"
-#include "implicit/min_length_implicit.h"
-#include "implicit/min_properties_covered_by_required.h"
-#include "implicit/min_properties_implicit.h"
-#include "implicit/multiple_of_implicit.h"
-#include "implicit/properties_implicit.h"
-#include "implicit/type_union_implicit.h"
-// Superfluous
-#include "superfluous/content_media_type_without_encoding.h"
-#include "superfluous/content_schema_without_media_type.h"
-#include "superfluous/drop_non_array_keywords_applicator_2019_09.h"
-#include "superfluous/drop_non_array_keywords_applicator_2020_12.h"
-#include "superfluous/drop_non_array_keywords_content_2019_09.h"
-#include "superfluous/drop_non_array_keywords_content_2020_12.h"
-#include "superfluous/drop_non_array_keywords_draft0.h"
-#include "superfluous/drop_non_array_keywords_draft1.h"
-#include "superfluous/drop_non_array_keywords_draft2.h"
-#include "superfluous/drop_non_array_keywords_draft3.h"
-#include "superfluous/drop_non_array_keywords_draft4.h"
-#include "superfluous/drop_non_array_keywords_draft6.h"
-#include "superfluous/drop_non_array_keywords_draft7.h"
-#include "superfluous/drop_non_array_keywords_format_2019_09.h"
-#include "superfluous/drop_non_array_keywords_format_2020_12.h"
-#include "superfluous/drop_non_array_keywords_unevaluated_2020_12.h"
-#include "superfluous/drop_non_array_keywords_validation_2019_09.h"
-#include "superfluous/drop_non_array_keywords_validation_2020_12.h"
-#include "superfluous/drop_non_boolean_keywords_applicator_2019_09.h"
-#include "superfluous/drop_non_boolean_keywords_applicator_2020_12.h"
-#include "superfluous/drop_non_boolean_keywords_content_2019_09.h"
-#include "superfluous/drop_non_boolean_keywords_content_2020_12.h"
-#include "superfluous/drop_non_boolean_keywords_draft0.h"
-#include "superfluous/drop_non_boolean_keywords_draft1.h"
-#include "superfluous/drop_non_boolean_keywords_draft2.h"
-#include "superfluous/drop_non_boolean_keywords_draft3.h"
-#include "superfluous/drop_non_boolean_keywords_draft4.h"
-#include "superfluous/drop_non_boolean_keywords_draft6.h"
-#include "superfluous/drop_non_boolean_keywords_draft7.h"
-#include "superfluous/drop_non_boolean_keywords_format_2019_09.h"
-#include "superfluous/drop_non_boolean_keywords_format_2020_12.h"
-#include "superfluous/drop_non_boolean_keywords_unevaluated_2020_12.h"
-#include "superfluous/drop_non_boolean_keywords_validation_2019_09.h"
-#include "superfluous/drop_non_boolean_keywords_validation_2020_12.h"
-#include "superfluous/drop_non_null_keywords_applicator_2019_09.h"
-#include "superfluous/drop_non_null_keywords_applicator_2020_12.h"
-#include "superfluous/drop_non_null_keywords_content_2019_09.h"
-#include "superfluous/drop_non_null_keywords_content_2020_12.h"
-#include "superfluous/drop_non_null_keywords_draft0.h"
-#include "superfluous/drop_non_null_keywords_draft1.h"
-#include "superfluous/drop_non_null_keywords_draft2.h"
-#include "superfluous/drop_non_null_keywords_draft3.h"
-#include "superfluous/drop_non_null_keywords_draft4.h"
-#include "superfluous/drop_non_null_keywords_draft6.h"
-#include "superfluous/drop_non_null_keywords_draft7.h"
-#include "superfluous/drop_non_null_keywords_format_2019_09.h"
-#include "superfluous/drop_non_null_keywords_format_2020_12.h"
-#include "superfluous/drop_non_null_keywords_unevaluated_2020_12.h"
-#include "superfluous/drop_non_null_keywords_validation_2019_09.h"
-#include "superfluous/drop_non_null_keywords_validation_2020_12.h"
-#include "superfluous/drop_non_numeric_keywords_applicator_2019_09.h"
-#include "superfluous/drop_non_numeric_keywords_applicator_2020_12.h"
-#include "superfluous/drop_non_numeric_keywords_content_2019_09.h"
-#include "superfluous/drop_non_numeric_keywords_content_2020_12.h"
-#include "superfluous/drop_non_numeric_keywords_draft0.h"
-#include "superfluous/drop_non_numeric_keywords_draft1.h"
-#include "superfluous/drop_non_numeric_keywords_draft2.h"
-#include "superfluous/drop_non_numeric_keywords_draft3.h"
-#include "superfluous/drop_non_numeric_keywords_draft4.h"
-#include "superfluous/drop_non_numeric_keywords_draft6.h"
-#include "superfluous/drop_non_numeric_keywords_draft7.h"
-#include "superfluous/drop_non_numeric_keywords_format_2019_09.h"
-#include "superfluous/drop_non_numeric_keywords_format_2020_12.h"
-#include "superfluous/drop_non_numeric_keywords_unevaluated_2020_12.h"
-#include "superfluous/drop_non_numeric_keywords_validation_2019_09.h"
-#include "superfluous/drop_non_numeric_keywords_validation_2020_12.h"
-#include "superfluous/drop_non_object_keywords_applicator_2019_09.h"
-#include "superfluous/drop_non_object_keywords_applicator_2020_12.h"
-#include "superfluous/drop_non_object_keywords_content_2019_09.h"
-#include "superfluous/drop_non_object_keywords_content_2020_12.h"
-#include "superfluous/drop_non_object_keywords_draft0.h"
-#include "superfluous/drop_non_object_keywords_draft1.h"
-#include "superfluous/drop_non_object_keywords_draft2.h"
-#include "superfluous/drop_non_object_keywords_draft3.h"
-#include "superfluous/drop_non_object_keywords_draft4.h"
-#include "superfluous/drop_non_object_keywords_draft6.h"
-#include "superfluous/drop_non_object_keywords_draft7.h"
-#include "superfluous/drop_non_object_keywords_format_2019_09.h"
-#include "superfluous/drop_non_object_keywords_format_2020_12.h"
-#include "superfluous/drop_non_object_keywords_unevaluated_2020_12.h"
-#include "superfluous/drop_non_object_keywords_validation_2019_09.h"
-#include "superfluous/drop_non_object_keywords_validation_2020_12.h"
-#include "superfluous/drop_non_string_keywords_applicator_2019_09.h"
-#include "superfluous/drop_non_string_keywords_applicator_2020_12.h"
-#include "superfluous/drop_non_string_keywords_draft0.h"
-#include "superfluous/drop_non_string_keywords_draft1.h"
-#include "superfluous/drop_non_string_keywords_draft2.h"
-#include "superfluous/drop_non_string_keywords_draft3.h"
-#include "superfluous/drop_non_string_keywords_draft4.h"
-#include "superfluous/drop_non_string_keywords_draft6.h"
-#include "superfluous/drop_non_string_keywords_draft7.h"
-#include "superfluous/drop_non_string_keywords_unevaluated_2020_12.h"
-#include "superfluous/drop_non_string_keywords_validation_2019_09.h"
-#include "superfluous/drop_non_string_keywords_validation_2020_12.h"
-#include "superfluous/duplicate_allof_branches.h"
-#include "superfluous/duplicate_anyof_branches.h"
-#include "superfluous/else_without_if.h"
-#include "superfluous/if_without_then_else.h"
-#include "superfluous/max_contains_without_contains.h"
-#include "superfluous/min_contains_without_contains.h"
-#include "superfluous/then_without_if.h"
+// Common
+#include "common/allof_false_simplify.h"
+#include "common/anyof_false_simplify.h"
+#include "common/anyof_remove_false_schemas.h"
+#include "common/anyof_true_simplify.h"
+#include "common/const_in_enum.h"
+#include "common/const_with_type.h"
+#include "common/content_media_type_without_encoding.h"
+#include "common/content_schema_without_media_type.h"
+#include "common/dependencies_property_tautology.h"
+#include "common/dependent_required_tautology.h"
+#include "common/draft_official_dialect_with_https.h"
+#include "common/draft_official_dialect_without_empty_fragment.h"
+#include "common/draft_ref_siblings.h"
+#include "common/drop_allof_empty_schemas.h"
+#include "common/duplicate_allof_branches.h"
+#include "common/duplicate_anyof_branches.h"
+#include "common/duplicate_enum_values.h"
+#include "common/duplicate_required_values.h"
+#include "common/else_empty.h"
+#include "common/else_without_if.h"
+#include "common/empty_object_as_true.h"
+#include "common/enum_with_type.h"
+#include "common/equal_numeric_bounds_to_enum.h"
+#include "common/exclusive_maximum_number_and_maximum.h"
+#include "common/exclusive_minimum_number_and_minimum.h"
+#include "common/if_without_then_else.h"
+#include "common/ignored_metaschema.h"
+#include "common/max_contains_without_contains.h"
+#include "common/maximum_real_for_integer.h"
+#include "common/min_contains_without_contains.h"
+#include "common/minimum_real_for_integer.h"
+#include "common/modern_official_dialect_with_empty_fragment.h"
+#include "common/modern_official_dialect_with_http.h"
+#include "common/non_applicable_additional_items.h"
+#include "common/non_applicable_enum_validation_keywords.h"
+#include "common/non_applicable_type_specific_keywords.h"
+#include "common/not_false.h"
+#include "common/oneof_false_simplify.h"
+#include "common/oneof_to_anyof_disjoint_types.h"
+#include "common/orphan_definitions.h"
+#include "common/required_properties_in_properties.h"
+#include "common/single_type_array.h"
+#include "common/then_empty.h"
+#include "common/then_without_if.h"
+#include "common/unknown_keywords_prefix.h"
+#include "common/unknown_local_ref.h"
+#include "common/unnecessary_allof_ref_wrapper_draft.h"
+#include "common/unnecessary_allof_ref_wrapper_modern.h"
+#include "common/unnecessary_allof_wrapper.h"
+#include "common/unsatisfiable_drop_validation.h"
+#include "common/unsatisfiable_in_place_applicator_type.h"
+
+// Linter
+#include "linter/comment_trim.h"
+#include "linter/const_not_in_enum.h"
+#include "linter/content_schema_default.h"
+#include "linter/definitions_to_defs.h"
+#include "linter/dependencies_default.h"
+#include "linter/dependent_required_default.h"
+#include "linter/description_trailing_period.h"
+#include "linter/description_trim.h"
+#include "linter/duplicate_examples.h"
+#include "linter/enum_to_const.h"
+#include "linter/equal_numeric_bounds_to_const.h"
+#include "linter/forbid_empty_enum.h"
+#include "linter/incoherent_min_max_contains.h"
+#include "linter/invalid_external_ref.h"
+#include "linter/items_array_default.h"
+#include "linter/items_schema_default.h"
+#include "linter/multiple_of_default.h"
+#include "linter/pattern_properties_default.h"
+#include "linter/properties_default.h"
+#include "linter/property_names_default.h"
+#include "linter/property_names_type_default.h"
+#include "linter/simple_properties_identifiers.h"
+#include "linter/title_description_equal.h"
+#include "linter/title_trailing_period.h"
+#include "linter/title_trim.h"
+#include "linter/top_level_description.h"
+#include "linter/top_level_examples.h"
+#include "linter/top_level_title.h"
+#include "linter/unevaluated_items_default.h"
+#include "linter/unevaluated_properties_default.h"
+#include "linter/unsatisfiable_max_contains.h"
+#include "linter/unsatisfiable_min_properties.h"
+
+#undef ONLY_CONTINUE_IF
 } // namespace sourcemeta::core
 
 namespace sourcemeta::core {
 
-auto add(SchemaTransformer &bundle, const AlterSchemaCategory category)
-    -> void {
-  switch (category) {
-    case AlterSchemaCategory::AntiPattern:
-      bundle.add<EnumWithType>();
-      bundle.add<DuplicateEnumValues>();
-      bundle.add<DuplicateRequiredValues>();
-      bundle.add<ConstWithType>();
-      bundle.add<ExclusiveMaximumNumberAndMaximum>();
-      bundle.add<ExclusiveMinimumNumberAndMinimum>();
-      break;
-    case AlterSchemaCategory::Simplify:
-      bundle.add<DependenciesPropertyTautology>();
-      bundle.add<DependentRequiredTautology>();
-      bundle.add<EqualNumericBoundsToEnum>();
-      bundle.add<MaximumRealForInteger>();
-      bundle.add<MinimumRealForInteger>();
-      bundle.add<SingleTypeArray>();
-      break;
-    case AlterSchemaCategory::SyntaxSugar:
-      bundle.add<EnumToConst>();
-      break;
-    case AlterSchemaCategory::Desugar:
-      bundle.add<BooleanTrue>();
-      bundle.add<ConstAsEnum>();
-      bundle.add<ExclusiveMaximumIntegerToMaximum>();
-      bundle.add<ExclusiveMinimumIntegerToMinimum>();
-      bundle.add<TypeArrayToAnyOf_2020_12>();
-      bundle.add<TypeBooleanAsEnum>();
-      bundle.add<TypeNullAsEnum>();
-      break;
-    case AlterSchemaCategory::Redundant:
-      bundle.add<AdditionalPropertiesDefault>();
-      bundle.add<ContentSchemaDefault>();
-      bundle.add<DependenciesDefault>();
-      bundle.add<DependentRequiredDefault>();
-      bundle.add<ItemsArrayDefault>();
-      bundle.add<ItemsSchemaDefault>();
-      bundle.add<PatternPropertiesDefault>();
-      bundle.add<PropertiesDefault>();
-      bundle.add<UnevaluatedItemsDefault>();
-      bundle.add<UnevaluatedPropertiesDefault>();
-      bundle.add<UnsatisfiableMaxContains>();
-      bundle.add<UnsatisfiableMinProperties>();
-      break;
-    case AlterSchemaCategory::Implicit:
-      bundle.add<MaxContainsCoveredByMaxItems>();
-      bundle.add<MinItemsGivenMinContains>();
-      bundle.add<MinItemsImplicit>();
-      bundle.add<MinLengthImplicit>();
-      bundle.add<MinPropertiesCoveredByRequired>();
-      bundle.add<MinPropertiesImplicit>();
-      bundle.add<MultipleOfImplicit>();
-      bundle.add<PropertiesImplicit>();
-      bundle.add<TypeUnionImplicit>();
-      break;
-    case AlterSchemaCategory::Superfluous:
-      bundle.add<ContentMediaTypeWithoutEncoding>();
-      bundle.add<ContentSchemaWithoutMediaType>();
-      bundle.add<DropNonArrayKeywordsApplicator_2019_09>();
-      bundle.add<DropNonArrayKeywordsApplicator_2020_12>();
-      bundle.add<DropNonArrayKeywordsContent_2019_09>();
-      bundle.add<DropNonArrayKeywordsContent_2020_12>();
-      bundle.add<DropNonArrayKeywords_Draft0>();
-      bundle.add<DropNonArrayKeywords_Draft1>();
-      bundle.add<DropNonArrayKeywords_Draft2>();
-      bundle.add<DropNonArrayKeywords_Draft3>();
-      bundle.add<DropNonArrayKeywords_Draft4>();
-      bundle.add<DropNonArrayKeywords_Draft6>();
-      bundle.add<DropNonArrayKeywords_Draft7>();
-      bundle.add<DropNonArrayKeywordsFormat_2019_09>();
-      bundle.add<DropNonArrayKeywordsFormat_2020_12>();
-      bundle.add<DropNonArrayKeywordsUnevaluated_2020_12>();
-      bundle.add<DropNonArrayKeywordsValidation_2019_09>();
-      bundle.add<DropNonArrayKeywordsValidation_2020_12>();
-      bundle.add<DropNonBooleanKeywordsApplicator_2019_09>();
-      bundle.add<DropNonBooleanKeywordsApplicator_2020_12>();
-      bundle.add<DropNonBooleanKeywordsContent_2019_09>();
-      bundle.add<DropNonBooleanKeywordsContent_2020_12>();
-      bundle.add<DropNonBooleanKeywords_Draft0>();
-      bundle.add<DropNonBooleanKeywords_Draft1>();
-      bundle.add<DropNonBooleanKeywords_Draft2>();
-      bundle.add<DropNonBooleanKeywords_Draft3>();
-      bundle.add<DropNonBooleanKeywords_Draft4>();
-      bundle.add<DropNonBooleanKeywords_Draft6>();
-      bundle.add<DropNonBooleanKeywords_Draft7>();
-      bundle.add<DropNonBooleanKeywordsFormat_2019_09>();
-      bundle.add<DropNonBooleanKeywordsFormat_2020_12>();
-      bundle.add<DropNonBooleanKeywordsUnevaluated_2020_12>();
-      bundle.add<DropNonBooleanKeywordsValidation_2019_09>();
-      bundle.add<DropNonBooleanKeywordsValidation_2020_12>();
-      bundle.add<DropNonNullKeywordsApplicator_2019_09>();
-      bundle.add<DropNonNullKeywordsApplicator_2020_12>();
-      bundle.add<DropNonNullKeywordsContent_2019_09>();
-      bundle.add<DropNonNullKeywordsContent_2020_12>();
-      bundle.add<DropNonNullKeywords_Draft0>();
-      bundle.add<DropNonNullKeywords_Draft1>();
-      bundle.add<DropNonNullKeywords_Draft2>();
-      bundle.add<DropNonNullKeywords_Draft3>();
-      bundle.add<DropNonNullKeywords_Draft4>();
-      bundle.add<DropNonNullKeywords_Draft6>();
-      bundle.add<DropNonNullKeywords_Draft7>();
-      bundle.add<DropNonNullKeywordsFormat_2019_09>();
-      bundle.add<DropNonNullKeywordsFormat_2020_12>();
-      bundle.add<DropNonNullKeywordsUnevaluated_2020_12>();
-      bundle.add<DropNonNullKeywordsValidation_2019_09>();
-      bundle.add<DropNonNullKeywordsValidation_2020_12>();
-      bundle.add<DropNonNumericKeywordsApplicator_2019_09>();
-      bundle.add<DropNonNumericKeywordsApplicator_2020_12>();
-      bundle.add<DropNonNumericKeywordsContent_2019_09>();
-      bundle.add<DropNonNumericKeywordsContent_2020_12>();
-      bundle.add<DropNonNumericKeywords_Draft0>();
-      bundle.add<DropNonNumericKeywords_Draft1>();
-      bundle.add<DropNonNumericKeywords_Draft2>();
-      bundle.add<DropNonNumericKeywords_Draft3>();
-      bundle.add<DropNonNumericKeywords_Draft4>();
-      bundle.add<DropNonNumericKeywords_Draft6>();
-      bundle.add<DropNonNumericKeywords_Draft7>();
-      bundle.add<DropNonNumericKeywordsFormat_2019_09>();
-      bundle.add<DropNonNumericKeywordsFormat_2020_12>();
-      bundle.add<DropNonNumericKeywordsUnevaluated_2020_12>();
-      bundle.add<DropNonNumericKeywordsValidation_2019_09>();
-      bundle.add<DropNonNumericKeywordsValidation_2020_12>();
-      bundle.add<DropNonObjectKeywordsApplicator_2019_09>();
-      bundle.add<DropNonObjectKeywordsApplicator_2020_12>();
-      bundle.add<DropNonObjectKeywordsContent_2019_09>();
-      bundle.add<DropNonObjectKeywordsContent_2020_12>();
-      bundle.add<DropNonObjectKeywords_Draft0>();
-      bundle.add<DropNonObjectKeywords_Draft1>();
-      bundle.add<DropNonObjectKeywords_Draft2>();
-      bundle.add<DropNonObjectKeywords_Draft3>();
-      bundle.add<DropNonObjectKeywords_Draft4>();
-      bundle.add<DropNonObjectKeywords_Draft6>();
-      bundle.add<DropNonObjectKeywords_Draft7>();
-      bundle.add<DropNonObjectKeywordsFormat_2019_09>();
-      bundle.add<DropNonObjectKeywordsFormat_2020_12>();
-      bundle.add<DropNonObjectKeywordsUnevaluated_2020_12>();
-      bundle.add<DropNonObjectKeywordsValidation_2019_09>();
-      bundle.add<DropNonObjectKeywordsValidation_2020_12>();
-      bundle.add<DropNonStringKeywordsApplicator_2019_09>();
-      bundle.add<DropNonStringKeywordsApplicator_2020_12>();
-      bundle.add<DropNonStringKeywords_Draft0>();
-      bundle.add<DropNonStringKeywords_Draft1>();
-      bundle.add<DropNonStringKeywords_Draft2>();
-      bundle.add<DropNonStringKeywords_Draft3>();
-      bundle.add<DropNonStringKeywords_Draft4>();
-      bundle.add<DropNonStringKeywords_Draft6>();
-      bundle.add<DropNonStringKeywords_Draft7>();
-      bundle.add<DropNonStringKeywordsUnevaluated_2020_12>();
-      bundle.add<DropNonStringKeywordsValidation_2019_09>();
-      bundle.add<DropNonStringKeywordsValidation_2020_12>();
-      bundle.add<DuplicateAllOfBranches>();
-      bundle.add<DuplicateAnyOfBranches>();
-      bundle.add<ElseWithoutIf>();
-      bundle.add<IfWithoutThenElse>();
-      bundle.add<MaxContainsWithoutContains>();
-      bundle.add<MinContainsWithoutContains>();
-      bundle.add<ThenWithoutIf>();
-      break;
-    default:
-      // We should never get here
-      assert(false);
-      break;
+auto add(SchemaTransformer &bundle, const AlterSchemaMode mode) -> void {
+  if (mode == AlterSchemaMode::Canonicalizer) {
+    bundle.add<TypeUnionImplicit>();
+    bundle.add<TypeArrayToAnyOf>();
   }
+
+  if (mode == AlterSchemaMode::Linter) {
+    bundle.add<DefinitionsToDefs>();
+  }
+
+  bundle.add<ContentMediaTypeWithoutEncoding>();
+  bundle.add<ContentSchemaWithoutMediaType>();
+  bundle.add<DraftOfficialDialectWithHttps>();
+  bundle.add<DraftOfficialDialectWithoutEmptyFragment>();
+  bundle.add<NonApplicableTypeSpecificKeywords>();
+  bundle.add<AnyOfRemoveFalseSchemas>();
+  bundle.add<AnyOfTrueSimplify>();
+  bundle.add<DuplicateAllOfBranches>();
+  bundle.add<DuplicateAnyOfBranches>();
+  bundle.add<UnsatisfiableInPlaceApplicatorType>();
+  bundle.add<AllOfFalseSimplify>();
+  bundle.add<AnyOfFalseSimplify>();
+  bundle.add<OneOfFalseSimplify>();
+  bundle.add<OneOfToAnyOfDisjointTypes>();
+  bundle.add<UnsatisfiableDropValidation>();
+  bundle.add<ElseWithoutIf>();
+  bundle.add<IfWithoutThenElse>();
+  bundle.add<IgnoredMetaschema>();
+  bundle.add<MaxContainsWithoutContains>();
+  bundle.add<MinContainsWithoutContains>();
+  bundle.add<NotFalse>();
+  bundle.add<ThenEmpty>();
+  bundle.add<ElseEmpty>();
+  bundle.add<ThenWithoutIf>();
+  bundle.add<DependenciesPropertyTautology>();
+  bundle.add<DependentRequiredTautology>();
+  bundle.add<EqualNumericBoundsToEnum>();
+  bundle.add<MaximumRealForInteger>();
+  bundle.add<MinimumRealForInteger>();
+  bundle.add<SingleTypeArray>();
+  bundle.add<EnumWithType>();
+  bundle.add<NonApplicableEnumValidationKeywords>();
+  bundle.add<DuplicateEnumValues>();
+  bundle.add<DuplicateRequiredValues>();
+  bundle.add<ConstWithType>();
+  bundle.add<ConstInEnum>();
+  bundle.add<NonApplicableAdditionalItems>();
+  bundle.add<ModernOfficialDialectWithEmptyFragment>();
+  bundle.add<ModernOfficialDialectWithHttp>();
+  bundle.add<ExclusiveMaximumNumberAndMaximum>();
+  bundle.add<ExclusiveMinimumNumberAndMinimum>();
+  bundle.add<DraftRefSiblings>();
+  bundle.add<UnknownKeywordsPrefix>();
+  bundle.add<UnknownLocalRef>();
+  bundle.add<RequiredPropertiesInProperties>();
+  bundle.add<OrphanDefinitions>();
+
+  if (mode == AlterSchemaMode::Canonicalizer) {
+    bundle.add<ConstAsEnum>();
+    bundle.add<EqualNumericBoundsToConst>();
+    bundle.add<ExclusiveMaximumIntegerToMaximum>();
+    bundle.add<ExclusiveMinimumIntegerToMinimum>();
+    bundle.add<TypeBooleanAsEnum>();
+    bundle.add<TypeNullAsEnum>();
+    bundle.add<MaxContainsCoveredByMaxItems>();
+    bundle.add<MinItemsGivenMinContains>();
+    bundle.add<MinPropertiesCoveredByRequired>();
+    bundle.add<NoMetadata>();
+    bundle.add<MinItemsImplicit>();
+    bundle.add<MinLengthImplicit>();
+    bundle.add<MinPropertiesImplicit>();
+    bundle.add<MultipleOfImplicit>();
+    bundle.add<PropertiesImplicit>();
+    bundle.add<ItemsImplicit>();
+  }
+
+  if (mode == AlterSchemaMode::Linter) {
+    bundle.add<EqualNumericBoundsToConst>();
+    bundle.add<ConstNotInEnum>();
+    bundle.add<ContentSchemaDefault>();
+    bundle.add<DependenciesDefault>();
+    bundle.add<DependentRequiredDefault>();
+    bundle.add<ItemsArrayDefault>();
+    bundle.add<ItemsSchemaDefault>();
+    bundle.add<MultipleOfDefault>();
+    bundle.add<PatternPropertiesDefault>();
+    bundle.add<PropertiesDefault>();
+    bundle.add<PropertyNamesDefault>();
+    bundle.add<PropertyNamesTypeDefault>();
+    bundle.add<UnevaluatedItemsDefault>();
+    bundle.add<UnevaluatedPropertiesDefault>();
+    bundle.add<UnsatisfiableMaxContains>();
+    bundle.add<IncoherentMinMaxContains>();
+    bundle.add<UnsatisfiableMinProperties>();
+    bundle.add<EnumToConst>();
+    bundle.add<ForbidEmptyEnum>();
+    bundle.add<TopLevelTitle>();
+    bundle.add<TopLevelDescription>();
+    bundle.add<TopLevelExamples>();
+    bundle.add<TitleDescriptionEqual>();
+    bundle.add<TitleTrailingPeriod>();
+    bundle.add<DescriptionTrailingPeriod>();
+    bundle.add<TitleTrim>();
+    bundle.add<DescriptionTrim>();
+    bundle.add<CommentTrim>();
+    bundle.add<DuplicateExamples>();
+    bundle.add<SimplePropertiesIdentifiers>();
+    bundle.add<InvalidExternalRef>();
+  }
+
+  bundle.add<UnnecessaryAllOfRefWrapperModern>();
+  bundle.add<UnnecessaryAllOfRefWrapperDraft>();
+  bundle.add<UnnecessaryAllOfWrapper>();
+  bundle.add<DropAllOfEmptySchemas>();
+  bundle.add<EmptyObjectAsTrue>();
 }
 
 } // namespace sourcemeta::core

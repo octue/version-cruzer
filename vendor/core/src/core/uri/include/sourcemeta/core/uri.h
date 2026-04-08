@@ -5,20 +5,24 @@
 #include <sourcemeta/core/uri_export.h>
 #endif
 
+// NOLINTBEGIN(misc-include-cleaner)
 #include <sourcemeta/core/uri_error.h>
+// NOLINTEND(misc-include-cleaner)
 
+#include <concepts>    // std::convertible_to
 #include <cstdint>     // std::uint32_t
+#include <filesystem>  // std::filesystem
 #include <istream>     // std::istream
 #include <memory>      // std::unique_ptr
 #include <optional>    // std::optional
-#include <ostream>     // std::ostream
 #include <span>        // std::span
 #include <string>      // std::string
 #include <string_view> // std::string_view
+#include <type_traits> // std::is_same_v
 #include <vector>      // std::vector
 
 /// @defgroup uri URI
-/// @brief A RFC 3986 URI implementation based on `uriparser`.
+/// @brief A strict RFC 3986 URI implementation.
 ///
 /// This functionality is included as follows:
 ///
@@ -31,16 +35,34 @@ namespace sourcemeta::core {
 /// @ingroup uri
 class SOURCEMETA_CORE_URI_EXPORT URI {
 public:
-  // TODO: Add a constructor that takes a C++ input stream
+  /// Default constructor creates an empty URI
+  URI() = default;
 
-  /// This constructor creates a URI from a string type. For example:
+  /// Copy constructor
+  URI(const URI &) = default;
+
+  /// Move constructor
+  URI(URI &&) noexcept = default;
+
+  /// Copy assignment operator
+  auto operator=(const URI &) -> URI & = default;
+
+  /// Move assignment operator
+  auto operator=(URI &&) noexcept -> URI & = default;
+
+  /// This constructor creates a URI from a string. For example:
   ///
   /// ```cpp
   /// #include <sourcemeta/core/uri.h>
   ///
   /// const sourcemeta::core::URI uri{"https://www.sourcemeta.com"};
   /// ```
-  URI(std::string input);
+  template <typename T>
+    requires std::convertible_to<T, std::string_view> &&
+             (!std::is_same_v<std::decay_t<T>, URI>)
+  URI(T &&input) {
+    this->parse(std::string_view{std::forward<T>(input)});
+  }
 
   /// This constructor creates a URI from a C++ input stream. For example:
   ///
@@ -52,15 +74,6 @@ public:
   /// const sourcemeta::core::URI uri{input};
   /// ```
   URI(std::istream &input);
-
-  /// Destructor
-  ~URI();
-
-  /// Copy constructor
-  URI(const URI &other);
-
-  /// Move constructor
-  URI(URI &&other);
 
   /// Check if the URI is absolute. For example:
   ///
@@ -82,7 +95,7 @@ public:
   /// const sourcemeta::core::URI uri{"urn:example:schema"};
   /// assert(uri.is_urn());
   /// ```
-  auto is_urn() const -> bool;
+  [[nodiscard]] auto is_urn() const -> bool;
 
   /// Check if the URI is a tag as described by RFC 4151. For example:
   ///
@@ -93,7 +106,7 @@ public:
   /// const sourcemeta::core::URI uri{"tag:yaml.org,2002:int"};
   /// assert(uri.is_tag());
   /// ```
-  auto is_tag() const -> bool;
+  [[nodiscard]] auto is_tag() const -> bool;
 
   /// Check if the URI has the `mailto` scheme. For example:
   ///
@@ -104,7 +117,18 @@ public:
   /// const sourcemeta::core::URI uri{"mailto:joe@example.com"};
   /// assert(uri.is_mailto());
   /// ```
-  auto is_mailto() const -> bool;
+  [[nodiscard]] auto is_mailto() const -> bool;
+
+  /// Check if the URI is a file URI. For example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/uri.h>
+  /// #include <cassert>
+  ///
+  /// sourcemeta::core::URI uri{"file:///home/jviotti/foo.txt"};
+  /// assert(uri.is_file());
+  /// ```
+  [[nodiscard]] auto is_file() const -> bool;
 
   /// Check if the URI only consists of a fragment. For example:
   ///
@@ -115,7 +139,7 @@ public:
   /// const sourcemeta::core::URI uri{"#foo"};
   /// assert(uri.is_fragment_only());
   /// ```
-  auto is_fragment_only() const -> bool;
+  [[nodiscard]] auto is_fragment_only() const -> bool;
 
   /// Check if the URI is relative. For example:
   ///
@@ -126,9 +150,20 @@ public:
   /// sourcemeta::core::URI uri{"./foo"};
   /// assert(uri.is_relative());
   /// ```
-  auto is_relative() const -> bool;
+  [[nodiscard]] auto is_relative() const -> bool;
 
-  /// Check if the host is an ipv6 address. For example:
+  /// Check if the host is an IPv4 address. For example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/uri.h>
+  /// #include <cassert>
+  ///
+  /// sourcemeta::core::URI uri{"http://192.168.1.1/index.html"};
+  /// assert(uri.is_ipv4());
+  /// ```
+  [[nodiscard]] auto is_ipv4() const -> bool;
+
+  /// Check if the host is an IPv6 address. For example:
   ///
   /// ```cpp
   /// #include <sourcemeta/core/uri.h>
@@ -137,7 +172,18 @@ public:
   /// sourcemeta::core::URI uri{"http://[::1]"};
   /// assert(uri.is_ipv6());
   /// ```
-  auto is_ipv6() const -> bool;
+  [[nodiscard]] auto is_ipv6() const -> bool;
+
+  /// Check if the URI corresponds to the empty URI. For example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/uri.h>
+  /// #include <cassert>
+  ///
+  /// sourcemeta::core::URI uri{""};
+  /// assert(uri.empty());
+  /// ```
+  [[nodiscard]] auto empty() const -> bool;
 
   /// Get the scheme part of the URI, if any. For example:
   ///
@@ -215,6 +261,30 @@ public:
   /// assert(uri.path().value() == "/foo/bar");
   auto path(std::string &&path) -> URI &;
 
+  /// Append a path to the existing URI path or set a path if such component
+  /// does not exist in the URI. For example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/uri.h>
+  /// #include <cassert>
+  ///
+  /// sourcemeta::core::URI uri{"https://www.sourcemeta.com/foo"};
+  /// uri.append_path("bar/baz");
+  /// assert(uri.recompose() == "https://www.sourcemeta.com/foo/bar/baz");
+  auto append_path(const std::string &path) -> URI &;
+
+  /// If the URI has a path, this method sets or replace the extension in the
+  /// path. For example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/uri.h>
+  /// #include <cassert>
+  ///
+  /// sourcemeta::core::URI uri{"https://www.sourcemeta.com/foo"};
+  /// uri.extension("json");
+  /// assert(uri.recompose() == "https://www.sourcemeta.com/foo.json");
+  auto extension(std::string &&extension) -> URI &;
+
   /// Get the fragment part of the URI, if any. For example:
   ///
   /// ```cpp
@@ -226,6 +296,20 @@ public:
   /// assert(uri.fragment().value() == "foo");
   /// ```
   [[nodiscard]] auto fragment() const -> std::optional<std::string_view>;
+
+  /// Set the fragment part of the URI. For example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/uri.h>
+  /// #include <cassert>
+  ///
+  /// sourcemeta::core::URI uri{"https://www.sourcemeta.com"};
+  /// const std::string fragment{"foo"};
+  /// uri.fragment(fragment);
+  /// assert(uri.fragment().has_value());
+  /// assert(uri.fragment().value() == "foo");
+  /// ```
+  auto fragment(const std::string_view fragment) -> URI &;
 
   /// Get the non-dissected query part of the URI, if any. For example:
   ///
@@ -262,24 +346,36 @@ public:
   ///
   /// const sourcemeta::core::URI
   ///   uri{"https://www.sourcemeta.com/foo#bar"};
-  /// assert(uri.recompose_without_fragment().has_value()");
+  /// assert(uri.recompose_without_fragment().has_value());
   /// assert(uri.recompose_without_fragment().value() ==
   /// "https://sourcemeta.com/foo");
   /// ```
   [[nodiscard]] auto recompose_without_fragment() const
       -> std::optional<std::string>;
 
-  /// Recompose and canonicalize a URI. For example:
+  /// Canonicalize a URI. For example:
   ///
   /// ```cpp
   /// #include <sourcemeta/core/uri.h>
   /// #include <cassert>
   ///
   /// sourcemeta::core::URI uri{"hTtP://exAmpLe.com:80/TEST"};
-  /// uri.canonicalize():
+  /// uri.canonicalize();
   /// assert(uri.recompose() == "http://example.com/TEST");
   /// ```
   auto canonicalize() -> URI &;
+
+  /// Convert a URI into a filesystem path. If the URI is not under the `file`
+  /// scheme, get the URI path component as a filesystem path. For example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/uri.h>
+  /// #include <cassert>
+  ///
+  /// const sourcemeta::core::URI uri{"file:///home/jviotti/foo.txt"};
+  /// assert(uri.to_path() == "/home/jviotti/foo.txt");
+  /// ```
+  [[nodiscard]] auto to_path() const -> std::filesystem::path;
 
   /// Resolve a relative URI against a base URI as established by RFC 3986. For
   /// example:
@@ -294,24 +390,6 @@ public:
   /// assert(result.recompose() == "https://sourcemeta.com/foo");
   /// ```
   auto resolve_from(const URI &base) -> URI &;
-
-  // TODO: Do we really need this `try_resolve_from` method? There shouldn't
-  // be any reason why resolution cannot happen. This is probably just an
-  // artifact of `uriparser` not supporting relative resolution
-
-  /// Resolve a relative URI against a base URI as established by RFC
-  /// 3986. If the resolution cannot happen, nothing happens. For example:
-  ///
-  /// ```cpp
-  /// #include <sourcemeta/core/uri.h>
-  /// #include <cassert>
-  ///
-  /// const sourcemeta::core::URI base{"bar"};
-  /// sourcemeta::core::URI result{"foo"};
-  /// result.try_resolve_from(base);
-  /// assert(result.recompose() == "foo");
-  /// ```
-  auto try_resolve_from(const URI &base) -> URI &;
 
   /// Attempt to resolve a URI relative to another URI. If the latter URI is not
   /// a base for the former, leave the URI intact. For example:
@@ -342,35 +420,27 @@ public:
   /// ```
   auto rebase(const URI &base, const URI &new_base) -> URI &;
 
-  /// Escape a string as established by RFC 3986 using C++ standard stream. For
-  /// example:
+  /// Get the user information part of the URI, if any. For example:
   ///
   /// ```cpp
   /// #include <sourcemeta/core/uri.h>
-  /// #include <sstream>
   /// #include <cassert>
   ///
-  /// std::istringstream input{"foo bar"};
-  /// std::ostringstream output;
-  /// sourcemeta::core::URI::escape(input, output);
-  /// assert(output.str() == "foo%20bar");
+  /// const sourcemeta::core::URI uri{"https://user:@host"};
+  /// assert(uri.userinfo().has_value());
+  /// assert(uri.userinfo().value() == "user:");
   /// ```
-  static auto escape(std::istream &input, std::ostream &output) -> void;
+  ///
+  /// As mentioned in RFC 3986, the format "user:password" is deprecated.
+  /// Applications should not render as clear text any data after the first
+  /// colon. See https://tools.ietf.org/html/rfc3986#section-3.2.1
+  [[nodiscard]] auto userinfo() const -> std::optional<std::string_view>;
 
-  /// Unescape a string that has been percentage-escaped as established by
-  /// RFC 3986 using C++ standard streams. For example:
-  ///
-  /// ```cpp
-  /// #include <sourcemeta/core/uri.h>
-  /// #include <sstream>
-  /// #include <cassert>
-  ///
-  /// std::istringstream input{"foo%20bar"};
-  /// std::ostringstream output;
-  /// sourcemeta::core::URI::unescape(input, output);
-  /// assert(output.str() == "foo bar");
-  /// ```
-  static auto unescape(std::istream &input, std::ostream &output) -> void;
+  /// To support equality of URIs
+  auto operator==(const URI &other) const noexcept -> bool = default;
+
+  /// To support ordering of URIs
+  auto operator<(const URI &other) const noexcept -> bool;
 
   /// Create a URI from a fragment. For example:
   ///
@@ -382,27 +452,64 @@ public:
   ///   sourcemeta::core::URI::from_fragment("foo")};
   /// assert(uri.recompose() == "#foo");
   /// ```
-  static auto from_fragment(std::string_view fragment) -> URI;
+  static auto from_fragment(const std::string_view fragment) -> URI;
 
-  /// Get the user information part of the URI, if any. For example:
+  /// Create a URI from a file system path. For example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/uri.h>
+  /// #include <cassert>
+  /// #include <filesystem>
+  ///
+  /// const std::filesystem::path path{"/foo/bar"};
+  /// const sourcemeta::core::URI uri{sourcemeta::core::URI::from_path(path)};
+  /// assert(uri.recompose() == "file:///foo/bar");
+  /// ```
+  static auto from_path(const std::filesystem::path &path) -> URI;
+
+  /// A convenient method to canonicalize and recompose a URI from a string. For
+  /// example:
   ///
   /// ```cpp
   /// #include <sourcemeta/core/uri.h>
   /// #include <cassert>
   ///
-  /// const sourcemeta::core::URI uri{"https://user:@host"};
-  /// assert(uri.userinfo().has_value());
-  /// assert(uri.userinfo().value() == "user:);
+  /// const auto result{
+  ///   sourcemeta::core::URI::canonicalize("hTtP://exAmpLe.com:80/TEST")};
+  /// assert(result == "http://example.com/TEST");
   /// ```
+  static auto canonicalize(std::string_view input) -> std::string;
+
+  /// Check if the given string is a valid absolute URI (has a scheme) per
+  /// RFC 3986 without constructing a full URI object. For example:
   ///
-  /// As mentioned in RFC 3986, the format "user:password" is deprecated.
-  /// Applications should not render as clear text any data after the first
-  /// colon. See https://tools.ietf.org/html/rfc3986#section-3.2.1
-  [[nodiscard]] auto userinfo() const -> std::optional<std::string_view>;
+  /// ```cpp
+  /// #include <sourcemeta/core/uri.h>
+  /// #include <cassert>
+  ///
+  /// assert(sourcemeta::core::URI::is_uri("https://example.com/path"));
+  /// assert(!sourcemeta::core::URI::is_uri("://bad"));
+  /// assert(!sourcemeta::core::URI::is_uri("relative/path"));
+  /// ```
+  [[nodiscard]] static auto is_uri(std::string_view input) noexcept -> bool;
+
+  /// Check if the given string is a valid URI reference per RFC 3986
+  /// (absolute or relative) without constructing a full URI object.
+  /// For example:
+  ///
+  /// ```cpp
+  /// #include <sourcemeta/core/uri.h>
+  /// #include <cassert>
+  ///
+  /// assert(sourcemeta::core::URI::is_uri_reference("https://example.com"));
+  /// assert(sourcemeta::core::URI::is_uri_reference("relative/path"));
+  /// assert(!sourcemeta::core::URI::is_uri_reference("://bad"));
+  /// ```
+  [[nodiscard]] static auto is_uri_reference(std::string_view input) noexcept
+      -> bool;
 
 private:
-  bool parsed = false;
-  auto parse() -> void;
+  auto parse(std::string_view input) -> void;
 
 // Exporting symbols that depends on the standard C++ library is considered
 // safe.
@@ -410,23 +517,14 @@ private:
 #if defined(_MSC_VER)
 #pragma warning(disable : 4251)
 #endif
-  // We need to keep the string as the URI structure just
-  // points to fragments of it.
-  // We keep this as const as this class is immutable
-  std::string data;
-
-  std::optional<std::string> path_;
-  std::optional<std::string> userinfo_;
-  std::optional<std::string> host_;
-  std::optional<std::uint32_t> port_;
-  std::optional<std::string> scheme_;
-  std::optional<std::string> fragment_;
-  std::optional<std::string> query_;
-  bool is_ipv6_ = false;
-
-  // Use PIMPL idiom to hide `uriparser`
-  struct Internal;
-  std::unique_ptr<Internal> internal;
+  std::optional<std::string> path_{};
+  std::optional<std::string> userinfo_{};
+  std::optional<std::string> host_{};
+  std::optional<std::uint32_t> port_{};
+  std::optional<std::string> scheme_{};
+  std::optional<std::string> fragment_{};
+  std::optional<std::string> query_{};
+  bool ip_literal_{false};
 #if defined(_MSC_VER)
 #pragma warning(default : 4251)
 #endif

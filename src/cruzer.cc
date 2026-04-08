@@ -1,9 +1,10 @@
 #include <octue/cruzer.h>
 
-#include <algorithm> // std::move
-#include <cassert>   // assert
-#include <iterator>  // std::back_inserter
-#include <sstream>   // std::ostringstream
+#include <algorithm>   // std::ranges::find
+#include <cassert>     // assert
+#include <sstream>     // std::ostringstream
+#include <string_view> // std::string_view
+#include <utility>     // std::move
 
 #include "comparator.h"
 #include "helpers.h"
@@ -16,6 +17,15 @@ effective_subschema(const octue::cruzer::SchemaLocation &location) noexcept
                  location.subschema.get().empty()
              ? wildcard
              : location.subschema.get();
+}
+
+static auto vocabulary_string(
+    const std::optional<sourcemeta::core::Vocabularies::URI> &vocabulary)
+    -> std::string_view {
+  if (!vocabulary.has_value()) {
+    return {};
+  }
+  return sourcemeta::core::to_string(vocabulary.value());
 }
 
 // TODO: Investigate why older GCC versions get confused here
@@ -43,18 +53,22 @@ static auto compare_subschemas(const octue::cruzer::SchemaLocation &left,
   if (left.subschema.get().is_object() && right.subschema.get().is_object() &&
       !left.subschema.get().empty() && !right.subschema.get().empty()) {
     for (const auto &left_entry : left.subschema.get().as_object()) {
-      const auto left_walker_result{
+      const auto &left_walker_result{
           left.walker(left_entry.first, left_vocabularies)};
+      sourcemeta::core::WeakPointer left_new_pointer{left.pointer};
+      left_new_pointer.push_back(std::cref(left_entry.first));
       for (const auto &right_entry : right.subschema.get().as_object()) {
-        const auto right_walker_result{
+        const auto &right_walker_result{
             right.walker(right_entry.first, right_vocabularies)};
+        sourcemeta::core::WeakPointer right_new_pointer{right.pointer};
+        right_new_pointer.push_back(std::cref(right_entry.first));
         result.push_back(octue::cruzer::compare(
             left.subschema.get(), left_entry.first,
-            left_walker_result.vocabulary, left_walker_result.type,
-            left.pointer.concat({left_entry.first}), left.instance_location,
+            vocabulary_string(left_walker_result.vocabulary),
+            left_walker_result.type, left_new_pointer, left.instance_location,
             right.subschema.get(), right_entry.first,
-            right_walker_result.vocabulary, right_walker_result.type,
-            right.pointer.concat({right_entry.first}),
+            vocabulary_string(right_walker_result.vocabulary),
+            right_walker_result.type, right_new_pointer,
             right.instance_location));
       }
     }
@@ -63,23 +77,25 @@ static auto compare_subschemas(const octue::cruzer::SchemaLocation &left,
               right.subschema.get().empty())) {
     if (left.subschema.get().empty()) {
       result.push_back(octue::cruzer::compare(
-          effective_subschema(left), BOOLEAN_KEYWORD_NAME, std::nullopt,
+          effective_subschema(left), BOOLEAN_KEYWORD_NAME, std::string_view{},
           sourcemeta::core::SchemaKeywordType::Assertion, left.pointer,
           left.instance_location, effective_subschema(right),
-          BOOLEAN_KEYWORD_NAME, std::nullopt,
+          BOOLEAN_KEYWORD_NAME, std::string_view{},
           sourcemeta::core::SchemaKeywordType::Assertion, right.pointer,
           right.instance_location));
     } else {
       for (const auto &left_entry : left.subschema.get().as_object()) {
-        const auto left_walker_result{
+        const auto &left_walker_result{
             left.walker(left_entry.first, left_vocabularies)};
+        sourcemeta::core::WeakPointer left_new_pointer{left.pointer};
+        left_new_pointer.push_back(std::cref(left_entry.first));
         result.push_back(octue::cruzer::compare(
             left.subschema.get(), left_entry.first,
-            left_walker_result.vocabulary, left_walker_result.type,
-            left.pointer.concat({left_entry.first}), left.instance_location,
-            effective_subschema(right), BOOLEAN_KEYWORD_NAME, std::nullopt,
-            sourcemeta::core::SchemaKeywordType::Assertion, right.pointer,
-            right.instance_location));
+            vocabulary_string(left_walker_result.vocabulary),
+            left_walker_result.type, left_new_pointer, left.instance_location,
+            effective_subschema(right), BOOLEAN_KEYWORD_NAME,
+            std::string_view{}, sourcemeta::core::SchemaKeywordType::Assertion,
+            right.pointer, right.instance_location));
       }
     }
   } else if (right.subschema.get().is_object() &&
@@ -87,22 +103,24 @@ static auto compare_subschemas(const octue::cruzer::SchemaLocation &left,
               left.subschema.get().empty())) {
     if (right.subschema.get().empty()) {
       result.push_back(octue::cruzer::compare(
-          effective_subschema(left), BOOLEAN_KEYWORD_NAME, std::nullopt,
+          effective_subschema(left), BOOLEAN_KEYWORD_NAME, std::string_view{},
           sourcemeta::core::SchemaKeywordType::Assertion, left.pointer,
           left.instance_location, effective_subschema(right),
-          BOOLEAN_KEYWORD_NAME, std::nullopt,
+          BOOLEAN_KEYWORD_NAME, std::string_view{},
           sourcemeta::core::SchemaKeywordType::Assertion, right.pointer,
           right.instance_location));
     } else {
       for (const auto &right_entry : right.subschema.get().as_object()) {
-        const auto right_walker_result{
+        const auto &right_walker_result{
             right.walker(right_entry.first, right_vocabularies)};
+        sourcemeta::core::WeakPointer right_new_pointer{right.pointer};
+        right_new_pointer.push_back(std::cref(right_entry.first));
         result.push_back(octue::cruzer::compare(
-            effective_subschema(left), BOOLEAN_KEYWORD_NAME, std::nullopt,
+            effective_subschema(left), BOOLEAN_KEYWORD_NAME, std::string_view{},
             sourcemeta::core::SchemaKeywordType::Assertion, left.pointer,
             left.instance_location, right.subschema.get(), right_entry.first,
-            right_walker_result.vocabulary, right_walker_result.type,
-            right.pointer.concat({right_entry.first}),
+            vocabulary_string(right_walker_result.vocabulary),
+            right_walker_result.type, right_new_pointer,
             right.instance_location));
       }
     }
@@ -110,10 +128,10 @@ static auto compare_subschemas(const octue::cruzer::SchemaLocation &left,
     assert(left.subschema.get().is_boolean() || left.subschema.get().empty());
     assert(right.subschema.get().is_boolean() || right.subschema.get().empty());
     result.push_back(octue::cruzer::compare(
-        effective_subschema(left), BOOLEAN_KEYWORD_NAME, std::nullopt,
+        effective_subschema(left), BOOLEAN_KEYWORD_NAME, std::string_view{},
         sourcemeta::core::SchemaKeywordType::Assertion, left.pointer,
         left.instance_location, effective_subschema(right),
-        BOOLEAN_KEYWORD_NAME, std::nullopt,
+        BOOLEAN_KEYWORD_NAME, std::string_view{},
         sourcemeta::core::SchemaKeywordType::Assertion, right.pointer,
         left.instance_location));
   }
@@ -127,8 +145,9 @@ static auto compare_subschemas(const octue::cruzer::SchemaLocation &left,
 #pragma GCC diagnostic pop
 #endif
 
-static auto keyword_name(const sourcemeta::core::Pointer &pointer,
-                         const std::optional<sourcemeta::core::Pointer> &parent)
+static auto
+keyword_name(const sourcemeta::core::WeakPointer &pointer,
+             const std::optional<sourcemeta::core::WeakPointer> &parent)
     -> const std::string & {
   if (!parent.value().empty()) {
     if (parent.value().back().is_property()) {
@@ -162,7 +181,7 @@ is_annotation_subschema(const sourcemeta::core::SchemaFrame &frame,
   }
 
   const auto &keyword{keyword_name(location)};
-  const auto walker_result{
+  const auto &walker_result{
       walker(keyword, frame.vocabularies(location, resolver))};
   if (walker_result.type ==
       sourcemeta::core::SchemaKeywordType::ApplicatorValueInPlaceOther) {
@@ -240,7 +259,7 @@ auto is_compatible_with(const SchemaIndex &left, const SchemaIndex &right)
           const auto entry_vocabularies{sourcemeta::core::vocabularies(
               entry.resolver, entry.base_dialect, entry.dialect)};
           const auto &keyword{keyword_name(entry.pointer, entry.parent)};
-          const auto walker_result{entry.walker(keyword, entry_vocabularies)};
+          const auto &walker_result{entry.walker(keyword, entry_vocabularies)};
           if (is_applicator(walker_result.type)) {
             // then/else without if is meaningless
             if ((keyword == "then" || keyword == "else") &&
@@ -298,18 +317,27 @@ auto is_compatible_with(
     const std::optional<sourcemeta::core::JSON::String> &default_id_left,
     const std::optional<sourcemeta::core::JSON::String> &default_id_right)
     -> std::vector<Trace> {
-  sourcemeta::core::SchemaFrame frame_left{
-      sourcemeta::core::SchemaFrame::Mode::Instances};
-  frame_left.analyse(left, walker_left, resolver_left, default_dialect_left,
-                     default_id_left);
-  sourcemeta::core::SchemaFrame frame_right{
-      sourcemeta::core::SchemaFrame::Mode::Instances};
-  frame_right.analyse(right, walker_right, resolver_right,
-                      default_dialect_right, default_id_right);
+  // Keep these owned strings alive for the lifetime of the frames,
+  // because the frames store `std::string_view` references to them
+  const std::string default_dialect_left_str{default_dialect_left.value_or("")};
+  const std::string default_id_left_str{default_id_left.value_or("")};
+  const std::string default_dialect_right_str{
+      default_dialect_right.value_or("")};
+  const std::string default_id_right_str{default_id_right.value_or("")};
 
-  const auto index_left{index(frame_left, left, walker_left, resolver_left)};
-  const auto index_right{
-      index(frame_right, right, walker_right, resolver_right)};
+  sourcemeta::core::SchemaFrame frame_left{
+      sourcemeta::core::SchemaFrame::Mode::References};
+  frame_left.analyse(left, walker_left, resolver_left, default_dialect_left_str,
+                     default_id_left_str);
+  sourcemeta::core::SchemaFrame frame_right{
+      sourcemeta::core::SchemaFrame::Mode::References};
+  frame_right.analyse(right, walker_right, resolver_right,
+                      default_dialect_right_str, default_id_right_str);
+
+  const auto index_left{index(frame_left, left, walker_left, resolver_left,
+                              default_dialect_left)};
+  const auto index_right{index(frame_right, right, walker_right, resolver_right,
+                               default_dialect_right)};
 
   return is_compatible_with(index_left, index_right);
 }
@@ -317,8 +345,12 @@ auto is_compatible_with(
 auto index(const sourcemeta::core::SchemaFrame &frame,
            const sourcemeta::core::JSON &schema,
            const sourcemeta::core::SchemaWalker &walker,
-           const sourcemeta::core::SchemaResolver &resolver) -> SchemaIndex {
+           const sourcemeta::core::SchemaResolver &resolver,
+           const std::optional<sourcemeta::core::JSON::String> &default_dialect)
+    -> SchemaIndex {
   SchemaIndex result;
+  const auto instances{
+      instance_locations(frame, schema, walker, resolver, default_dialect)};
 
   for (const auto &location : frame.locations()) {
     // We only care about anonymous subschemas and named subschemas (a.k.a.
@@ -334,12 +366,16 @@ auto index(const sourcemeta::core::SchemaFrame &frame,
       continue;
     }
 
-    for (const auto &instance_location :
-         frame.instance_locations(location.second)) {
+    const auto match{instances.find(location.second.pointer)};
+    if (match == instances.cend()) {
+      continue;
+    }
+
+    for (const auto &instance_location : match->second) {
       // We don't really need to manipulate the pointer templates
       // for this use case, so we can stringify to simplify the map
       std::ostringstream key;
-      sourcemeta::core::stringify(instance_location, key);
+      octue::cruzer::stringify(instance_location, key);
       result[key.str()].push_back(
           {instance_location, location.second.parent, location.second.pointer,
            sourcemeta::core::get(schema, location.second.pointer), schema,
@@ -363,22 +399,31 @@ auto version(
     const std::optional<sourcemeta::core::JSON::String> &default_id_to)
     -> Result {
   if (from == to) {
-    return {SemVer::Equal, {}};
+    return {.version = SemVer::Equal, .traces = {}};
   }
+
+  // Keep these owned strings alive for the lifetime of the frames,
+  // because the frames store `std::string_view` references to them
+  const std::string default_dialect_from_str{default_dialect_from.value_or("")};
+  const std::string default_id_from_str{default_id_from.value_or("")};
+  const std::string default_dialect_to_str{default_dialect_to.value_or("")};
+  const std::string default_id_to_str{default_id_to.value_or("")};
 
   // (1) Frame both schemas for unresolved instance locations
   sourcemeta::core::SchemaFrame frame_from{
-      sourcemeta::core::SchemaFrame::Mode::Instances};
-  frame_from.analyse(from, walker_from, resolver_from, default_dialect_from,
-                     default_id_from);
+      sourcemeta::core::SchemaFrame::Mode::References};
+  frame_from.analyse(from, walker_from, resolver_from, default_dialect_from_str,
+                     default_id_from_str);
   sourcemeta::core::SchemaFrame frame_to{
-      sourcemeta::core::SchemaFrame::Mode::Instances};
-  frame_to.analyse(to, walker_to, resolver_to, default_dialect_to,
-                   default_id_to);
+      sourcemeta::core::SchemaFrame::Mode::References};
+  frame_to.analyse(to, walker_to, resolver_to, default_dialect_to_str,
+                   default_id_to_str);
 
   // (2) Index subschemas by their unresolved instance locations
-  const auto index_from{index(frame_from, from, walker_from, resolver_from)};
-  const auto index_to{index(frame_to, to, walker_to, resolver_to)};
+  const auto index_from{index(frame_from, from, walker_from, resolver_from,
+                              default_dialect_from)};
+  const auto index_to{
+      index(frame_to, to, walker_to, resolver_to, default_dialect_to)};
 
   // (3) Collect all version compatibility traces
   std::vector<Trace> from_to_unknowns;
@@ -386,10 +431,10 @@ auto version(
   std::vector<Trace> from_to_incompatibilities;
   std::vector<Trace> to_from_incompatibilities;
 
-  const auto from_to{is_compatible_with(index_from, index_to)};
-  const auto to_from{is_compatible_with(index_to, index_from)};
+  auto from_to{is_compatible_with(index_from, index_to)};
+  auto to_from{is_compatible_with(index_to, index_from)};
 
-  for (auto &&trace : from_to) {
+  for (auto &trace : from_to) {
     switch (trace.compatibility) {
       case Compatibility::Incompatible:
         from_to_incompatibilities.push_back(std::move(trace));
@@ -402,16 +447,18 @@ auto version(
     }
   }
 
-  for (auto &&trace : to_from) {
+  for (auto &trace : to_from) {
     switch (trace.compatibility) {
       case Compatibility::Incompatible:
-        to_from_incompatibilities.push_back({trace.compatibility,
-                                             std::move(trace.right),
-                                             std::move(trace.left)});
+        to_from_incompatibilities.push_back(
+            {.compatibility = trace.compatibility,
+             .left = std::move(trace.right),
+             .right = std::move(trace.left)});
         break;
       case Compatibility::Unknown:
-        to_from_unknowns.push_back({trace.compatibility, std::move(trace.right),
-                                    std::move(trace.left)});
+        to_from_unknowns.push_back({.compatibility = trace.compatibility,
+                                    .left = std::move(trace.right),
+                                    .right = std::move(trace.left)});
         break;
       default:
         continue;
@@ -420,31 +467,33 @@ auto version(
 
   // (4) Figure out the result
   if (!from_to_unknowns.empty() || !to_from_unknowns.empty()) {
-    for (auto &&trace : to_from_unknowns) {
-      if (std::find(from_to_unknowns.cbegin(), from_to_unknowns.cend(),
-                    trace) == from_to_unknowns.cend()) {
+    for (auto &trace : to_from_unknowns) {
+      if (std::ranges::find(from_to_unknowns, trace) ==
+          from_to_unknowns.cend()) {
         from_to_unknowns.push_back(std::move(trace));
       }
     }
 
-    return {std::nullopt, std::move(from_to_unknowns)};
+    return {.version = std::nullopt, .traces = std::move(from_to_unknowns)};
   } else if (!from_to_incompatibilities.empty() &&
              !to_from_incompatibilities.empty()) {
-    for (auto &&trace : to_from_incompatibilities) {
-      if (std::find(from_to_incompatibilities.cbegin(),
-                    from_to_incompatibilities.cend(),
-                    trace) == from_to_incompatibilities.cend()) {
+    for (auto &trace : to_from_incompatibilities) {
+      if (std::ranges::find(from_to_incompatibilities, trace) ==
+          from_to_incompatibilities.cend()) {
         from_to_incompatibilities.push_back(std::move(trace));
       }
     }
 
-    return {SemVer::Major, std::move(from_to_incompatibilities)};
+    return {.version = SemVer::Major,
+            .traces = std::move(from_to_incompatibilities)};
   } else if (!to_from_incompatibilities.empty()) {
-    return {SemVer::Major, std::move(to_from_incompatibilities)};
+    return {.version = SemVer::Major,
+            .traces = std::move(to_from_incompatibilities)};
   } else if (!from_to_incompatibilities.empty()) {
-    return {SemVer::Minor, std::move(from_to_incompatibilities)};
+    return {.version = SemVer::Minor,
+            .traces = std::move(from_to_incompatibilities)};
   } else {
-    return {SemVer::Patch, {}};
+    return {.version = SemVer::Patch, .traces = {}};
   }
 }
 

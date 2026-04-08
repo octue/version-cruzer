@@ -1,7 +1,10 @@
 #ifndef OCTUE_CRUZER_COMPARATOR_H_
 #define OCTUE_CRUZER_COMPARATOR_H_
 
-#include <cassert> // assert
+#include <sourcemeta/core/jsonpointer.h>
+
+#include <cassert>     // assert
+#include <string_view> // std::string_view
 
 #include "helpers.h"
 
@@ -12,27 +15,27 @@ static auto compare(
     const sourcemeta::core::JSON &left_subschema,
     // Left keyword name
     const sourcemeta::core::JSON::String &left_keyword,
-    // Left keyword vocabulary
-    const std::optional<sourcemeta::core::JSON::String> &left_vocabulary,
+    // Left keyword vocabulary (empty if none)
+    const std::string_view left_vocabulary,
     // Left keyword type
     const sourcemeta::core::SchemaKeywordType &left_type,
     // Left schema location
-    const sourcemeta::core::Pointer &left_schema_location,
+    const sourcemeta::core::WeakPointer &left_schema_location,
     // Left instance location
-    const sourcemeta::core::PointerTemplate &,
+    const octue::cruzer::PointerTemplate &,
 
     // Right current subschema
     const sourcemeta::core::JSON &right_subschema,
     // Right keyword name
     const sourcemeta::core::JSON::String &right_keyword,
-    // Right keyword vocabulary
-    const std::optional<sourcemeta::core::JSON::String> &right_vocabulary,
+    // Right keyword vocabulary (empty if none)
+    const std::string_view right_vocabulary,
     // Right keyword type
     const sourcemeta::core::SchemaKeywordType &right_type,
     // Right schema location
-    const sourcemeta::core::Pointer &right_schema_location,
+    const sourcemeta::core::WeakPointer &right_schema_location,
     // Right instance location
-    const sourcemeta::core::PointerTemplate &) -> Trace {
+    const octue::cruzer::PointerTemplate &) -> Trace {
 
 #define MAKE_RESULT(expected_compatibility)                                    \
   Trace{Compatibility::expected_compatibility, left_schema_location,           \
@@ -51,6 +54,7 @@ static auto compare(
     return MAKE_RESULT(expected_else_compatibility);                           \
   }
 
+// NOLINTBEGIN(bugprone-macro-parentheses)
 #define MAKE_IF_ANY_ELSE(expected_compatibility, expected_else_compatibility,  \
                          expected_iterator, expected_item_name,                \
                          expected_result)                                      \
@@ -58,6 +62,7 @@ static auto compare(
     MAKE_IF(expected_compatibility, (expected_result));                        \
   }                                                                            \
   return MAKE_RESULT(expected_else_compatibility);
+  // NOLINTEND(bugprone-macro-parentheses)
 
   // Annotations / comments do not participate
   MAKE_IF(Skip, does_not_validate(left_type) || does_not_validate(right_type));
@@ -89,17 +94,17 @@ static auto compare(
   // If the keywords match totally different types, then we shouldn't be
   // comparing at all
   MAKE_IF(Skip,
-          !have_common_types(left_vocabulary.value_or(""), left_keyword,
-                             right_vocabulary.value_or(""), right_keyword));
+          !have_common_types(
+              sourcemeta::core::JSON::String{left_vocabulary}, left_keyword,
+              sourcemeta::core::JSON::String{right_vocabulary}, right_keyword));
 
 #define COMPARISON_2020_12(expected_left_vocabulary, expected_left_name,       \
                            expected_right_vocabulary, expected_right_name)     \
-  (left_vocabulary.has_value() &&                                              \
-   left_vocabulary.value() == "https://json-schema.org/draft/2020-12/"         \
-                              "vocab/" expected_left_vocabulary &&             \
-   left_keyword == (expected_left_name) && right_vocabulary.has_value() &&     \
-   right_vocabulary.value() == "https://json-schema.org/draft/2020-12/"        \
-                               "vocab/" expected_right_vocabulary &&           \
+  (left_vocabulary == "https://json-schema.org/draft/2020-12/"                 \
+                      "vocab/" expected_left_vocabulary &&                     \
+   left_keyword == (expected_left_name) &&                                     \
+   right_vocabulary == "https://json-schema.org/draft/2020-12/"                \
+                       "vocab/" expected_right_vocabulary &&                   \
    right_keyword == (expected_right_name))
 
 #define BIDIRECTIONAL_2020_12(expected_vocabulary, expected_keyword_left,      \
@@ -111,6 +116,15 @@ static auto compare(
   } else if (COMPARISON_2020_12(expected_vocabulary, expected_keyword_right,   \
                                 expected_vocabulary, expected_keyword_left)) { \
     MAKE_IF_ELSE(Compatible, Incompatible, (expected_result_right));           \
+  }
+
+#define BIDIRECTIONAL_ALWAYS_COMPATIBLE_2020_12(                               \
+    expected_vocabulary, expected_keyword_left, expected_keyword_right)        \
+  if (COMPARISON_2020_12(expected_vocabulary, expected_keyword_left,           \
+                         expected_vocabulary, expected_keyword_right) ||       \
+      COMPARISON_2020_12(expected_vocabulary, expected_keyword_right,          \
+                         expected_vocabulary, expected_keyword_left)) {        \
+    return MAKE_RESULT(Compatible);                                            \
   }
 
 #define BIDIRECTIONAL_TYPED_2020_12(expected_vocabulary, expected_left_name,   \
@@ -157,9 +171,8 @@ static auto compare(
 
       // Adding a type declaration to a type-less schema is by definition
       // incompatible
-      if (right_vocabulary.has_value() &&
-          right_vocabulary.value() == "https://json-schema.org/draft/2020-12/"
-                                      "vocab/validation" &&
+      if (right_vocabulary == "https://json-schema.org/draft/2020-12/"
+                              "vocab/validation" &&
           right_keyword == "type" && !left_subschema.defines("type") &&
           !left_subschema.defines("allOf") && !left_subschema.defines("enum") &&
           !left_subschema.defines("const")) {
@@ -222,9 +235,8 @@ static auto compare(
 
       // Adding a type declaration to a type-less schema is by definition
       // incompatible
-      if (left_vocabulary.has_value() &&
-          left_vocabulary.value() == "https://json-schema.org/draft/2020-12/"
-                                     "vocab/validation" &&
+      if (left_vocabulary == "https://json-schema.org/draft/2020-12/"
+                             "vocab/validation" &&
           left_keyword == "type" && !right_subschema.defines("type") &&
           !right_subschema.defines("allOf") &&
           !right_subschema.defines("enum") &&
@@ -344,18 +356,14 @@ static auto compare(
 
 #define MARK_DEPENDENT_2020_12(expected_vocabulary, expected_name,             \
                                expected_dependency)                            \
-  if (left_vocabulary.has_value() &&                                           \
-      left_vocabulary.value() == "https://json-schema.org/draft/2020-12/"      \
-                                 "vocab/" expected_vocabulary &&               \
-      left_keyword == (expected_name) &&                                       \
-      !left_subschema.defines(expected_dependency)) {                          \
-    return MAKE_RESULT(Skip);                                                  \
-  } else if (right_vocabulary.has_value() &&                                   \
-             right_vocabulary.value() ==                                       \
-                 "https://json-schema.org/draft/2020-12/"                      \
-                 "vocab/" expected_vocabulary &&                               \
-             right_keyword == (expected_name) &&                               \
-             !right_subschema.defines(expected_dependency)) {                  \
+  if ((left_vocabulary == "https://json-schema.org/draft/2020-12/"             \
+                          "vocab/" expected_vocabulary &&                      \
+       left_keyword == (expected_name) &&                                      \
+       !left_subschema.defines(expected_dependency)) ||                        \
+      (right_vocabulary == "https://json-schema.org/draft/2020-12/"            \
+                           "vocab/" expected_vocabulary &&                     \
+       right_keyword == (expected_name) &&                                     \
+       !right_subschema.defines(expected_dependency))) {                       \
     return MAKE_RESULT(Skip);                                                  \
   }
 
@@ -365,18 +373,22 @@ static auto compare(
 #undef MARK_DEPENDENT_2020_12
 
     // Always compatible
-    BIDIRECTIONAL_2020_12("validation", "uniqueItems", "minItems", true, true);
-    BIDIRECTIONAL_2020_12("validation", "uniqueItems", "maxItems", true, true);
-    BIDIRECTIONAL_2020_12("validation", "dependentRequired", "required", true,
-                          true);
-    BIDIRECTIONAL_2020_12("validation", "dependentRequired", "minProperties",
-                          true, true);
-    BIDIRECTIONAL_2020_12("validation", "multipleOf", "minimum", true, true);
-    BIDIRECTIONAL_2020_12("validation", "multipleOf", "maximum", true, true);
-    BIDIRECTIONAL_2020_12("validation", "multipleOf", "exclusiveMinimum", true,
-                          true);
-    BIDIRECTIONAL_2020_12("validation", "multipleOf", "exclusiveMaximum", true,
-                          true);
+    BIDIRECTIONAL_ALWAYS_COMPATIBLE_2020_12("validation", "uniqueItems",
+                                            "minItems");
+    BIDIRECTIONAL_ALWAYS_COMPATIBLE_2020_12("validation", "uniqueItems",
+                                            "maxItems");
+    BIDIRECTIONAL_ALWAYS_COMPATIBLE_2020_12("validation", "dependentRequired",
+                                            "required");
+    BIDIRECTIONAL_ALWAYS_COMPATIBLE_2020_12("validation", "dependentRequired",
+                                            "minProperties");
+    BIDIRECTIONAL_ALWAYS_COMPATIBLE_2020_12("validation", "multipleOf",
+                                            "minimum");
+    BIDIRECTIONAL_ALWAYS_COMPATIBLE_2020_12("validation", "multipleOf",
+                                            "maximum");
+    BIDIRECTIONAL_ALWAYS_COMPATIBLE_2020_12("validation", "multipleOf",
+                                            "exclusiveMinimum");
+    BIDIRECTIONAL_ALWAYS_COMPATIBLE_2020_12("validation", "multipleOf",
+                                            "exclusiveMaximum");
 
     ///////////////////////////////////////////////////////////////////
     // Special checks
@@ -474,17 +486,15 @@ static auto compare(
 
     // Adding a type declaration to a type-less schema is by definition
     // incompatible
-    if (left_vocabulary.has_value() &&
-        left_vocabulary.value() == "https://json-schema.org/draft/2020-12/"
-                                   "vocab/validation" &&
+    if (left_vocabulary == "https://json-schema.org/draft/2020-12/"
+                           "vocab/validation" &&
         left_keyword == "type" && !right_subschema.defines("type") &&
         !right_subschema.defines("enum") && !right_subschema.defines("const")) {
       return MAKE_RESULT(Incompatible);
     }
 
-    if (right_vocabulary.has_value() &&
-        right_vocabulary.value() == "https://json-schema.org/draft/2020-12/"
-                                    "vocab/validation" &&
+    if (right_vocabulary == "https://json-schema.org/draft/2020-12/"
+                            "vocab/validation" &&
         (right_keyword == "const" || right_keyword == "enum")) {
       if (!left_subschema.defines("type") && !left_subschema.defines("enum") &&
           !left_subschema.defines("enum")) {

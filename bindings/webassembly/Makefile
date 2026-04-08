@@ -1,29 +1,54 @@
 # Programs
 EMCC ?= emcc
+EMCMAKE ?= emcmake
 MKDIR ?= mkdir
-SED ?= sed
 NODE ?= node
 CMAKE ?= cmake
 
 # Misc
 ROOT := ../..
+BUILD := build
+CMAKE_BUILD := $(BUILD)/cmake
 
 # Flags
-CFLAGS ?= -O3 -std=c11 -flto
-CXXFLAGS ?= -O3 -std=c++20 -flto \
-	-I$(ROOT)/vendor/core/vendor/uriparser/include \
-	-I$(ROOT)/vendor/core/vendor/boost-regex/include \
-	-I$(ROOT)/vendor/core/src/core/uri/include \
+CXXFLAGS ?= -O3 -std=c++23 -flto \
+	-I$(ROOT)/src/include \
+	-I$(CMAKE_BUILD)/src/include \
 	-I$(ROOT)/vendor/core/src/core/json/include \
-	-I$(ROOT)/vendor/core/src/core/regex/include \
 	-I$(ROOT)/vendor/core/src/core/jsonpointer/include \
 	-I$(ROOT)/vendor/core/src/core/jsonschema/include \
-	-I$(ROOT)/src/include \
-	-DOCTUE_CRUZER_EXPORT= \
-	-DSOURCEMETA_CORE_URI_EXPORT= \
-	-DSOURCEMETA_CORE_JSON_EXPORT= \
-	-DSOURCEMETA_CORE_JSONPOINTER_EXPORT= \
-	-DSOURCEMETA_CORE_JSONSCHEMA_EXPORT=
+	-I$(ROOT)/vendor/core/src/core/regex/include \
+	-I$(ROOT)/vendor/core/src/core/uri/include \
+	-I$(ROOT)/vendor/core/src/core/ip/include \
+	-I$(ROOT)/vendor/core/src/core/unicode/include \
+	-I$(ROOT)/vendor/core/src/lang/numeric/include \
+	-I$(ROOT)/vendor/core/src/lang/io/include \
+	-I$(ROOT)/vendor/core/src/lang/preprocessor/include \
+	-I$(CMAKE_BUILD)/vendor/core/src/core/json/include \
+	-I$(CMAKE_BUILD)/vendor/core/src/core/jsonpointer/include \
+	-I$(CMAKE_BUILD)/vendor/core/src/core/jsonschema/include \
+	-I$(CMAKE_BUILD)/vendor/core/src/core/regex/include \
+	-I$(CMAKE_BUILD)/vendor/core/src/core/uri/include \
+	-I$(CMAKE_BUILD)/vendor/core/src/core/ip/include \
+	-I$(CMAKE_BUILD)/vendor/core/src/core/unicode/include \
+	-I$(CMAKE_BUILD)/vendor/core/src/lang/numeric/include \
+	-I$(CMAKE_BUILD)/vendor/core/src/lang/io/include
+
+# Static libraries built by the CMake configure step below, in link order
+# (dependents first). `octue_cruzer` depends on the vendor libraries, and
+# those in turn depend on PCRE2 and each other.
+STATIC_LIBS := \
+	$(CMAKE_BUILD)/src/liboctue_cruzer.a \
+	$(CMAKE_BUILD)/vendor/core/src/core/jsonschema/libsourcemeta_core_jsonschema.a \
+	$(CMAKE_BUILD)/vendor/core/src/core/jsonpointer/libsourcemeta_core_jsonpointer.a \
+	$(CMAKE_BUILD)/vendor/core/src/core/regex/libsourcemeta_core_regex.a \
+	$(CMAKE_BUILD)/vendor/core/libpcre2.a \
+	$(CMAKE_BUILD)/vendor/core/src/core/uri/libsourcemeta_core_uri.a \
+	$(CMAKE_BUILD)/vendor/core/src/core/ip/libsourcemeta_core_ip.a \
+	$(CMAKE_BUILD)/vendor/core/src/core/json/libsourcemeta_core_json.a \
+	$(CMAKE_BUILD)/vendor/core/src/core/unicode/libsourcemeta_core_unicode.a \
+	$(CMAKE_BUILD)/vendor/core/src/lang/numeric/libsourcemeta_core_numeric.a \
+	$(CMAKE_BUILD)/vendor/core/src/lang/io/libsourcemeta_core_io.a
 
 # See https://emscripten.org/docs/tools_reference/settings_reference.html
 LDFLAGS ?= -lembind -s EXPORT_NAME=cruzer -DNDEBUG \
@@ -38,46 +63,33 @@ compile: dist/wrapper.js
 test: test.js
 	$(NODE) $<
 
+$(BUILD): ; $(MKDIR) $@
 dist: ; $(MKDIR) $@
-build: ; $(MKDIR) $@
-build/uri: | build; $(MKDIR) $@
-build/json: | build; $(MKDIR) $@
-build/jsonpointer: | build; $(MKDIR) $@
-build/jsonschema: | build; $(MKDIR) $@
-build/cruzer: | build; $(MKDIR) $@
 
-# URIParser
-build/uriparser: | build; $(MKDIR) $@
-build/uriparser/UriConfig.h: $(ROOT)/vendor/core/vendor/uriparser/src/UriConfig.h.in | build/uriparser
-	$(SED) -e 's/@PROJECT_VERSION@/0.0.0/g' -e 's/#cmakedefine/#undef/g' $< > $@
-build/uriparser/%.o: $(ROOT)/vendor/core/vendor/uriparser/src/%.c build/uriparser/UriConfig.h | build/uriparser
-	$(EMCC) $(CFLAGS) -o $@ $< -I$(ROOT)/vendor/core/vendor/uriparser/include -I$(dir $(word 2,$^)) -c
+$(CMAKE_BUILD)/CMakeCache.txt: | $(BUILD)
+	$(EMCMAKE) $(CMAKE) -S $(ROOT) -B $(CMAKE_BUILD) \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCRUZER_TESTS=OFF \
+		-DCRUZER_PYTHON=OFF \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DCMAKE_COMPILE_WARNING_AS_ERROR=OFF \
+		-DSOURCEMETA_CORE_LANG_PARALLEL=OFF \
+		-DSOURCEMETA_CORE_LANG_PROCESS=OFF \
+		-DSOURCEMETA_CORE_LANG_ERROR=OFF \
+		-DSOURCEMETA_CORE_LANG_OPTIONS=OFF \
+		-DSOURCEMETA_CORE_PUNYCODE=OFF \
+		-DSOURCEMETA_CORE_TIME=OFF \
+		-DSOURCEMETA_CORE_CRYPTO=OFF \
+		-DSOURCEMETA_CORE_URITEMPLATE=OFF \
+		-DSOURCEMETA_CORE_SEMVER=OFF \
+		-DSOURCEMETA_CORE_HTML=OFF \
+		-DSOURCEMETA_CORE_EXTENSION_ALTERSCHEMA=OFF \
+		-DSOURCEMETA_CORE_EXTENSION_EDITORSCHEMA=OFF \
+		-DSOURCEMETA_CORE_INSTALL=OFF
 
-build/jsonschema/official_resolver.in.cc: \
-	$(ROOT)/vendor/core/src/core/jsonschema/official_resolver.cmake \
-	$(ROOT)/vendor/core/src/core/jsonschema/official_resolver.in.cc \
-	| build/jsonschema
-	$(CMAKE) \
-		-DPROJECT_SOURCE_DIR=$(ROOT)/vendor/core \
-		-DOFFICIAL_RESOLVER_INPUT=$(ROOT)/vendor/core/src/core/jsonschema/official_resolver.in.cc \
-		-DOFFICIAL_RESOLVER_OUTPUT=$@ -P $<
+.PHONY: $(STATIC_LIBS)
+$(STATIC_LIBS): $(CMAKE_BUILD)/CMakeCache.txt
+	$(CMAKE) --build $(CMAKE_BUILD) --target octue_cruzer --parallel 4
 
-build/%.o: build/%.cc \
-	| build/uri build/json build/jsonpointer build/jsonschema
-	$(EMCC) $(CXXFLAGS) -o $@ -c $<
-build/%.o: $(ROOT)/vendor/core/src/core/%.cc \
-	| build/uri build/json build/jsonpointer build/jsonschema
-	$(EMCC) $(CXXFLAGS) -o $@ -c $<
-build/cruzer/%.o: $(ROOT)/src/%.cc \
-	| build/cruzer
-	$(EMCC) $(CXXFLAGS) -o $@ -c $<
-
-dist/%.js: %.cc \
-	$(patsubst ../../vendor/core/vendor/uriparser/src/%.c,build/uriparser/%.o,$(wildcard $(ROOT)/vendor/core/vendor/uriparser/src/*.c)) \
-	$(patsubst ../../vendor/core/src/core/%.cc,build/%.o,$(wildcard $(ROOT)/vendor/core/src/core/uri/*.cc)) \
-	$(patsubst ../../vendor/core/src/core/%.cc,build/%.o,$(wildcard $(ROOT)/vendor/core/src/core/json/*.cc)) \
-	$(patsubst ../../vendor/core/src/core/%.cc,build/%.o,$(wildcard $(ROOT)/vendor/core/src/core/jsonpointer/*.cc)) \
-	$(patsubst ../../vendor/core/src/core/%.cc,build/%.o,$(wildcard $(ROOT)/vendor/core/src/core/jsonschema/*.cc)) \
-	build/cruzer/cruzer.o \
-	| dist
-	$(EMCC) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
+dist/wrapper.js: wrapper.cc $(STATIC_LIBS) | dist
+	$(EMCC) $(CXXFLAGS) $(LDFLAGS) -o $@ wrapper.cc $(STATIC_LIBS)

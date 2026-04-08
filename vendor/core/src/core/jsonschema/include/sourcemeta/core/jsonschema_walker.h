@@ -10,9 +10,7 @@
 #include <sourcemeta/core/jsonschema_types.h>
 
 #include <cstdint>     // std::uint64_t
-#include <map>         // std::map
 #include <optional>    // std::optional
-#include <string>      // std::string
 #include <string_view> // std::string_view
 #include <vector>      // std::vector
 
@@ -49,8 +47,8 @@ namespace sourcemeta::core {
 ///
 /// for (const auto &entry :
 ///          sourcemeta::core::SchemaIterator{
-///          document, sourcemeta::core::schema_official_walker,
-///          sourcemeta::core::schema_official_resolver}) {
+///          document, sourcemeta::core::schema_walker,
+///          sourcemeta::core::schema_resolver}) {
 ///   sourcemeta::core::prettify(
 ///     sourcemeta::core::get(document, entry.pointer), std::cout);
 ///   std::cout << "\n";
@@ -62,14 +60,13 @@ private:
 
 public:
   using const_iterator = typename internal::const_iterator;
-  SchemaIterator(
-      const JSON &input, const SchemaWalker &walker,
-      const SchemaResolver &resolver,
-      const std::optional<std::string> &default_dialect = std::nullopt);
-  auto begin() const -> const_iterator;
-  auto end() const -> const_iterator;
-  auto cbegin() const -> const_iterator;
-  auto cend() const -> const_iterator;
+  SchemaIterator(const JSON &input, const SchemaWalker &walker,
+                 const SchemaResolver &resolver,
+                 std::string_view default_dialect = "");
+  [[nodiscard]] auto begin() const -> const_iterator;
+  [[nodiscard]] auto end() const -> const_iterator;
+  [[nodiscard]] auto cbegin() const -> const_iterator;
+  [[nodiscard]] auto cend() const -> const_iterator;
 
 private:
 // Exporting symbols that depends on the standard C++ library is considered
@@ -78,7 +75,7 @@ private:
 #if defined(_MSC_VER)
 #pragma warning(disable : 4251)
 #endif
-  internal subschemas;
+  internal subschemas{};
 #if defined(_MSC_VER)
 #pragma warning(default : 4251)
 #endif
@@ -116,8 +113,8 @@ private:
 ///
 /// for (const auto &entry :
 ///          sourcemeta::core::SchemaIteratorFlat{
-///          document, sourcemeta::core::schema_official_walker,
-///          sourcemeta::core::schema_official_resolver}) {
+///          document, sourcemeta::core::schema_walker,
+///          sourcemeta::core::schema_resolver}) {
 ///   sourcemeta::core::prettify(
 ///     sourcemeta::core::get(document, entry.pointer), std::cout);
 ///   std::cout << "\n";
@@ -129,14 +126,13 @@ private:
 
 public:
   using const_iterator = typename internal::const_iterator;
-  SchemaIteratorFlat(
-      const JSON &input, const SchemaWalker &walker,
-      const SchemaResolver &resolver,
-      const std::optional<std::string> &default_dialect = std::nullopt);
-  auto begin() const -> const_iterator;
-  auto end() const -> const_iterator;
-  auto cbegin() const -> const_iterator;
-  auto cend() const -> const_iterator;
+  SchemaIteratorFlat(const JSON &input, const SchemaWalker &walker,
+                     const SchemaResolver &resolver,
+                     std::string_view default_dialect = "");
+  [[nodiscard]] auto begin() const -> const_iterator;
+  [[nodiscard]] auto end() const -> const_iterator;
+  [[nodiscard]] auto cbegin() const -> const_iterator;
+  [[nodiscard]] auto cend() const -> const_iterator;
 
 private:
 // Exporting symbols that depends on the standard C++ library is considered
@@ -145,7 +141,7 @@ private:
 #if defined(_MSC_VER)
 #pragma warning(disable : 4251)
 #endif
-  internal subschemas;
+  internal subschemas{};
 #if defined(_MSC_VER)
 #pragma warning(default : 4251)
 #endif
@@ -174,8 +170,8 @@ private:
 ///
 /// for (const auto &entry :
 ///          sourcemeta::core::SchemaKeywordIterator{
-///          document, sourcemeta::core::schema_official_walker,
-///          sourcemeta::core::schema_official_resolver}) {
+///          document, sourcemeta::core::schema_walker,
+///          sourcemeta::core::schema_resolver}) {
 ///   sourcemeta::core::stringify(entry.pointer, std::cout);
 ///   std::cout << "\n";
 /// }
@@ -186,14 +182,13 @@ private:
 
 public:
   using const_iterator = typename internal::const_iterator;
-  SchemaKeywordIterator(
-      const JSON &input, const SchemaWalker &walker,
-      const SchemaResolver &resolver,
-      const std::optional<std::string> &default_dialect = std::nullopt);
-  auto begin() const -> const_iterator;
-  auto end() const -> const_iterator;
-  auto cbegin() const -> const_iterator;
-  auto cend() const -> const_iterator;
+  SchemaKeywordIterator(const JSON &input, const SchemaWalker &walker,
+                        const SchemaResolver &resolver,
+                        std::string_view default_dialect = "");
+  [[nodiscard]] auto begin() const -> const_iterator;
+  [[nodiscard]] auto end() const -> const_iterator;
+  [[nodiscard]] auto cbegin() const -> const_iterator;
+  [[nodiscard]] auto cend() const -> const_iterator;
 
 private:
 // Exporting symbols that depends on the standard C++ library is considered
@@ -202,7 +197,7 @@ private:
 #if defined(_MSC_VER)
 #pragma warning(disable : 4251)
 #endif
-  internal entries;
+  internal entries{};
 #if defined(_MSC_VER)
 #pragma warning(default : 4251)
 #endif

@@ -8,21 +8,22 @@
 #include <sourcemeta/core/json.h>
 #include <sourcemeta/core/uri.h>
 
-#include <sourcemeta/core/jsonpointer.h>
+// NOLINTBEGIN(misc-include-cleaner)
 #include <sourcemeta/core/jsonpointer_error.h>
 #include <sourcemeta/core/jsonpointer_pointer.h>
 #include <sourcemeta/core/jsonpointer_position.h>
-#include <sourcemeta/core/jsonpointer_subpointer_walker.h>
-#include <sourcemeta/core/jsonpointer_template.h>
 #include <sourcemeta/core/jsonpointer_walker.h>
+// NOLINTEND(misc-include-cleaner)
 
-#include <functional> // std::reference_wrapper
-#include <memory>     // std::allocator
-#include <ostream>    // std::basic_ostream
-#include <string>     // std::basic_string
+#include <cassert>     // assert
+#include <functional>  // std::reference_wrapper
+#include <memory>      // std::allocator
+#include <ostream>     // std::basic_ostream
+#include <string>      // std::basic_string
+#include <string_view> // std::string_view
 
 /// @defgroup jsonpointer JSON Pointer
-/// @brief An growing implementation of RFC 6901 JSON Pointer.
+/// @brief A growing implementation of RFC 6901 JSON Pointer.
 ///
 /// This functionality is included as follows:
 ///
@@ -36,8 +37,9 @@ namespace sourcemeta::core {
 using Pointer = GenericPointer<JSON::String, PropertyHashJSON<JSON::String>>;
 
 /// @ingroup jsonpointer
-using WeakPointer = GenericPointer<std::reference_wrapper<const std::string>,
-                                   PropertyHashJSON<JSON::String>>;
+using WeakPointer = GenericPointer<
+    // We use this instead of a string view as the latter occupies more memory
+    std::reference_wrapper<const std::string>, PropertyHashJSON<JSON::String>>;
 
 /// @ingroup jsonpointer
 /// A global constant instance of the empty JSON Pointer.
@@ -46,10 +48,6 @@ const Pointer empty_pointer;
 /// @ingroup jsonpointer
 /// A global constant instance of the empty JSON WeakPointer.
 const WeakPointer empty_weak_pointer;
-
-/// @ingroup jsonpointer
-/// A JSON Pointer with unresolved wildcards
-using PointerTemplate = GenericPointerTemplate<Pointer>;
 
 /// @ingroup jsonpointer
 /// Get a value from a JSON document using a JSON Pointer (`const` overload).
@@ -72,6 +70,15 @@ using PointerTemplate = GenericPointerTemplate<Pointer>;
 /// ```
 SOURCEMETA_CORE_JSONPOINTER_EXPORT
 auto get(const JSON &document, const Pointer &pointer) -> const JSON &;
+
+// Constant reference parameters can accept xvalues which will be destructed
+// after the call. When the function returns such a parameter also as constant
+// reference, then the returned reference can be used after the object it refers
+// to has been destroyed.
+// https://clang.llvm.org/extra/clang-tidy/checks/bugprone/return-const-ref-from-parameter.html
+// This overload avoids mis-uses of retuning const reference parameter as
+// constant reference.
+auto get(JSON &&document, const Pointer &pointer) -> const JSON & = delete;
 
 /// @ingroup jsonpointer
 /// Get a value from a JSON document using a JSON WeakPointer (`const`
@@ -96,6 +103,37 @@ auto get(const JSON &document, const Pointer &pointer) -> const JSON &;
 /// ```
 SOURCEMETA_CORE_JSONPOINTER_EXPORT
 auto get(const JSON &document, const WeakPointer &pointer) -> const JSON &;
+
+// Constant reference parameters can accept xvalues which will be destructed
+// after the call. When the function returns such a parameter also as constant
+// reference, then the returned reference can be used after the object it refers
+// to has been destroyed.
+// https://clang.llvm.org/extra/clang-tidy/checks/bugprone/return-const-ref-from-parameter.html
+// This overload avoids mis-uses of retuning const reference parameter as
+// constant reference.
+auto get(JSON &&document, const WeakPointer &pointer) -> const JSON & = delete;
+
+/// @ingroup jsonpointer
+/// Get a value from a JSON document using a JSON WeakPointer (non-`const`
+/// overload). For example:
+///
+/// ```cpp
+/// #include <sourcemeta/core/json.h>
+/// #include <sourcemeta/core/jsonpointer.h>
+/// #include <cassert>
+/// #include <sstream>
+///
+/// std::istringstream stream{"[ { \"foo\": 1 }, { \"bar\": 2 } ]"};
+/// auto document{sourcemeta::core::parse_json(stream)};
+/// const sourcemeta::core::Pointer pointer{1, "bar"};
+/// sourcemeta::core::JSON &value{
+///   sourcemeta::core::get(document,
+///   sourcemeta::core::to_weak_pointer(pointer))};
+/// value = sourcemeta::core::JSON{3};
+/// assert(document.at(1).at("bar").to_integer() == 3);
+/// ```
+SOURCEMETA_CORE_JSONPOINTER_EXPORT
+auto get(JSON &document, const WeakPointer &pointer) -> JSON &;
 
 /// @ingroup jsonpointer
 /// Get a value from a JSON document using a Pointer, returning an optional that
@@ -283,6 +321,57 @@ SOURCEMETA_CORE_JSONPOINTER_EXPORT
 auto set(JSON &document, const Pointer &pointer, JSON &&value) -> void;
 
 /// @ingroup jsonpointer
+/// Remove a value from a JSON document using a JSON Pointer.
+/// Returns true if a value is removed, false otherwise.
+///
+/// Removing an empty pointer `Pointer{}`, i.e. the root, is a noop.
+///
+/// ```cpp
+/// #include <sourcemeta/core/json.h>
+/// #include <sourcemeta/core/jsonpointer.h>
+/// #include <cassert>
+/// #include <sstream>
+///
+/// std::istringstream stream{"[ { \"foo\": 1, \"baz\": 1 }, { \"bar\": 2 } ]"};
+/// sourcemeta::core::JSON document =
+///   sourcemeta::core::parse_json(stream);
+/// assert(document.at(0).defines("foo"));
+///
+/// const sourcemeta::core::Pointer pointer{0, "foo"};
+/// sourcemeta::core::remove(document, pointer);
+/// assert(!document.at(0).defines("foo"));
+/// assert(document.at(0).defines("baz"));
+/// ```
+SOURCEMETA_CORE_JSONPOINTER_EXPORT
+auto remove(JSON &document, const Pointer &pointer) -> bool;
+
+/// @ingroup jsonpointer
+/// Remove a value from a JSON document using a JSON WeakPointer.
+/// Returns true if a value is removed, false otherwise.
+///
+/// Removing an empty pointer `WeakPointer{}`, i.e. the root, is a noop.
+///
+/// ```cpp
+/// #include <sourcemeta/core/json.h>
+/// #include <sourcemeta/core/jsonpointer.h>
+/// #include <cassert>
+/// #include <sstream>
+///
+/// std::istringstream stream{"[ { \"foo\": 1, \"baz\": 1 }, { \"bar\": 2 } ]"};
+/// sourcemeta::core::JSON document =
+///   sourcemeta::core::parse_json(stream);
+/// assert(document.at(0).defines("foo"));
+///
+/// const std::string foo = "foo";
+/// const sourcemeta::core::WeakPointer pointer{0, std::cref(foo)};
+/// sourcemeta::core::remove(document, pointer);
+/// assert(!document.at(0).defines("foo"));
+/// assert(document.at(0).defines("baz"));
+/// ```
+SOURCEMETA_CORE_JSONPOINTER_EXPORT
+auto remove(JSON &document, const WeakPointer &pointer) -> bool;
+
+/// @ingroup jsonpointer
 /// Create a JSON Pointer from a JSON string value. For example:
 ///
 /// ```cpp
@@ -325,13 +414,48 @@ auto to_pointer(const std::basic_string<JSON::Char, JSON::CharTraits,
 /// const std::string foo = "foo";
 /// const sourcemeta::core::WeakPointer pointer{std::cref(foo)};
 /// const sourcemeta::core::Pointer result{
-///   sourcemeta::core::to_pointer(pointer)}:
-/// assert(pointer.size() == 1);
-/// assert(pointer.at(0).is_property());
-/// assert(pointer.at(0).to_property() == "foo");
+///   sourcemeta::core::to_pointer(pointer)};
+/// assert(result.size() == 1);
+/// assert(result.at(0).is_property());
+/// assert(result.at(0).to_property() == "foo");
 /// ```
 SOURCEMETA_CORE_JSONPOINTER_EXPORT
 auto to_pointer(const WeakPointer &pointer) -> Pointer;
+
+/// @ingroup jsonpointer
+/// Check if the given string is a valid JSON Pointer per RFC 6901 without
+/// constructing a JSON Pointer object. For example:
+///
+/// ```cpp
+/// #include <sourcemeta/core/jsonpointer.h>
+/// #include <cassert>
+///
+/// assert(sourcemeta::core::is_pointer("/foo/bar/0"));
+/// assert(sourcemeta::core::is_pointer(""));
+/// assert(!sourcemeta::core::is_pointer("foo"));
+/// ```
+SOURCEMETA_CORE_JSONPOINTER_EXPORT
+auto is_pointer(std::string_view input) noexcept -> bool;
+
+/// @ingroup jsonpointer
+/// Convert a JSON Pointer into a JSON WeakPointer. For example:
+///
+/// ```cpp
+/// #include <sourcemeta/core/jsonpointer.h>
+/// #include <cassert>
+///
+/// const sourcemeta::core::Pointer pointer{"foo", "bar", "baz"};
+/// const auto result{sourcemeta::core::to_weak_pointer(pointer)};
+/// assert(result.size() == 3);
+/// assert(result.at(0).is_property());
+/// assert(result.at(0).to_property() == "foo");
+/// assert(result.at(1).is_property());
+/// assert(result.at(1).to_property() == "bar");
+/// assert(result.at(2).is_property());
+/// assert(result.at(2).to_property() == "baz");
+/// ```
+SOURCEMETA_CORE_JSONPOINTER_EXPORT
+auto to_weak_pointer(const Pointer &pointer) -> WeakPointer;
 
 /// @ingroup jsonpointer
 ///
@@ -371,27 +495,6 @@ auto stringify(const Pointer &pointer,
 /// ```
 SOURCEMETA_CORE_JSONPOINTER_EXPORT
 auto stringify(const WeakPointer &pointer,
-               std::basic_ostream<JSON::Char, JSON::CharTraits> &stream)
-    -> void;
-
-/// @ingroup jsonpointer
-///
-/// Stringify the input JSON Pointer template into a given C++ standard output
-/// stream. For example:
-///
-/// ```cpp
-/// #include <sourcemeta/core/jsonpointer.h>
-/// #include <iostream>
-/// #include <sstream>
-///
-/// const sourcemeta::core::Pointer base{"foo", "bar"};
-/// const sourcemeta::core::PointerTemplate pointer{base};
-/// std::ostringstream stream;
-/// sourcemeta::core::stringify(pointer, stream);
-/// std::cout << stream.str() << std::endl;
-/// ```
-SOURCEMETA_CORE_JSONPOINTER_EXPORT
-auto stringify(const PointerTemplate &pointer,
                std::basic_ostream<JSON::Char, JSON::CharTraits> &stream)
     -> void;
 
@@ -473,58 +576,47 @@ SOURCEMETA_CORE_JSONPOINTER_EXPORT
 auto to_uri(const Pointer &pointer, const URI &base) -> URI;
 
 /// @ingroup jsonpointer
+SOURCEMETA_CORE_JSONPOINTER_EXPORT
+auto to_uri(const WeakPointer &pointer) -> URI;
+
+/// @ingroup jsonpointer
+SOURCEMETA_CORE_JSONPOINTER_EXPORT
+auto to_uri(const WeakPointer &pointer, const URI &base) -> URI;
+
+/// @ingroup jsonpointer
+SOURCEMETA_CORE_JSONPOINTER_EXPORT
+auto to_uri(const WeakPointer &pointer, const std::string_view base) -> URI;
+
+/// @ingroup jsonpointer
 ///
-/// Walk over every element of a JSON document, top-down, using JSON Pointers.
-/// For example:
+/// Walk over every element of a JSON document, top-down, using weak pointers.
+/// Note that the resulting weak pointers hold references to strings in the JSON
+/// document, so the document must outlive the walker and any pointers obtained
+/// from it. For example:
 ///
 /// ```cpp
 /// #include <sourcemeta/core/json.h>
 /// #include <sourcemeta/core/jsonpointer.h>
 /// #include <cassert>
+/// #include <string>
 /// #include <vector>
 ///
 /// const sourcemeta::core::JSON document =
 ///   sourcemeta::core::parse_json("[ 1, 2, 3 ]");
-/// std::vector<sourcemeta::core::Pointer> subpointers;
+/// std::vector<std::string> subpointers;
 ///
 /// for (const auto &subpointer :
 ///   sourcemeta::core::PointerWalker{document}) {
-///   subpointers.push_back(subpointer);
+///   subpointers.push_back(sourcemeta::core::to_string(subpointer));
 /// }
 ///
 /// assert(subpointers.size() == 4);
-/// assert(subpointers.at(0) == sourcemeta::core::Pointer{});
-/// assert(subpointers.at(1) == sourcemeta::core::Pointer{0});
-/// assert(subpointers.at(2) == sourcemeta::core::Pointer{1});
-/// assert(subpointers.at(3) == sourcemeta::core::Pointer{2});
+/// assert(subpointers.at(0) == "");
+/// assert(subpointers.at(1) == "/0");
+/// assert(subpointers.at(2) == "/1");
+/// assert(subpointers.at(3) == "/2");
 /// ```
-using PointerWalker = GenericPointerWalker<Pointer>;
-
-/// @ingroup jsonpointer
-///
-/// Walk over every subpointer of a JSON Pointer, from the current pointer down
-/// to the empty pointer. For example:
-///
-/// ```cpp
-/// #include <sourcemeta/core/json.h>
-/// #include <sourcemeta/core/jsonpointer.h>
-/// #include <cassert>
-/// #include <vector>
-///
-/// const sourcemeta::core::Pointer pointer{"foo", "bar"};
-/// std::vector<sourcemeta::core::Pointer> subpointers;
-///
-/// for (const auto &subpointer :
-///   sourcemeta::core::SubPointerWalker{pointer}) {
-///   subpointers.push_back(subpointer);
-/// }
-///
-/// assert(subpointers.size() == 3);
-/// assert(subpointers.at(0) == sourcemeta::core::Pointer{"foo", "bar"});
-/// assert(subpointers.at(1) == sourcemeta::core::Pointer{"foo"});
-/// assert(subpointers.at(2) == sourcemeta::core::Pointer{});
-/// ```
-using SubPointerWalker = GenericSubPointerWalker<Pointer>;
+using PointerWalker = GenericPointerWalker<WeakPointer>;
 
 } // namespace sourcemeta::core
 

@@ -79,8 +79,12 @@ static auto get_base_dialect(pybind11::object schema)
                                .attr("dumps")(schema)
                                .cast<std::string>()};
   const auto schema_json{sourcemeta::core::parse_json(schema_string)};
-  return sourcemeta::core::base_dialect(
-      schema_json, sourcemeta::core::schema_official_resolver);
+  const auto base_dialect{sourcemeta::core::base_dialect(
+      schema_json, sourcemeta::core::schema_resolver)};
+  if (base_dialect.has_value()) {
+    return std::string{sourcemeta::core::to_string(base_dialect.value())};
+  }
+  return std::nullopt;
 }
 
 PYBIND11_MODULE(pycruzer, m) {

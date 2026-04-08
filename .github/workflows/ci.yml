@@ -63,8 +63,13 @@ jobs:
           git clone --depth 1 https://github.com/emscripten-core/emsdk.git
           ./emsdk/emsdk install ${{ env.EMSDK_VERSION }}
           ./emsdk/emsdk activate ${{ env.EMSDK_VERSION }}
-          rm -rf emsdk/upstream/emscripten/cmake
-          echo "$(pwd)/emsdk/upstream/emscripten" >> $GITHUB_PATH
+          # Append (do not prepend) emsdk to PATH so the system `cmake`
+          # binary is still found first. `emsdk/upstream/emscripten`
+          # contains a sub-directory called `cmake/` (the toolchain
+          # module) which would otherwise shadow the real `cmake`
+          # executable, causing GNU Make's `execvp` to fail with
+          # "Permission denied".
+          echo "PATH=$PATH:$(pwd)/emsdk/upstream/emscripten" >> $GITHUB_ENV
         if: matrix.binding.name == 'webassembly'
       - uses: snok/install-poetry@v1.3.4
         if: matrix.binding.name == 'python'
