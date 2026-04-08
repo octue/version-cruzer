@@ -5,10 +5,11 @@
 #include <sourcemeta/core/jsonpointer.h>
 
 #include <cassert>          // assert
+#include <cstdint>          // std::uint8_t
 #include <initializer_list> // std::initializer_list
 #include <optional>         // std::optional, std::nullopt
 #include <ostream>          // std::basic_ostream
-#include <utility>          // std::forward, std::move
+#include <utility>          // std::forward
 #include <variant>          // std::variant, std::holds_alternative, std::get
 #include <vector>           // std::vector
 
@@ -16,34 +17,44 @@ namespace octue::cruzer {
 
 class PointerTemplate {
 public:
-  enum class Wildcard { Property, Item, Key };
+  enum class Wildcard : std::uint8_t { Property, Item, Key };
   struct Condition {
-    auto operator==(const Condition &) const noexcept -> bool = default;
+    [[nodiscard]] auto operator==(const Condition &) const noexcept
+        -> bool = default;
     std::optional<sourcemeta::core::JSON::String> suffix = std::nullopt;
   };
   struct Negation {
-    auto operator==(const Negation &) const noexcept -> bool = default;
+    [[nodiscard]] auto operator==(const Negation &) const noexcept
+        -> bool = default;
   };
   using Regex = sourcemeta::core::JSON::String;
-  using Token = sourcemeta::core::Pointer::Token;
+  using Token = sourcemeta::core::WeakPointer::Token;
   using Container =
       std::vector<std::variant<Wildcard, Condition, Negation, Regex, Token>>;
 
   PointerTemplate() : data{} {}
   PointerTemplate(std::initializer_list<typename Container::value_type> tokens)
-      : data{std::move(tokens)} {}
+      : data{tokens} {}
 
   using value_type = typename Container::value_type;
   using size_type = typename Container::size_type;
   using iterator = typename Container::iterator;
   using const_iterator = typename Container::const_iterator;
 
-  auto begin() noexcept -> iterator { return this->data.begin(); }
-  auto end() noexcept -> iterator { return this->data.end(); }
-  auto begin() const noexcept -> const_iterator { return this->data.begin(); }
-  auto end() const noexcept -> const_iterator { return this->data.end(); }
-  auto cbegin() const noexcept -> const_iterator { return this->data.cbegin(); }
-  auto cend() const noexcept -> const_iterator { return this->data.cend(); }
+  [[nodiscard]] auto begin() noexcept -> iterator { return this->data.begin(); }
+  [[nodiscard]] auto end() noexcept -> iterator { return this->data.end(); }
+  [[nodiscard]] auto begin() const noexcept -> const_iterator {
+    return this->data.begin();
+  }
+  [[nodiscard]] auto end() const noexcept -> const_iterator {
+    return this->data.end();
+  }
+  [[nodiscard]] auto cbegin() const noexcept -> const_iterator {
+    return this->data.cbegin();
+  }
+  [[nodiscard]] auto cend() const noexcept -> const_iterator {
+    return this->data.cend();
+  }
 
   template <class... Args> auto emplace_back(Args &&...args) -> void {
     this->data.emplace_back(std::forward<Args>(args)...);
@@ -58,7 +69,8 @@ public:
     return this->data.empty();
   }
 
-  auto operator==(const PointerTemplate &other) const noexcept -> bool {
+  [[nodiscard]] auto operator==(const PointerTemplate &other) const noexcept
+      -> bool {
     return this->data == other.data;
   }
 
@@ -113,7 +125,7 @@ stringify(const PointerTemplate &pointer,
       stream.put('!');
       stream.put('~');
     } else {
-      const sourcemeta::core::Pointer single{
+      const sourcemeta::core::WeakPointer single{
           std::get<PointerTemplate::Token>(token)};
       sourcemeta::core::stringify(single, stream);
     }

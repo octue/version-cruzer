@@ -18,13 +18,13 @@ TEST(Cruzer_index, example_2020_12_1) {
   })JSON")};
 
   sourcemeta::core::SchemaFrame frame{
-      sourcemeta::core::SchemaFrame::Mode::Instances};
-  frame.analyse(schema, sourcemeta::core::schema_official_walker,
-                sourcemeta::core::schema_official_resolver);
+      sourcemeta::core::SchemaFrame::Mode::References};
+  frame.analyse(schema, sourcemeta::core::schema_walker,
+                sourcemeta::core::schema_resolver);
 
-  const auto index{octue::cruzer::index(
-      frame, schema, sourcemeta::core::schema_official_walker,
-      sourcemeta::core::schema_official_resolver)};
+  const auto index{octue::cruzer::index(frame, schema,
+                                        sourcemeta::core::schema_walker,
+                                        sourcemeta::core::schema_resolver)};
 
   EXPECT_EQ(index.size(), 4);
 
@@ -39,7 +39,7 @@ TEST(Cruzer_index, example_2020_12_1) {
   EXPECT_EQ(index.at("").at(0).dialect,
             "https://json-schema.org/draft/2020-12/schema");
   EXPECT_EQ(index.at("").at(0).base_dialect,
-            "https://json-schema.org/draft/2020-12/schema");
+            sourcemeta::core::SchemaBaseDialect::JSON_Schema_2020_12);
 
   EXPECT_EQ(index.at("/foo").size(), 1);
   EXPECT_EQ(sourcemeta::core::to_string(index.at("/foo").at(0).pointer),
@@ -49,7 +49,7 @@ TEST(Cruzer_index, example_2020_12_1) {
   EXPECT_EQ(index.at("/foo").at(0).dialect,
             "https://json-schema.org/draft/2020-12/schema");
   EXPECT_EQ(index.at("/foo").at(0).base_dialect,
-            "https://json-schema.org/draft/2020-12/schema");
+            sourcemeta::core::SchemaBaseDialect::JSON_Schema_2020_12);
 
   EXPECT_EQ(index.at("/foo/~?additionalProperties~/~P~").size(), 1);
   EXPECT_EQ(sourcemeta::core::to_string(
@@ -60,7 +60,7 @@ TEST(Cruzer_index, example_2020_12_1) {
   EXPECT_EQ(index.at("/foo/~?additionalProperties~/~P~").at(0).dialect,
             "https://json-schema.org/draft/2020-12/schema");
   EXPECT_EQ(index.at("/foo/~?additionalProperties~/~P~").at(0).base_dialect,
-            "https://json-schema.org/draft/2020-12/schema");
+            sourcemeta::core::SchemaBaseDialect::JSON_Schema_2020_12);
 
   EXPECT_EQ(index.at("/bar").size(), 2);
 
@@ -71,7 +71,7 @@ TEST(Cruzer_index, example_2020_12_1) {
   EXPECT_EQ(index.at("/bar").at(0).dialect,
             "https://json-schema.org/draft/2020-12/schema");
   EXPECT_EQ(index.at("/bar").at(0).base_dialect,
-            "https://json-schema.org/draft/2020-12/schema");
+            sourcemeta::core::SchemaBaseDialect::JSON_Schema_2020_12);
 
   EXPECT_EQ(sourcemeta::core::to_string(index.at("/bar").at(1).pointer),
             "/properties/foo/additionalProperties");
@@ -80,7 +80,7 @@ TEST(Cruzer_index, example_2020_12_1) {
   EXPECT_EQ(index.at("/bar").at(1).dialect,
             "https://json-schema.org/draft/2020-12/schema");
   EXPECT_EQ(index.at("/bar").at(1).base_dialect,
-            "https://json-schema.org/draft/2020-12/schema");
+            sourcemeta::core::SchemaBaseDialect::JSON_Schema_2020_12);
 }
 
 TEST(Cruzer_index, example_2020_12_2) {
@@ -98,13 +98,13 @@ TEST(Cruzer_index, example_2020_12_2) {
   })JSON")};
 
   sourcemeta::core::SchemaFrame frame{
-      sourcemeta::core::SchemaFrame::Mode::Instances};
-  frame.analyse(schema, sourcemeta::core::schema_official_walker,
-                sourcemeta::core::schema_official_resolver);
+      sourcemeta::core::SchemaFrame::Mode::References};
+  frame.analyse(schema, sourcemeta::core::schema_walker,
+                sourcemeta::core::schema_resolver);
 
-  const auto index{octue::cruzer::index(
-      frame, schema, sourcemeta::core::schema_official_walker,
-      sourcemeta::core::schema_official_resolver)};
+  const auto index{octue::cruzer::index(frame, schema,
+                                        sourcemeta::core::schema_walker,
+                                        sourcemeta::core::schema_resolver)};
 
   EXPECT_EQ(index.size(), 1);
 
@@ -114,5 +114,5 @@ TEST(Cruzer_index, example_2020_12_2) {
   EXPECT_EQ(index.at("").at(0).dialect,
             "https://json-schema.org/draft/2020-12/schema");
   EXPECT_EQ(index.at("").at(0).base_dialect,
-            "https://json-schema.org/draft/2020-12/schema");
+            sourcemeta::core::SchemaBaseDialect::JSON_Schema_2020_12);
 }
