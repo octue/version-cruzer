@@ -6,7 +6,10 @@
 #endif
 
 #include <sourcemeta/core/json.h>
+
+// NOLINTBEGIN(misc-include-cleaner)
 #include <sourcemeta/core/jsonl_iterator.h>
+// NOLINTEND(misc-include-cleaner)
 
 #include <istream> // std::basic_istream
 
@@ -54,6 +57,7 @@ public:
   auto cend() -> const_iterator;
 
 private:
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-const-or-ref-data-members)
   std::basic_istream<JSON::Char, JSON::CharTraits> &data;
 };
 

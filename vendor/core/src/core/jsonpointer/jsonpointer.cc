@@ -1,14 +1,22 @@
+#include <sourcemeta/core/json.h>
+#include <sourcemeta/core/json_hash.h>
+#include <sourcemeta/core/json_value.h>
 #include <sourcemeta/core/jsonpointer.h>
+#include <sourcemeta/core/jsonpointer_pointer.h>
+#include <sourcemeta/core/uri.h>
 
-#include "grammar.h"
 #include "parser.h"
 #include "stringify.h"
 
+#include <array>       // std::array
 #include <cassert>     // assert
-#include <functional>  // std::reference_wrapper
-#include <iterator>    // std::cbegin, std::cend, std::prev
+#include <charconv>    // std::to_chars
+#include <iterator>    // std::cbegin, std::cend, std::prev, std::advance
 #include <memory>      // std::allocator
+#include <ostream>     // std::basic_ostream
 #include <sstream>     // std::basic_ostringstream, std::basic_stringstream
+#include <string>      // std::basic_string
+#include <string_view> // std::string_view
 #include <type_traits> // std::is_same_v
 #include <utility>     // std::move
 
@@ -50,7 +58,10 @@ auto traverse(V &document, typename PointerT::const_iterator begin,
       // token.
       // See https://www.rfc-editor.org/rfc/rfc6901#section-4
       if (current->is_object()) {
-        current = &current->at(std::to_string(iterator->to_index()));
+        std::array<char, 20> buffer{};
+        const auto [end_pointer, error_code] = std::to_chars(
+            buffer.data(), buffer.data() + buffer.size(), iterator->to_index());
+        current = &current->at(std::string{buffer.data(), end_pointer});
       } else {
         current = &current->at(iterator->to_index());
       }
@@ -77,7 +88,10 @@ auto traverse_all(V &document, const PointerT &pointer) -> V & {
       current = &current->at(token.to_property(), token.property_hash());
     } else {
       if (current->is_object()) {
-        current = &current->at(std::to_string(token.to_index()));
+        std::array<char, 20> buffer{};
+        const auto [end_pointer, error_code] = std::to_chars(
+            buffer.data(), buffer.data() + buffer.size(), token.to_index());
+        current = &current->at(std::string{buffer.data(), end_pointer});
       } else {
         current = &current->at(token.to_index());
       }
@@ -114,7 +128,10 @@ auto try_traverse(const sourcemeta::core::JSON &document,
       const auto index{token.to_index()};
       if (index < current->size()) {
         if (is_object) {
-          current = &current->at(std::to_string(index));
+          std::array<char, 20> buffer{};
+          const auto [end_pointer, error_code] = std::to_chars(
+              buffer.data(), buffer.data() + buffer.size(), index);
+          current = &current->at(std::string{buffer.data(), end_pointer});
         } else {
           current = &current->at(index);
         }
@@ -149,6 +166,14 @@ auto get(const JSON &document, const WeakPointer &pointer) -> const JSON & {
 }
 
 auto get(JSON &document, const Pointer &pointer) -> JSON & {
+  if (pointer.empty()) {
+    return document;
+  }
+
+  return traverse_all<std::allocator, JSON>(document, pointer);
+}
+
+auto get(JSON &document, const WeakPointer &pointer) -> JSON & {
   if (pointer.empty()) {
     return document;
   }
@@ -197,7 +222,7 @@ auto set(JSON &document, const Pointer &pointer, const JSON &value) -> void {
 
   JSON &current{traverse<std::allocator, JSON>(document, std::cbegin(pointer),
                                                std::prev(std::cend(pointer)))};
-  const auto last{pointer.back()};
+  const auto &last{pointer.back()};
   // Handle the hyphen as a last constant
   // If the currently referenced value is a JSON array, the reference
   // token [can be ] the single character "-", making the new referenced value
@@ -209,7 +234,10 @@ auto set(JSON &document, const Pointer &pointer, const JSON &value) -> void {
     current.at(last.to_property()).into(value);
   } else {
     if (current.is_object()) {
-      current.at(std::to_string(last.to_index())).into(value);
+      std::array<char, 20> buffer{};
+      const auto [end_pointer, error_code] = std::to_chars(
+          buffer.data(), buffer.data() + buffer.size(), last.to_index());
+      current.at(std::string{buffer.data(), end_pointer}).into(value);
     } else {
       current.at(last.to_index()).into(value);
     }
@@ -224,7 +252,7 @@ auto set(JSON &document, const Pointer &pointer, JSON &&value) -> void {
 
   JSON &current{traverse<std::allocator, JSON>(document, std::cbegin(pointer),
                                                std::prev(std::cend(pointer)))};
-  const auto last{pointer.back()};
+  const auto &last{pointer.back()};
   // Handle the hyphen as a last constant
   // If the currently referenced value is a JSON array, the reference
   // token [can be ] the single character "-", making the new referenced value
@@ -239,22 +267,69 @@ auto set(JSON &document, const Pointer &pointer, JSON &&value) -> void {
   }
 }
 
+template <typename PointerT>
+auto remove_pointer(JSON &document, const PointerT &pointer) -> bool {
+  // Current implementation doesn't support removing an empty JSON pointer
+  // because we don't have a reference to the parent JSON object and there may
+  // be none (i.e. current object is the root JSON object). Here we are copying
+  // RapidJSON by making this a noop.
+  // https://github.com/Tencent/rapidjson/blob/24b5e7a8b27f42fa16b96fc70aade9106cf7102f/include/rapidjson/pointer.h#L835C9-L835C55
+  if (pointer.empty()) {
+    return false;
+  }
+
+  JSON &current{traverse<std::allocator, JSON, PointerT>(
+      document, std::cbegin(pointer), std::prev(std::cend(pointer)))};
+  const auto &last{pointer.back()};
+
+  if (last.is_property()) {
+    const auto current_size{current.size()};
+    return current.erase(last.to_property()) < current_size;
+  } else {
+    if (current.is_object()) {
+      std::array<char, 20> buffer{};
+      const auto [end_pointer, error_code] = std::to_chars(
+          buffer.data(), buffer.data() + buffer.size(), last.to_index());
+      const auto current_size{current.size()};
+      return current.erase(std::string{buffer.data(), end_pointer}) <
+             current_size;
+    } else {
+      const auto index{last.to_index()};
+      const auto &array{current.as_array()};
+
+      if (index >= array.size()) {
+        return false;
+      }
+
+      auto iterator{array.cbegin()};
+      std::advance(iterator, index);
+      current.erase(iterator);
+      return true;
+    }
+  }
+}
+
+auto remove(JSON &document, const Pointer &pointer) -> bool {
+  return remove_pointer(document, pointer);
+}
+
+auto remove(JSON &document, const WeakPointer &pointer) -> bool {
+  return remove_pointer(document, pointer);
+}
+
 auto to_pointer(const JSON &document) -> Pointer {
   assert(document.is_string());
   auto stream{document.to_stringstream()};
-  return parse_pointer(stream);
+  return parse_pointer<false>(stream);
 }
 
 auto to_pointer(const std::basic_string<JSON::Char, JSON::CharTraits,
                                         std::allocator<JSON::Char>> &input)
     -> Pointer {
-  std::basic_stringstream<JSON::Char, JSON::CharTraits,
-                          std::allocator<JSON::Char>>
-      stream;
-  stream << internal::token_pointer_quote<JSON::Char>;
-  stream << input;
-  stream << internal::token_pointer_quote<JSON::Char>;
-  return to_pointer(parse_json(stream));
+  std::basic_istringstream<JSON::Char, JSON::CharTraits,
+                           std::allocator<JSON::Char>>
+      stream{input};
+  return parse_pointer<false>(stream);
 }
 
 auto to_pointer(const WeakPointer &pointer) -> Pointer {
@@ -270,25 +345,29 @@ auto to_pointer(const WeakPointer &pointer) -> Pointer {
   return result;
 }
 
+auto to_weak_pointer(const Pointer &pointer) -> WeakPointer {
+  WeakPointer result;
+  for (const auto &token : pointer) {
+    if (token.is_property()) {
+      result.push_back(token.to_property());
+    } else {
+      result.push_back(token.to_index());
+    }
+  }
+
+  return result;
+}
+
 auto stringify(const Pointer &pointer,
                std::basic_ostream<JSON::Char, JSON::CharTraits> &stream)
     -> void {
-  stringify<JSON::Char, JSON::CharTraits, std::allocator>(pointer, stream,
-                                                          false);
+  stringify<JSON::Char, JSON::CharTraits, std::allocator>(pointer, stream);
 }
 
 auto stringify(const WeakPointer &pointer,
                std::basic_ostream<JSON::Char, JSON::CharTraits> &stream)
     -> void {
-  stringify<JSON::Char, JSON::CharTraits, std::allocator>(pointer, stream,
-                                                          false);
-}
-
-auto stringify(const PointerTemplate &pointer,
-               std::basic_ostream<JSON::Char, JSON::CharTraits> &stream)
-    -> void {
-  stringify<JSON::Char, JSON::CharTraits, std::allocator>(pointer, stream,
-                                                          false);
+  stringify<JSON::Char, JSON::CharTraits, std::allocator>(pointer, stream);
 }
 
 auto to_string(const Pointer &pointer)
@@ -315,13 +394,42 @@ auto to_uri(const Pointer &pointer) -> URI {
   std::basic_ostringstream<JSON::Char, JSON::CharTraits,
                            std::allocator<JSON::Char>>
       result;
-  stringify<JSON::Char, JSON::CharTraits, std::allocator>(pointer, result,
-                                                          true);
+  stringify<JSON::Char, JSON::CharTraits, std::allocator>(pointer, result);
   return URI::from_fragment(result.str());
 }
 
 auto to_uri(const Pointer &pointer, const URI &base) -> URI {
-  return to_uri(pointer).try_resolve_from(base).canonicalize();
+  return to_uri(pointer).resolve_from(base).canonicalize();
+}
+
+auto to_uri(const WeakPointer &pointer) -> URI {
+  std::basic_ostringstream<JSON::Char, JSON::CharTraits,
+                           std::allocator<JSON::Char>>
+      result;
+  stringify(pointer, result);
+  return URI::from_fragment(result.str());
+}
+
+auto to_uri(const WeakPointer &pointer, const URI &base) -> URI {
+  return to_uri(pointer).resolve_from(base).canonicalize();
+}
+
+auto to_uri(const WeakPointer &pointer, const std::string_view base) -> URI {
+  if (base.empty()) {
+    return to_uri(pointer);
+  }
+
+  return to_uri(pointer).resolve_from(URI{base}).canonicalize();
+}
+
+auto is_pointer(const std::string_view input) noexcept -> bool {
+  try {
+    std::basic_istringstream<JSON::Char> stream{std::string{input}};
+    parse_pointer<true>(stream);
+    return true;
+  } catch (...) {
+    return false;
+  }
 }
 
 } // namespace sourcemeta::core
